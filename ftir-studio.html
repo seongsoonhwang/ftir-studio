@@ -7,14 +7,18 @@
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
-<div id="app">
+<div id="app" data-tab="ftir">
   <header>
     <div class="brand">
       <span class="logo">∿</span>
       <span class="title">FT-IR Studio</span>
-      <span class="ver">v1.2</span>
-      <span class="sub">Bruker OPUS 바이너리·ASCII · 스택 비교 · 정성/열화 판정</span>
+      <span class="ver">v1.3</span>
+      <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 &nbsp;|&nbsp; DSC: 피크 적분·Tg·결정화도</span>
     </div>
+    <nav class="ttabs">
+      <button class="ttab active" data-ttab="ftir">FT-IR</button>
+      <button class="ttab" data-ttab="dsc">DSC</button>
+    </nav>
     <div class="tools">
       <button id="btnOpen" class="primary">파일 열기</button>
       <button id="btnDemo">데모 데이터</button>
@@ -97,6 +101,13 @@
             </select>
           </label>
         </div>
+        <label class="fld"><span>PNG 배경</span>
+          <select id="viewExportBg">
+            <option value="transparent">투명 (기본)</option>
+            <option value="white">흰색</option>
+            <option value="dark">앱 테마(어두움)</option>
+          </select>
+        </label>
         <label class="chk"><input id="viewLegendOn" type="checkbox" checked> 범례 표시</label>
         <label class="fld"><span>피크 라벨 기준 (prominence/전체높이)</span><input id="viewLabelMin" type="number" min="0" max="0.5" step="0.005" value="0.03"></label>
         <div class="row2">
@@ -189,7 +200,7 @@
     </details>
   </aside>
 
-  <main>
+  <main id="mainFtir">
     <div id="plotWrap">
       <canvas id="plot"></canvas>
       <div id="tooltip" class="tooltip hidden"></div>
@@ -283,6 +294,179 @@
       </section>
     </div>
   </main>
+
+  <!-- ===================== DSC 탭 ===================== -->
+  <aside id="sideDsc">
+    <details open>
+      <summary>DSC 시료 <span class="cnt" id="dCount">0</span></summary>
+      <div class="body">
+        <div id="dDrop" class="drop">
+          <strong>파일을 여기로 끌어다 놓기</strong>
+          <span>DSC ASCII(.txt/.csv/.tsv) · 온도·열유량 2~5열</span>
+        </div>
+        <ul id="dList" class="tracelist"></ul>
+        <div class="row btns">
+          <button id="dShowAll" class="mini">전체 표시</button>
+          <button id="dHideAll" class="mini">전체 숨김</button>
+          <button id="dClear" class="mini danger">모두 삭제</button>
+        </div>
+        <div class="divider"></div>
+        <div class="subhead">선택 시료 스타일</div>
+        <label class="fld"><span>이름(범례)</span><input id="dName" type="text" placeholder="시료 선택"></label>
+        <label class="fld"><span>범례 문구</span><input id="dLegend" type="text" placeholder="비우면 이름 사용"></label>
+        <div class="row2">
+          <label class="fld"><span>색</span><input id="dColor" type="color" value="#4f9dff"></label>
+          <label class="fld"><span>굵기</span><input id="dWidth" type="number" min="0.5" max="8" step="0.1" value="1.6"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>선 형태</span>
+            <select id="dDash">
+              <option value="solid">실선</option>
+              <option value="dash">파선</option>
+              <option value="dot">점선</option>
+              <option value="dashdot">일점쇄선</option>
+            </select>
+          </label>
+          <label class="fld"><span>투명도</span><input id="dAlpha" type="number" min="0.1" max="1" step="0.05" value="1"></label>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>표시 설정</summary>
+      <div class="body">
+        <div class="row2">
+          <label class="fld"><span>배치</span>
+            <select id="dViewMode">
+              <option value="stacked">스택(한 화면)</option>
+              <option value="overlay">겹쳐보기</option>
+            </select>
+          </label>
+          <label class="fld"><span>간격</span><input id="dGap" type="number" min="0" max="1" step="0.05" value="0.35"></label>
+        </div>
+        <label class="chk"><input id="dNormH" type="checkbox" checked> 시료별 높이 정규화</label>
+        <label class="chk"><input id="dRev" type="checkbox"> X축 역순</label>
+        <label class="chk"><input id="dGrid" type="checkbox" checked> 격자</label>
+        <label class="chk"><input id="dPeaks" type="checkbox" checked> 피크 마커</label>
+        <label class="chk"><input id="dLabels" type="checkbox" checked> 피크 라벨</label>
+        <div class="row2">
+          <label class="fld"><span>X 최소 (°C)</span><input id="dLo" type="number" step="10" value="20"></label>
+          <label class="fld"><span>X 최대 (°C)</span><input id="dHi" type="number" step="10" value="320"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>글꼴 크기</span><input id="dFont" type="number" min="8" max="24" step="1" value="13"></label>
+          <label class="fld"><span>범례 위치</span>
+            <select id="dLegendPos">
+              <option value="out">바깥 오른쪽</option>
+              <option value="tr">오른쪽 위</option>
+              <option value="tl">왼쪽 위</option>
+              <option value="br">오른쪽 아래</option>
+              <option value="bl">왼쪽 아래</option>
+            </select>
+          </label>
+        </div>
+        <label class="fld"><span>PNG 배경</span>
+          <select id="dExportBg">
+            <option value="transparent">투명 (기본)</option>
+            <option value="white">흰색</option>
+            <option value="dark">앱 테마(어두움)</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <details open>
+      <summary>분석 설정</summary>
+      <div class="body">
+        <div class="row2">
+          <label class="fld"><span>시료 질량 (mg)</span><input id="dMass" type="number" min="0.1" step="0.1" value="5"></label>
+          <label class="fld"><span>가열속도 (°C/min)</span><input id="dBeta" type="number" min="0.1" step="1" value="20"></label>
+        </div>
+        <label class="fld"><span>열유량 단위</span>
+          <select id="dUnit">
+            <option value="mW/mg">mW/mg (질량당)</option>
+            <option value="W/g">W/g (= mW/mg)</option>
+            <option value="mW">mW (절대값)</option>
+            <option value="uW">µW (절대값)</option>
+            <option value="uV">µV (전압 — 보정 필요)</option>
+          </select>
+        </label>
+        <label class="fld"><span>스무딩 (점 수, 1=없음)</span><input id="dSmooth" type="number" min="1" max="51" step="2" value="3"></label>
+        <div class="divider"></div>
+        <div class="subhead">피크 구간 (융해·결정화·경화)</div>
+        <label class="chk"><input id="dAuto" type="checkbox" checked> 구간 자동 (시료마다 피크·Tg 자동 검출)</label>
+        <div class="row2">
+          <label class="fld"><span>시작 (°C)</span><input id="dPk1" type="number" step="1" value="180"></label>
+          <label class="fld"><span>끝 (°C)</span><input id="dPk2" type="number" step="1" value="250"></label>
+        </div>
+        <div class="subhead">유리전이(Tg) 구간</div>
+        <div class="row2">
+          <label class="fld"><span>시작 (°C)</span><input id="dTg1" type="number" step="1" value="30"></label>
+          <label class="fld"><span>끝 (°C)</span><input id="dTg2" type="number" step="1" value="90"></label>
+        </div>
+        <div class="divider"></div>
+        <label class="fld"><span>ΔHm° 참고 재료 (결정화도)</span><select id="dRefSel"></select></label>
+        <label class="fld"><span>ΔHm° (J/g) — 0이면 결정화도 계산 안 함</span><input id="dRefVal" type="number" min="0" step="1" value="190"></label>
+        <div class="row2">
+          <label class="fld"><span>온도 열 (0부터)</span><input id="dTempCol" type="number" min="0" step="1" value="0"></label>
+          <label class="fld"><span>열유량 열 (0부터)</span><input id="dHfCol" type="number" min="0" step="1" value="1"></label>
+        </div>
+        <div class="row btns">
+          <button id="dRun" class="mini primary">선택 분석</button>
+          <button id="dRunAll" class="mini">전체 분석</button>
+          <button id="dReparse" class="mini">열 다시 읽기</button>
+        </div>
+        <p class="hint"><b>ΔHm°</b>는 문헌 관용값입니다. grade·문헌에 따라 10 % 이상 차이가 나므로 반드시 확인 후 수정하세요. 결정화도 = ΔHm / ΔHm° × 100.</p>
+        <p class="hint">ΔH는 구간 양끝을 잇는 <b>직선 베이스라인</b> 기준 면적을 가열속도로 나눠 계산합니다(ΔH = ∫HF dT / (β/60)). onset·endset은 최대 기울기 접선과 베이스라인의 교점입니다. 열유량 단위가 mW(절대값)면 시료 질량이 필요합니다.</p>
+      </div>
+    </details>
+  </aside>
+
+  <main id="mainDsc">
+    <div id="dPlotWrap">
+      <canvas id="dPlot"></canvas>
+      <div id="dHint" class="plot-hint">드래그 확대 · 휠 줌 · 더블클릭 초기화</div>
+    </div>
+    <div id="dResizer" title="드래그: 아래 패널 높이 · 더블클릭: 접기"></div>
+    <div id="dBottom">
+      <nav class="tabs">
+        <button class="dtag active" data-dtag="result">분석 결과</button>
+        <button class="dtag" data-dtag="peaks">피크 표</button>
+        <button class="dtag" data-dtag="log">로그</button>
+        <span class="grow"></span>
+        <span class="tabinfo" id="dTabInfo"></span>
+      </nav>
+
+      <section class="panel active" id="dpanel-result">
+        <div class="toolbar">
+          <button id="dRunSel2" class="mini primary">선택 분석</button>
+          <button id="dRunAll2" class="mini">전체 분석</button>
+          <span class="grow"></span>
+          <span class="tabinfo">ΔH는 피크 구간 적분, Tg는 스텝 중간값(반높이)</span>
+          <button id="dCSV" class="mini">CSV 저장</button>
+        </div>
+        <div class="tablewrap"><table id="dResTable"><thead><tr>
+          <th>시료</th><th>Tg 중간</th><th>Tg 시작</th><th>Tg 끝</th><th>ΔCp</th>
+          <th>피크 시작</th><th>피크</th><th>피크 끝</th><th>ΔH (J/g)</th><th>결정화도 (%)</th><th>비고</th>
+        </tr></thead><tbody></tbody></table></div>
+      </section>
+
+      <section class="panel" id="dpanel-peaks">
+        <div class="tablewrap"><table id="dPkTable"><thead><tr>
+          <th>시료</th><th>구간 (°C)</th><th>피크 (°C)</th><th>높이</th><th>면적</th><th>onset (°C)</th><th>endset (°C)</th><th>방향</th>
+        </tr></thead><tbody></tbody></table></div>
+      </section>
+
+      <section class="panel" id="dpanel-log">
+        <div class="toolbar">
+          <button id="dClearLog" class="mini">로그 지우기</button>
+          <span class="grow"></span>
+          <span class="tabinfo">DSC 처리·경고 기록</span>
+        </div>
+        <div id="dLog" class="log"></div>
+      </section>
+    </div>
+  </main>
 </div>
 
 <input type="file" id="fileInput" multiple accept=".0,.1,.2,.3,.4,.5,.6,.7,.8,.9,.10,.11,.12,.13,.14,.15,.16,.17,.18,.19,.20,.dpt,.txt,.csv,.tsv,.asc,.dat" hidden>
@@ -319,6 +503,17 @@
     <li>ATR 보정은 단순형(A·ν/1000)입니다. 정밀 정량에는 파수 의존 n 분산을 반영한 상용 보정과 차이가 있을 수 있습니다.</li>
     <li>OPUS 바이너리 리더는 공개 포맷 문서와 오픈소스 구현(brukeropus·openreadout)을 근거로 작성했습니다. 사내 OPUS 버전·3D 파일처럼 검증하지 못한 변형이 있으면 로그에 실패로 표시됩니다.</li>
   </ul>
+  <h3>5. DSC 탭 (v1.3 추가)</h3>
+  <ol>
+    <li>상단 <b>DSC</b> 탭으로 전환 → 왼쪽에 DSC 파일을 끌어다 놓습니다. <b>온도 / 열유량 2~5열 ASCII</b>(.txt .csv .tsv)를 읽습니다 — 탭·쉼표·세미콜론·공백 구분, 소수점 쉼표 형식도 자동 인식합니다.</li>
+    <li><b>분석 설정</b>에서 시료 질량(mg)·가열속도(°C/min)·열유량 단위를 확인합니다. 단위가 mW/mg·W/g면 ΔH가 바로 나오고, mW(절대값)면 질량으로 나눠 환산합니다.</li>
+    <li><b>피크 구간</b>(예: PA6 융해 180–250 °C)을 지정하면 그 구간 양끝을 잇는 직선 베이스라인으로 <b>ΔH(J/g)</b>, peak, 외삽 onset/endset을 계산합니다.</li>
+    <li><b>Tg 구간</b>을 지정하면 스텝의 onset / 중간(반높이) / end 와 ΔCp를 계산합니다(ISO 11357-2 방식의 외삽 접선).</li>
+    <li><b>결정화도</b>는 ΔHm ÷ ΔHm° × 100 입니다. ΔHm°는 재료를 고르면 관용값이 채워지지만 <b>문헌·grade별로 10 % 이상 차이가 나므로 반드시 확인 후 수정</b>하십시오.</li>
+    <li>PNG 내보내기는 FT-IR 탭과 같이 배경을 <b>투명 / 흰색 / 앱 테마</b>에서 고를 수 있습니다(기본 투명, 어두운 글자라 흰 문서에 붙여도 보입니다).</li>
+    <li>한계: 기준선이 곡선인 경우(열량 보정 전, Cp 변화가 큰 시료) 결과가 달라질 수 있습니다. 필요하면 OPUS/계측기 소프트웨어에서 베이스라인을 만든 뒤 다시 내보내세요.</li>
+  </ol>
+
   <div class="dlgfoot"><button id="btnHelpClose" class="primary">닫기</button></div>
 </dialog>
 
@@ -328,5 +523,7 @@
 <script src="app-plot.js"></script>
 <script src="demo.js"></script>
 <script src="app.js"></script>
+<script src="dsc-core.js"></script>
+<script src="dsc.js"></script>
 </body>
 </html>

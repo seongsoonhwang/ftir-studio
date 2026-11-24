@@ -1,18 +1,23 @@
-FTIR Studio v1.2 — 웹에서 바로 쓰기
+FTIR Studio v1.3 — 웹에서 바로 쓰기
 ====================================
 
 [가장 빠른 방법]
   https://seongsoonhwang.github.io/ftir-studio/ 를 브라우저로 엽니다.
   → 설치 없이 그대로 실행됩니다. 데이터는 브라우저 안에서만 처리되고 외부로 전송되지 않습니다.
 
-[v1.2에서 추가된 것]
-  · 특정 밴드 피크 높이 정규화(내부 표준)
-    전처리 → 정규화에서 "특정 밴드 피크 높이 (내부 표준)" 선택 → 기준 밴드(예: 1440–1480)와
-    기준값(1.0, 100으로 두면 % 스케일) 입력. 시편 두께·ATR 접촉 압력 차이를 상쇄해
-    열화 전후·정상품/문제품을 상대 비교할 때 씁니다.
-    비율 지수(CI 등)는 정규화와 무관합니다(분자·분모가 같이 스케일되므로).
-  · 기준 밴드가 비어 있으면 정규화를 생략하고 로그에 경고를 남깁니다(배율 폭주 방지).
-  · 표시 구간 기준 y범위 정규화 — 화면 밖 포화 피크 때문에 그래프가 납작해지던 문제 수정.
+[화면 구성 — 상단 탭]
+  · FT-IR : OPUS 원시 파일(.0/.1)과 ASCII(.dpt) 스펙트럼 — 정성 판정·열화 지수·차이 스펙트럼
+  · DSC   : DSC ASCII(온도/열유량) — ΔH·onset/endset·Tg·ΔCp·결정화도  (v1.3 추가)
+
+[v1.3에서 추가된 것]
+  · DSC 분석 탭 — 피크 적분(ΔH, J/g), 외삽 onset/endset, Tg(시작/중간/끝)+ΔCp,
+    결정화도(ΔHm/ΔHm°), 구간 자동 검출, 결과 CSV·PNG 내보내기
+  · PNG 배경 선택 — 투명(기본, 어두운 글자) / 흰색 / 앱 테마
+    → 투명은 워드·PPT·보고서에 붙여도 축·범례·수치가 그대로 읽힙니다
+
+[v1.2까지]
+  · 특정 밴드 피크 높이 정규화(내부 표준), 표시구간 기준 y범위 정규화
+  · OPUS 원시 바이너리(.0/.1) 직접 읽기 + MNY/MXY 무결성 검사
 
 [내 PC에 파일로 보관하려면]
   1) 위 주소를 연 뒤 Ctrl+S → "웹페이지, 완전히" 로 저장 (ftir-studio-single.html 과 동일)
@@ -20,7 +25,7 @@ FTIR Studio v1.2 — 웹에서 바로 쓰기
   3) 주소창 없는 앱 창으로 쓰려면 실행.bat 을 ftir-studio.html 과 같은 폴더에 두고 더블클릭
      (Edge/Chrome --app 모드, 창 크기 1500x950)
 
-[예제 데이터]
+[예제 데이터 — FT-IR]
   https://seongsoonhwang.github.io/ftir-studio/samples/PA6-GF30_ok.dpt
   https://seongsoonhwang.github.io/ftir-studio/samples/PA6-GF30_ng.dpt
   https://seongsoonhwang.github.io/ftir-studio/samples/PPS-GF40.dpt
@@ -31,14 +36,25 @@ FTIR Studio v1.2 — 웹에서 바로 쓰기
   https://seongsoonhwang.github.io/ftir-studio/samples/Epoxy_uncured.dpt
   https://seongsoonhwang.github.io/ftir-studio/samples/PA6_neat.dpt
   https://seongsoonhwang.github.io/ftir-studio/samples/PA6_aged168h.dpt
-  (모두 합성 데모 스펙트럼입니다. 실측 OPUS 원본 파일은 공개 저장소에서 제외했습니다.
-   실제 Bruker OPUS .0/.1 파일은 도구 창에 그대로 끌어다 놓으면 됩니다.)
+
+[예제 데이터 — DSC]
+  https://seongsoonhwang.github.io/ftir-studio/samples/dsc/PA6_virgin.txt
+  https://seongsoonhwang.github.io/ftir-studio/samples/dsc/PA6_aged168h.txt
+  https://seongsoonhwang.github.io/ftir-studio/samples/dsc/PA6-GF30_ok.txt
+  https://seongsoonhwang.github.io/ftir-studio/samples/dsc/PA6-GF30_ng.txt
+  https://seongsoonhwang.github.io/ftir-studio/samples/dsc/PPS-GF40.txt
+  https://seongsoonhwang.github.io/ftir-studio/samples/dsc/PBT.txt
+  https://seongsoonhwang.github.io/ftir-studio/samples/dsc/Epoxy_uncured.txt
+  https://seongsoonhwang.github.io/ftir-studio/samples/dsc/Epoxy_cured.txt
+
+  (모두 합성 데모 데이터입니다. 실측 원본 파일은 공개 저장소에서 제외했습니다.
+   실제 Bruker OPUS 스펙트럼·DSC ASCII는 도구 창에 그대로 끌어다 놓으면 됩니다.)
 
 [주소창 없는 앱 창으로 쓰고 싶으면]
   Edge 로 위 주소를 연 뒤 ... → 앱 → "이 사이트를 앱으로 설치"
   → 바탕화면 아이콘으로 실행 (실행.bat 과 동일한 효과)
 
 [소스]
-  같은 폴더의 app*.js, lib-bands.js, demo.js, app.css 가 모듈 버전 소스입니다.
+  같은 폴더의 app*.js, lib-bands.js, demo.js, dsc-core.js, dsc.js, app.css 가 모듈 버전 소스입니다.
   tools/bundle.py 로 모듈을 다시 단일 파일로 묶을 수 있고,
-  tools/gen_samples.js 로 samples/*.dpt 합성 데모를 재생성할 수 있습니다.
+  tools/gen_samples.js (FT-IR), tools/gen_dsc_samples.js (DSC) 로 합성 데모를 재생성할 수 있습니다.

@@ -17,7 +17,8 @@
     view: {
       stacked: true, normHeight: true, gap: 0.35, rev: true, grid: true,
       peaksOn: true, labelsOn: true, lo: 400, hi: 4000, fontSize: 13,
-      legendOn: true, legendPos: 'out', legendScale: 1
+      legendOn: true, legendPos: 'out', legendScale: 1,
+      exportBg: 'transparent'
     },
     pre: {
       smooth: { on: false, win: 9, order: 2 },
@@ -522,6 +523,7 @@
     $('viewLegendPos').value = state.view.legendPos;
     $('viewLegendScale').value = state.view.legendScale;
     $('viewLabelMin').value = state.view.labelMinProm === undefined ? 0.03 : state.view.labelMinProm;
+    if ($('viewExportBg')) $('viewExportBg').value = state.view.exportBg || 'transparent';
     $('smoothOn').checked = state.pre.smooth.on;
     $('smoothWin').value = state.pre.smooth.win;
     $('smoothOrder').value = state.pre.smooth.order;
@@ -549,25 +551,40 @@
   }
 
   /* -------------------------------------------------------------- 이벤트 */
+  /* 상위 탭 (FT-IR / DSC) */
+  function switchTopTab(name) {
+    window.APP_TAB = name;
+    const app = $('app');
+    if (app) app.dataset.tab = name;
+    document.querySelectorAll('.ttab').forEach((b) => b.classList.toggle('active', b.dataset.ttab === name));
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 30);
+  }
+
   function bind() {
     document.querySelectorAll('.tab').forEach((b) => { b.onclick = () => switchTab(b.dataset.tab); });
+    document.querySelectorAll('.ttab').forEach((b) => { b.onclick = () => switchTopTab(b.dataset.ttab); });
 
-    $('btnOpen').onclick = () => $('fileInput').click();
+    $('btnOpen').onclick = () => {
+      if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.openFiles();
+      $('fileInput').click();
+    };
     $('fileInput').onchange = (e) => { handleFiles(e.target.files); e.target.value = ''; };
 
     // 드래그&드롭 — 창 전체
     let dragDepth = 0;
     const dz = $('dropzone');
     dz.onclick = () => $('fileInput').click();
-    window.addEventListener('dragenter', (e) => { e.preventDefault(); dragDepth++; dz.classList.add('over'); });
+    window.addEventListener('dragenter', (e) => { e.preventDefault(); if (window.APP_TAB === 'dsc') return; dragDepth++; dz.classList.add('over'); });
     window.addEventListener('dragover', (e) => { e.preventDefault(); });
     window.addEventListener('dragleave', (e) => { e.preventDefault(); if (--dragDepth <= 0) dz.classList.remove('over'); });
     window.addEventListener('drop', (e) => {
       e.preventDefault(); dragDepth = 0; dz.classList.remove('over');
+      if (window.APP_TAB === 'dsc') return;          // DSC 탭은 자체 드롭핸들러가 처리
       handleFiles(e.dataTransfer.files);
     });
 
     $('btnDemo').onclick = () => {
+      if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.demo();
       const d = window.FTIR_DEMO();
       state.traces = [];
       d.forEach((s) => newTrace(s.name, s.x, s.y));
@@ -576,18 +593,24 @@
       renderAll();
     };
 
-    $('btnSave').onclick = saveProject;
+    $('btnSave').onclick = () => {
+      if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.saveProject();
+      saveProject();
+    };
     $('btnLoad').onclick = () => {
+      if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.loadProject();
       const inp = document.createElement('input');
       inp.type = 'file'; inp.accept = '.json';
       inp.onchange = () => inp.files[0] && loadProject(inp.files[0]);
       inp.click();
     };
     $('btnPNG').onclick = () => {
+      if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.png();
       if (!state.traces.length) { log('내보낼 스펙트럼이 없습니다', 'warn'); return; }
-      const url = P.toPNG($('plot'), state, { scale: 2 });
+      const bg = state.view.exportBg || 'transparent';
+      const url = P.toPNG($('plot'), state, { scale: 2, bg: bg });
       download('ftir-plot-' + Date.now() + '.png', url.split(',')[1] ? dataURLtoBlob(url) : url, 'image/png');
-      log('PNG 내보내기 (2배 해상도)', 'ok');
+      log('PNG 내보내기 (2배 해상도) · 배경 ' + (bg === 'transparent' ? '투명(어두운 글자)' : bg === 'white' ? '흰색' : '앱 테마'), 'ok');
     };
     $('btnHelp').onclick = () => { const d = $('helpDlg'); d.showModal(); d.scrollTop = 0; };
     $('btnHelpClose').onclick = () => $('helpDlg').close();
@@ -629,12 +652,14 @@
       state.view.legendPos = $('viewLegendPos').value;
       state.view.legendScale = Math.max(0.6, +$('viewLegendScale').value || 1);
       state.view.labelMinProm = Math.max(0, +$('viewLabelMin').value || 0);
+      if ($('viewExportBg')) state.view.exportBg = $('viewExportBg').value;
       let lo = +$('viewLo').value, hi = +$('viewHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 20) { state.view.lo = lo; state.view.hi = hi; }
       renderPlot();
     };
     ['viewMode', 'viewGap', 'viewNormHeight', 'viewRev', 'viewGrid', 'viewPeaks', 'viewLabels',
-      'viewFont', 'viewLegendPos', 'viewLegendOn', 'viewLegendScale', 'viewLo', 'viewHi', 'viewLabelMin'].forEach((id) => {
+      'viewFont', 'viewLegendPos', 'viewLegendOn', 'viewLegendScale', 'viewLo', 'viewHi', 'viewLabelMin',
+      'viewExportBg'].forEach((id) => {
       $(id).onchange = onView; $(id).oninput = onView;
     });
     const setRange = (lo, hi) => {
@@ -971,7 +996,8 @@
     state.lib = C.loadLibrary();
     bind();
     renderAll();
-    log('FT-IR Studio v1.2 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요.');
+    window.APP_TAB = 'ftir';
+    log('FT-IR Studio v1.3 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC 분석으로 전환할 수 있습니다.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 

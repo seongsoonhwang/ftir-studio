@@ -42,18 +42,26 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
 
-    const theme = state.theme || {};
-    const bg = theme.bg || '#0f1319';
+    // 테마 = 앱 테마 + 내보내기용 오버라이드(o.theme). bg:null 이면 배경을 칠하지 않는다(투명 PNG).
+    const theme = Object.assign({}, state.theme || {}, o.theme || {});
+    const bg = (theme.bg === null) ? null : (theme.bg || '#0f1319');
     const fg = theme.fg || '#c9d3e0';
     const gridC = theme.grid || 'rgba(140,160,190,0.14)';
     const axisC = theme.axis || '#8fa1b8';
+    const mutedC = theme.muted || '#5b6b80';
+    const nameBgC = theme.nameBg || 'rgba(15,19,25,0.78)';
+    const legendBgC = theme.legendBg || 'rgba(12,18,26,0.72)';
+    const legendStrokeC = theme.legendStroke || 'rgba(140,170,210,0.25)';
+    const crossC = theme.cross || 'rgba(160,190,230,0.45)';
 
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, cssW, cssH);
+    if (bg) {
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, cssW, cssH);
+    }
 
     const vis = state.traces.filter((t) => t.visible && t.p && t.p.y.length);
     if (!vis.length) {
-      ctx.fillStyle = '#5b6b80';
+      ctx.fillStyle = mutedC;
       ctx.font = `14px ${FONT}`;
       ctx.textAlign = 'center';
       ctx.fillText('스펙트럼이 없습니다 — 파일을 끌어다 놓거나 “데모 데이터”를 누르세요', cssW / 2, cssH / 2);
@@ -184,7 +192,7 @@
     ctx.fillStyle = fg;
     ctx.font = `${Math.round(fs * 1.05)}px ${FONT}`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.fillText('Wavenumber (cm⁻¹)', m.l + pw / 2, cssH - 6);
+    ctx.fillText(state.view.xLabel || 'Wavenumber (cm⁻¹)', m.l + pw / 2, cssH - 6);
     if (!stacked || !normH) {
       ctx.save();
       ctx.translate(14, m.t + ph / 2); ctx.rotate(-Math.PI / 2);
@@ -331,7 +339,7 @@
         const nm = t.legend || t.name;
         const txt = nm.length > 16 ? nm.slice(0, 15) + '…' : nm;
         const tw = ctx.measureText(txt).width;
-        ctx.fillStyle = 'rgba(15,19,25,0.78)';
+        ctx.fillStyle = nameBgC;
         ctx.fillRect(m.l + 2, y - fs * 0.92, tw + 6, fs * 0.92);
         ctx.fillStyle = t.color;
         ctx.fillText(txt, m.l + 5, y);
@@ -342,7 +350,7 @@
     if (state.hover && state.hover.px !== null && state.hover.px !== undefined) {
       const px = state.hover.px;
       if (px > m.l && px < m.l + pw) {
-        ctx.strokeStyle = 'rgba(160,190,230,0.45)';
+        ctx.strokeStyle = crossC;
         ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(px, m.t); ctx.lineTo(px, m.t + ph); ctx.stroke();
         ctx.setLineDash([]);
@@ -368,8 +376,8 @@
         by = (pos === 'bl' || pos === 'br') ? m.t + ph - boxH - 10 : m.t + 10;
       }
       ctx.save();
-      ctx.fillStyle = outside ? 'rgba(12,18,26,0.0)' : 'rgba(12,18,26,0.72)';
-      ctx.strokeStyle = 'rgba(140,170,210,0.25)';
+      ctx.fillStyle = outside ? 'rgba(12,18,26,0)' : legendBgC;
+      ctx.strokeStyle = legendStrokeC;
       ctx.lineWidth = 1;
       ctx.beginPath();
       const r = 6;
@@ -404,6 +412,22 @@
     return { geom, legendRects };
   }
 
+  /* 내보내기 배경 프리셋
+   * transparent : 배경 없음 + 어두운 글자(흰 문서·PPT에 붙여도 보이게)
+   * white       : 흰 배경 + 어두운 글자
+   * dark        : 앱 테마 그대로(어두운 배경 + 밝은 글자)
+   */
+  const INK_DARK = {
+    fg: '#1b2026', grid: 'rgba(0,0,0,0.10)', axis: '#5b6672', muted: '#8b95a1',
+    nameBg: 'rgba(255,255,255,0.72)', cross: 'rgba(0,0,0,0.22)',
+    legendBg: 'rgba(255,255,255,0.85)', legendStroke: 'rgba(0,0,0,0.18)'
+  };
+  function exportTheme(mode) {
+    if (mode === 'white') return Object.assign({ bg: '#ffffff' }, INK_DARK);
+    if (mode === 'dark') return {};
+    return Object.assign({ bg: null }, INK_DARK);   // 기본: 투명
+  }
+
   /* PNG 내보내기 (2배 고해상도) */
   function toPNG(canvas, state, opts) {
     const o = opts || {};
@@ -411,9 +435,11 @@
     const off = document.createElement('canvas');
     const w = canvas.clientWidth || canvas.width;
     const h = canvas.clientHeight || canvas.height;
-    render(off, state, { scale, width: w, height: h });
-    return off.toDataURL(o.transparent ? 'image/png' : 'image/png');
+    const mode = o.bg || 'transparent';
+    const th = exportTheme(mode);
+    render(off, state, { scale, width: w, height: h, theme: th, transparent: mode === 'transparent' });
+    return off.toDataURL('image/png');
   }
 
-  window.FTIRPlot = { render, toPNG, dashArr, niceStep };
+  window.FTIRPlot = { render, toPNG, exportTheme, dashArr, niceStep };
 })();
