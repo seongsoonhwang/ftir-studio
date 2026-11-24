@@ -17,7 +17,7 @@
     traces: [], selectedId: null, geom: null, legendRects: [],
     view: {
       stacked: true, normHeight: true, gap: 0.35, rev: false, grid: true,
-      peaksOn: true, labelsOn: true, labelMinProm: 0,
+      peaksOn: true, labelsOn: true, labelMinProm: 0, summaryOn: true,
       lo: 20, hi: 320, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
       exportBg: 'transparent',
       exportFmt: 'journal', exportWidth: '180', exportDpi: 300,
@@ -205,9 +205,51 @@
   }
 
   /* ------------------------------------------------------------ 그리기 */
+  /* 우측 요약(사이드) 패널 — 전이점·ΔH만 따로 */
+  function summarySpec() {
+    if (!st.view.summaryOn) return null;
+    const vis = st.traces.filter((t) => t.visible && st.res[t.id]);
+    if (!vis.length) return null;
+    const names = vis.map((t) => (t.legend || t.name).replace(/\s*\(합성\)/, ''));
+    const auto = names.some((n) => n.length > 11);
+    const cats = names.map((n, i) => (auto ? ('S' + (i + 1)) : n));
+    const tPts = [], hPts = [];
+    vis.forEach((t, i) => {
+      const r = st.res[t.id] || {};
+      const pk = r.peak && r.peak.ok ? r.peak : null;
+      const tg = r.tg && r.tg.ok ? r.tg : null;
+      if (pk && isFinite(pk.peakX)) {
+        const endo = pk.sign >= 0;
+        tPts.push({ cat: i, y: pk.peakX, color: endo ? '#1f4e79' : '#b23a2e',
+          marker: endo ? 'circle' : 'diamond', below: !endo,
+          text: (endo ? 'Tm ' : 'Tc ') + pk.peakX.toFixed(1) + ' °C', textShort: pk.peakX.toFixed(1) });
+      }
+      if (tg && isFinite(tg.tgMid)) {
+        tPts.push({ cat: i, y: tg.tgMid, color: '#1f7a4d', marker: 'square',
+          text: 'Tg ' + tg.tgMid.toFixed(1), textShort: tg.tgMid.toFixed(1) });
+      }
+      if (pk && isFinite(pk.dH)) {
+        hPts.push({ cat: i, y: Math.abs(pk.dH), color: '#1f4e79', marker: 'circle',
+          text: Math.abs(pk.dH).toFixed(1) + ' J/g', textShort: Math.abs(pk.dH).toFixed(1) });
+      }
+    });
+    if (!tPts.length && !hPts.length) return null;
+    return {
+      panels: [
+        { title: '전이 온도 (Transition temperatures)', yLabel: 'Temperature (°C)', yFmt: 0, categories: cats,
+          legend: [{ name: 'Tm', color: '#1f4e79', marker: 'circle' },
+                   { name: 'Tc', color: '#b23a2e', marker: 'diamond' },
+                   { name: 'Tg', color: '#1f7a4d', marker: 'square' }],
+          points: tPts },
+        { title: '피크 면적 (ΔH)', yLabel: 'ΔH (J/g)', yFmt: 1, yMin: 0, categories: cats, points: hPts }
+      ]
+    };
+  }
+
   function renderPlot() {
     const cv = $('dPlot'); if (!cv) return;
     if (!cv.clientWidth) return;
+    st.summary = summarySpec();
     const out = P.render(cv, st, {});
     st.geom = cv._geom; st.legendRects = (out && out.legendRects) || [];
     updateTabInfo();
@@ -470,6 +512,7 @@
     $('dGrid').checked = st.view.grid;
     $('dPeaks').checked = st.view.peaksOn;
     $('dLabels').checked = st.view.labelsOn;
+    if ($('dSummary')) $('dSummary').checked = !!st.view.summaryOn;
     $('dLo').value = st.view.lo; $('dHi').value = st.view.hi;
     $('dFont').value = st.view.fontSize;
     $('dLegendPos').value = st.view.legendPos;
@@ -549,6 +592,7 @@
       st.view.grid = $('dGrid').checked;
       st.view.peaksOn = $('dPeaks').checked;
       st.view.labelsOn = $('dLabels').checked;
+      if ($('dSummary')) st.view.summaryOn = $('dSummary').checked;
       st.view.fontSize = Math.max(8, +$('dFont').value || 13);
       st.view.legendPos = $('dLegendPos').value;
       st.view.exportBg = $('dExportBg').value;
@@ -559,7 +603,7 @@
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 1) { st.view.lo = lo; st.view.hi = hi; }
       renderPlot();
     };
-    ['dViewMode', 'dGap', 'dNormH', 'dRev', 'dGrid', 'dPeaks', 'dLabels', 'dFont', 'dLegendPos',
+    ['dViewMode', 'dGap', 'dNormH', 'dRev', 'dGrid', 'dPeaks', 'dLabels', 'dSummary', 'dFont', 'dLegendPos',
       'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dLo', 'dHi'].forEach((id) => { $(id).onchange = onView; $(id).oninput = onView; });
 
     // 분석 설정

@@ -71,6 +71,7 @@
     }
 
     const fs = state.view.fontSize || 13;
+    const fs0 = fs;
     const fsBig = state.view.legendScale || 1;
 
     // ---- 범례 폭 측정(바깥 배치 시 오른쪽 여백 확보)
@@ -84,10 +85,22 @@
       }
       legendBoxW = Math.min(Math.max(200, cssW * 0.33), Math.max(300, Math.ceil(wmax) + 54));
     }
-    const outside = legendOn && state.view.legendPos === 'out';
+    const sumOn = !!(state.summary && state.summary.panels && state.summary.panels.length);
+    const outside = legendOn && state.view.legendPos === 'out' && !sumOn;
     // 여백: 포맷(저널 300 dpi 등)에서는 글자 크기에 맞춰 o.margin 으로 덮어쓴다
     const m = Object.assign(
       { l: 70, r: outside ? legendBoxW + 22 : 26, t: 22, b: 46 }, o.margin || {});
+
+    // ---- 우측 요약(사이드) 패널 — 주요 지점만 따로 그리는 작은 그래프들
+    const sum = (state.summary && state.summary.panels && state.summary.panels.length) ? state.summary : null;
+    let sumRect = null;
+    if (sum) {
+      const sw = Math.max(150, Math.min(cssW * 0.34, Math.max(220, 300 * (fs0 / 13))));
+      m.r = sw + Math.max(24, m.l * 0.5);
+      m.t = Math.max(m.t, Math.round(fs0 * 2.0));     // 패널 제목 자리
+      m.b = Math.max(m.b, Math.round(fs0 * 3.0));     // x축 제목 자리
+      sumRect = { x: cssW - sw - 8, y: m.t, w: sw, h: cssH - m.t - m.b };
+    }
 
     // ---- 스택 오프셋 계산
     const stacked = !!state.view.stacked;
@@ -184,9 +197,11 @@
     }
     if (yTicks.length) {
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      const ys = yTicks.length > 1 ? Math.abs(yTicks[1] - yTicks[0]) : 1;
+      const yDec = ys >= 1 ? 0 : ys >= 0.1 ? 1 : ys >= 0.01 ? 2 : 3;
       for (const v of yTicks) {
         const py = Y(v);
-        ctx.fillText(v.toFixed(Math.abs(v) < 1 ? 3 : 2), m.l - 8, py);
+        ctx.fillText(v.toFixed(yDec), m.l - 8, py);
         ctx.strokeStyle = axisC; ctx.beginPath();
         ctx.moveTo(m.l - 5, py); ctx.lineTo(m.l, py); ctx.stroke();
       }
@@ -374,7 +389,9 @@
       const maxH = outside ? ph : ph - 20;
       let lh = lineH;
       if (boxH > maxH) { lh = Math.max(11, Math.floor((maxH - pad * 2) / order.length)); boxH = order.length * lh + pad * 2; }
-      const pos = state.view.legendPos || 'out';
+      // 요약 패널이 있으면 '바깥' 자리가 없으므로 안쪽 오른쪽 위로 옮긴다
+      let pos = state.view.legendPos || 'out';
+      if (pos === 'out') pos = sumOn ? 'tr' : 'out';
       let bx, by;
       if (outside) { bx = m.l + pw + 10; by = m.t; }
       else {
@@ -415,7 +432,145 @@
       ctx.restore();
     }
 
+    // ---- 우측 요약 패널 그리기
+    if (sumRect) drawSummary(ctx, sumRect, sum, { fg: fg, axis: axisC, grid: gridC, muted: mutedC }, fs);
+
     return { geom, legendRects };
+  }
+
+  /* =========================================================================
+   * 우측 요약(사이드) 패널 — 주요 지점만 따로 그리는 작은 산점도
+   *  summary = { panels: [{
+   *    title, yLabel, yUnit, yMin, yMax, yFmt,           // 축
+   *    categories: ['AB','BB'],                          // x 위치(범주)
+   *    legend: [{name, color, marker}],                  // 패널 상단 범례(선택)
+   *    points: [{cat, y, text, color, marker}]           // cat = categories 인덱스
+   *  }] }
+   * ========================================================================= */
+  function drawSummary(ctx, rect, summary, th, fs) {
+    const panels = summary.panels;
+    const gapY = Math.round(fs * 2.2);
+    const ph = (rect.h - gapY * (panels.length - 1)) / panels.length;
+    panels.forEach((pn, i) => {
+      const y0 = rect.y + i * (ph + gapY);
+      drawSummaryPanel(ctx, { x: rect.x, y: y0, w: rect.w, h: ph }, pn, th, fs,
+        i === panels.length - 1, ph > 120);
+    });
+  }
+
+  function marker(ctx, shape, x, y, r) {
+    ctx.beginPath();
+    if (shape === 'diamond') {
+      ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath();
+    } else if (shape === 'square') {
+      ctx.rect(x - r * 0.85, y - r * 0.85, r * 1.7, r * 1.7);
+    } else {
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  }
+
+  function drawSummaryPanel(ctx, r, pn, th, fs, last, roomy) {
+    const fg = th.fg, axisC = th.axis, gridC = th.grid, mutedC = th.muted;
+    const fSmall = Math.max(8, Math.round(fs * 0.72));
+    const fTitle = Math.max(9, Math.round(fs * 0.82));
+
+    // 제목
+    ctx.fillStyle = fg;
+    ctx.font = `${fTitle}px ${FONT}`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText(pn.title || '', r.x, r.y - Math.round(fs * 0.2));
+
+    const pl = Math.round(fs * 3.8), pb = Math.round(fs * (last ? 2.0 : 0.9)),
+      pt = Math.round(fs * ((pn.legend && roomy) ? 1.7 : 0.6));
+    const px0 = r.x + pl, py0 = r.y + pt, pw = r.w - pl - Math.round(fs * 0.4), phh = r.h - pt - pb;
+    if (pw < 20 || phh < 20) return;
+
+    // y 범위
+    let mn = Infinity, mx = -Infinity;
+    for (const p of pn.points) { if (isFinite(p.y)) { if (p.y < mn) mn = p.y; if (p.y > mx) mx = p.y; } }
+    if (!isFinite(mn)) { mn = 0; mx = 1; }
+    if (pn.yMin !== undefined) mn = Math.min(mn, pn.yMin);
+    if (pn.yMax !== undefined) mx = Math.max(mx, pn.yMax);
+    let pad = (mx - mn) * 0.18 || Math.abs(mx) * 0.1 || 1;
+    mn -= pad; mx += pad;
+    const Y = (v) => py0 + phh - ((v - mn) / ((mx - mn) || 1)) * phh;
+
+    // x 범주 위치
+    const cats = pn.categories && pn.categories.length ? pn.categories : [];
+    const nCat = Math.max(1, cats.length);
+    const X = (i) => px0 + (pw / nCat) * (i + 0.5);
+
+    // 축 + 격자
+    ctx.strokeStyle = axisC; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px0, py0); ctx.lineTo(px0, py0 + phh); ctx.lineTo(px0 + pw, py0 + phh); ctx.stroke();
+
+    const step = niceStep(mx - mn, 4);
+    ctx.font = `${fSmall}px ${FONT}`;
+    ctx.fillStyle = mutedC; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let v = Math.ceil(mn / step) * step; v <= mx; v += step) {
+      const yy = Y(v);
+      ctx.strokeStyle = gridC; ctx.beginPath(); ctx.moveTo(px0, yy); ctx.lineTo(px0 + pw, yy); ctx.stroke();
+      ctx.fillStyle = mutedC;
+      ctx.fillText(pn.yFmt === 0 ? String(Math.round(v)) : v.toFixed(1), px0 - 6, yy);
+    }
+
+    // x 범주 라벨 — 마지막 패널에만(공간 절약)
+    if (last) {
+      ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      const fCat = Math.max(7, Math.round(fs * 0.66));
+      ctx.font = `${fCat}px ${FONT}`;
+      cats.forEach((c, i) => {
+        let s = String(c);
+        while (s.length > 3 && ctx.measureText(s).width > (pw / nCat) - 4) s = s.slice(0, -2) + '…';
+        ctx.fillText(s, X(i), py0 + phh + 5);
+      });
+    }
+
+    // y축 라벨(회전)
+    if (pn.yLabel) {
+      ctx.save();
+      ctx.translate(r.x + Math.round(fs * 0.5), py0 + phh / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.font = `${fSmall}px ${FONT}`; ctx.fillStyle = fg;
+      ctx.fillText(pn.yLabel, 0, 0);
+      ctx.restore();
+    }
+
+    // 점 + 값 라벨 — 범주가 촘촘하면 값 라벨은 생략(표에서 확인)
+    const rad = Math.max(3, Math.round(fs * 0.3));
+    const showText = (pw / nCat) >= 52;
+    for (const p of pn.points) {
+      if (!isFinite(p.y)) continue;
+      const xx = X(p.cat || 0), yy = Y(p.y);
+      ctx.fillStyle = p.color || fg;
+      marker(ctx, p.marker || 'circle', xx, yy, rad);
+      const full = p.text !== undefined ? p.text : (pn.yFmt === 0 ? Math.round(p.y) : p.y.toFixed(1)) + (pn.yUnit || '');
+      ctx.font = `${fSmall}px ${FONT}`;
+      const slot = (pw / nCat) - 4;
+      let txt = full;
+      if (ctx.measureText(txt).width > slot && p.textShort) txt = p.textShort;
+      if (!p.alwaysText && ctx.measureText(txt).width > slot) continue;
+      ctx.textAlign = 'center'; ctx.textBaseline = p.below ? 'top' : 'bottom';
+      ctx.fillStyle = p.color || fg;
+      ctx.fillText(txt, Math.min(Math.max(xx, r.x + ctx.measureText(txt).width / 2), r.x + r.w - ctx.measureText(txt).width / 2),
+        p.below ? yy + rad + 2 : yy - rad - 2);
+    }
+
+    // 패널 범례(상단 오른쪽)
+    if (pn.legend && pn.legend.length && roomy) {
+      ctx.font = `${fSmall}px ${FONT}`;
+      ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      let lx = px0 + 4;
+      const ly = r.y + Math.round(fs * 0.6);
+      for (const lg of pn.legend) {
+        ctx.fillStyle = lg.color || fg;
+        marker(ctx, lg.marker || 'circle', lx + 3, ly, rad * 0.85);
+        ctx.fillText(lg.name, lx + 10, ly);
+        lx += 10 + ctx.measureText(lg.name).width + 12;
+      }
+    }
   }
 
   /* 내보내기 배경 프리셋
@@ -479,8 +634,8 @@
       return {
         width, height, scale: 1, bg: 'white', font: JOURNAL_FONT, nameMax: 26,
         margin: {
-          l: Math.round(46 * k), t: Math.round(16 * k),
-          b: Math.round(fs * 2.1 + 18 * k), r: Math.round(26 * k)
+          l: Math.round(fs * 2.3), t: Math.round(fs * 1.5),
+          b: Math.round(fs * 3.0 + 6), r: Math.round(26 * k)
         },
         view: {
           grid: false, legendOn: false, fontSize: fs,
@@ -495,7 +650,7 @@
     if (fmt === 'ppt') {
       return {
         width: o.width || 1600, height: o.height || 900, scale: 1, bg: 'transparent', font: PPT_FONT,
-        margin: { l: 56, t: 18, b: Math.round(26 * 2.1 + 18) }, nameMax: 26,
+        margin: { l: Math.round(26 * 2.5), t: Math.round(26 * 1.5), b: Math.round(26 * 2.9) }, nameMax: 26,
         view: {
           grid: true, legendOn: true, fontSize: 26,
           peaksOn: true, labelsOn: true,

@@ -572,6 +572,7 @@
 
     $('btnOpen').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.openFiles();
+      if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.openFiles();
       $('fileInput').click();
     };
     $('fileInput').onchange = (e) => { handleFiles(e.target.files); e.target.value = ''; };
@@ -580,17 +581,18 @@
     let dragDepth = 0;
     const dz = $('dropzone');
     dz.onclick = () => $('fileInput').click();
-    window.addEventListener('dragenter', (e) => { e.preventDefault(); if (window.APP_TAB === 'dsc') return; dragDepth++; dz.classList.add('over'); });
+    window.addEventListener('dragenter', (e) => { e.preventDefault(); if (window.APP_TAB === 'dsc' || window.APP_TAB === 'tga') return; dragDepth++; dz.classList.add('over'); });
     window.addEventListener('dragover', (e) => { e.preventDefault(); });
     window.addEventListener('dragleave', (e) => { e.preventDefault(); if (--dragDepth <= 0) dz.classList.remove('over'); });
     window.addEventListener('drop', (e) => {
       e.preventDefault(); dragDepth = 0; dz.classList.remove('over');
-      if (window.APP_TAB === 'dsc') return;          // DSC 탭은 자체 드롭핸들러가 처리
+      if (window.APP_TAB === 'dsc' || window.APP_TAB === 'tga') return;   // DSC/TGA 탭은 자체 드롭핸들러
       handleFiles(e.dataTransfer.files);
     });
 
     $('btnDemo').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.demo();
+      if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.demo();
       const d = window.FTIR_DEMO();
       state.traces = [];
       d.forEach((s) => newTrace(s.name, s.x, s.y));
@@ -601,10 +603,12 @@
 
     $('btnSave').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.saveProject();
+      if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.saveProject();
       saveProject();
     };
     $('btnLoad').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.loadProject();
+      if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.loadProject();
       const inp = document.createElement('input');
       inp.type = 'file'; inp.accept = '.json';
       inp.onchange = () => inp.files[0] && loadProject(inp.files[0]);
@@ -612,6 +616,7 @@
     };
     $('btnPNG').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.png();
+      if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.png();
       if (!state.traces.length) { log('내보낼 스펙트럼이 없습니다', 'warn'); return; }
       const fmt = state.view.exportFmt || 'journal';
       const o = {
@@ -1022,7 +1027,7 @@
     bind();
     renderAll();
     window.APP_TAB = 'ftir';
-    log('FT-IR Studio v1.3 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC 분석으로 전환할 수 있습니다.');
+    log('FT-IR Studio v1.4 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 

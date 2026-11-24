@@ -263,6 +263,28 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
 #dpanel-peaks.active{grid-template-rows:minmax(0,1fr)}
 #dpanel-log.active{grid-template-rows:auto minmax(0,1fr)}
 
+/* ---------- TGA 탭 ---------- */
+#app[data-tab="dsc"] #sideTga, #app[data-tab="dsc"] #mainTga,
+#app[data-tab="ftir"] #sideTga, #app[data-tab="ftir"] #mainTga{display:none}
+#app[data-tab="tga"] #side, #app[data-tab="tga"] #mainFtir,
+#app[data-tab="tga"] #sideDsc, #app[data-tab="tga"] #mainDsc{display:none}
+#sideTga{
+  background:var(--panel); border-right:1px solid var(--line);
+  overflow-y:auto; overflow-x:hidden; padding:6px 0 40px;
+}
+#sideTga::-webkit-scrollbar{width:9px}
+#sideTga::-webkit-scrollbar-thumb{background:#2a3849; border-radius:6px}
+#mainTga{display:grid; grid-template-rows:minmax(0,1fr) 6px var(--bottomH,300px); min-height:0; min-width:0}
+#tPlotWrap{position:relative; min-height:0; min-width:0; background:#0f1319}
+#tPlot{width:100%; height:100%; display:block; cursor:crosshair}
+#tResizer{background:#151d27; border-top:1px solid var(--line); cursor:row-resize; position:relative}
+#tResizer:hover{background:#1f2a38}
+#tResizer::after{content:""; position:absolute; left:50%; top:2px; width:44px; height:2px; margin-left:-22px; background:#33465c; border-radius:2px}
+#tBottom{border-top:1px solid var(--line); background:var(--panel); display:grid; grid-template-rows:34px minmax(0,1fr); min-height:0}
+#tpanel-result.active{grid-template-rows:auto minmax(0,1fr)}
+#tpanel-steps.active{grid-template-rows:auto minmax(0,1fr)}
+#tpanel-log.active{grid-template-rows:auto minmax(0,1fr)}
+
 @media (max-width:1100px){
   #app{grid-template-columns:300px minmax(0,1fr)}
   .brand .sub{display:none}
@@ -276,12 +298,13 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <div class="brand">
       <span class="logo">∿</span>
       <span class="title">FT-IR Studio</span>
-      <span class="ver">v1.3</span>
-      <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 &nbsp;|&nbsp; DSC: 피크 적분·Tg·결정화도</span>
+      <span class="ver">v1.4</span>
+      <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 | DSC: ΔH·Tg·결정화도 | TGA: T5%·Td·잔량</span>
     </div>
     <nav class="ttabs">
       <button class="ttab active" data-ttab="ftir">FT-IR</button>
       <button class="ttab" data-ttab="dsc">DSC</button>
+      <button class="ttab" data-ttab="tga">TGA</button>
     </nav>
     <div class="tools">
       <button id="btnOpen" class="primary">파일 열기</button>
@@ -634,6 +657,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
         <label class="chk"><input id="dGrid" type="checkbox" checked> 격자</label>
         <label class="chk"><input id="dPeaks" type="checkbox" checked> 피크 마커</label>
         <label class="chk"><input id="dLabels" type="checkbox" checked> 피크 라벨</label>
+        <label class="chk"><input id="dSummary" type="checkbox" checked> <b>우측 요약 패널</b> (전이점·ΔH만 따로)</label>
         <div class="row2">
           <label class="fld"><span>X 최소 (°C)</span><input id="dLo" type="number" step="10" value="20"></label>
           <label class="fld"><span>X 최대 (°C)</span><input id="dHi" type="number" step="10" value="320"></label>
@@ -773,6 +797,176 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
       </section>
     </div>
   </main>
+
+  <!-- ===================== TGA 탭 ===================== -->
+  <aside id="sideTga">
+    <details open>
+      <summary>TGA 시료 <span class="cnt" id="tCount">0</span></summary>
+      <div class="body">
+        <div id="tDrop" class="drop">
+          <strong>파일을 여기로 끌어다 놓기</strong>
+          <span>TGA ASCII(.txt/.csv/.tsv) · 온도·중량 2~5열</span>
+        </div>
+        <ul id="tList" class="tracelist"></ul>
+        <div class="row btns">
+          <button id="tShowAll" class="mini">전체 표시</button>
+          <button id="tHideAll" class="mini">전체 숨김</button>
+          <button id="tClear" class="mini danger">모두 삭제</button>
+        </div>
+        <div class="divider"></div>
+        <div class="subhead">선택 시료 스타일</div>
+        <label class="fld"><span>이름(범례)</span><input id="tName" type="text" placeholder="시료 선택"></label>
+        <label class="fld"><span>범례 문구</span><input id="tLegend" type="text" placeholder="비우면 이름 사용"></label>
+        <div class="row2">
+          <label class="fld"><span>색</span><input id="tColor" type="color" value="#4f9dff"></label>
+          <label class="fld"><span>굵기</span><input id="tWidth" type="number" min="0.5" max="8" step="0.1" value="1.6"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>선 형태</span>
+            <select id="tDash">
+              <option value="solid">실선</option>
+              <option value="dash">파선</option>
+              <option value="dot">점선</option>
+              <option value="dashdot">일점쇄선</option>
+            </select>
+          </label>
+          <label class="fld"><span>투명도</span><input id="tAlpha" type="number" min="0.1" max="1" step="0.05" value="1"></label>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>표시 설정</summary>
+      <div class="body">
+        <div class="row2">
+          <label class="fld"><span>배치</span>
+            <select id="tViewMode">
+              <option value="overlay">겹쳐보기 (중량 % 축)</option>
+              <option value="stacked">스택(한 화면)</option>
+            </select>
+          </label>
+          <label class="fld"><span>스택 간격</span><input id="tGap" type="number" min="0" max="1" step="0.05" value="0.35"></label>
+        </div>
+        <label class="chk"><input id="tGrid" type="checkbox" checked> 격자</label>
+        <label class="chk"><input id="tPeaks" type="checkbox" checked> 주요 지점 마커 (T5·Td·Tmax)</label>
+        <label class="chk"><input id="tLabels" type="checkbox"> 지점 라벨 (요약 패널과 중복되면 끄세요)</label>
+        <label class="chk"><input id="tSummary" type="checkbox" checked> <b>우측 요약 패널</b> (주요 지점만 따로)</label>
+        <div class="row2">
+          <label class="fld"><span>X 최소 (°C)</span><input id="tLo" type="number" step="10" value="30"></label>
+          <label class="fld"><span>X 최대 (°C)</span><input id="tHi" type="number" step="10" value="800"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>글꼴 크기</span><input id="tFont" type="number" min="8" max="24" step="1" value="13"></label>
+          <label class="fld"><span>범례 위치</span>
+            <select id="tLegendPos">
+              <option value="out">바깥 오른쪽</option>
+              <option value="tr">오른쪽 위</option>
+              <option value="tl">왼쪽 위</option>
+              <option value="br">오른쪽 아래</option>
+              <option value="bl">왼쪽 아래</option>
+            </select>
+          </label>
+        </div>
+        <label class="fld"><span>요약 패널 시료 코드 (쉼표로 구분, 비우면 이름)</span><input id="tSumCodes" type="text" placeholder="예: AB, BB"></label>
+        <label class="fld"><span>PNG 포맷</span>
+          <select id="tExportFmt">
+            <option value="journal">학술지 (인쇄용)</option>
+            <option value="ppt">PPT (16:9, 투명)</option>
+            <option value="screen">화면 그대로</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>저널 폭</span>
+            <select id="tExportWidth">
+              <option value="180">double 180 mm</option>
+              <option value="88">single 88 mm</option>
+            </select>
+          </label>
+          <label class="fld"><span>해상도</span>
+            <select id="tExportDpi">
+              <option value="300">300 dpi</option>
+              <option value="600">600 dpi</option>
+            </select>
+          </label>
+        </div>
+        <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
+          <select id="tExportBg">
+            <option value="transparent">투명 (기본)</option>
+            <option value="white">흰색</option>
+            <option value="dark">앱 테마(어두움)</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <details open>
+      <summary>분석 설정</summary>
+      <div class="body">
+        <label class="fld"><span>스무딩 (점 수, 1=없음)</span><input id="tSmooth" type="number" min="1" max="51" step="2" value="5"></label>
+        <div class="row2">
+          <label class="fld"><span>온도 열 (0부터)</span><input id="tTempCol" type="number" min="0" step="1" placeholder="자동"></label>
+          <label class="fld"><span>중량 열 (0부터)</span><input id="tWtCol" type="number" min="0" step="1" placeholder="자동"></label>
+        </div>
+        <div class="row btns">
+          <button id="tRunSel" class="mini primary">선택 분석</button>
+          <button id="tRunAll" class="mini">전체 분석</button>
+          <button id="tOpen2" class="mini">파일 열기</button>
+        </div>
+        <div class="divider"></div>
+        <p class="hint"><b>자동 계산</b> — T5/T10/T50은 초기 수평부 대비 규정 중량 감소에 도달하는 온도(선형 보간), <b>Td,onset</b>은 최대 기울기 구간의 접선과 초기 수평선의 교점, <b>Tmax</b>는 DTG 최대점, <b>잔량</b>은 마지막 2 % 구간 평균입니다.</p>
+        <p class="hint">중량 열은 <b>“초기 ≈100 %에서 전체적으로 감소”</b>하는 열을 자동 선택합니다. 시간·온도·중량 3열이면 시간 열을 자동으로 제외합니다. 판정이 틀리면 위 열 번호를 직접 넣고 파일을 다시 불러오세요.</p>
+      </div>
+    </details>
+  </aside>
+
+  <main id="mainTga">
+    <div id="tPlotWrap">
+      <canvas id="tPlot"></canvas>
+      <div id="tHint" class="plot-hint">드래그 확대 · 휠 줌 · 더블클릭 초기화</div>
+    </div>
+    <div id="tResizer" title="드래그: 아래 패널 높이 · 더블클릭: 접기"></div>
+    <div id="tBottom">
+      <nav class="tabs">
+        <button class="dtag active" data-dtag="result">분석 결과</button>
+        <button class="dtag" data-dtag="steps">단계 표</button>
+        <button class="dtag" data-dtag="log">로그</button>
+        <span class="grow"></span>
+        <span class="tabinfo" id="tTabInfo"></span>
+      </nav>
+
+      <section class="panel active" id="tpanel-result">
+        <div class="toolbar">
+          <button id="tDemo2" class="mini">데모 데이터</button>
+          <button id="tCSV" class="mini">CSV 저장</button>
+          <span class="grow"></span>
+          <span class="tabinfo">T5·T10·T50 · Td,onset · Tmax · 잔량</span>
+        </div>
+        <div class="tablewrap"><table id="tResTable"><thead><tr>
+          <th>시료</th><th>T5 (°C)</th><th>T10 (°C)</th><th>T50 (°C)</th><th>Td onset (°C)</th><th>Tmax (°C)</th>
+          <th>잔량 (%)</th><th>총감량 (%)</th><th>단계</th>
+        </tr></thead><tbody></tbody></table></div>
+      </section>
+
+      <section class="panel" id="tpanel-steps">
+        <div class="toolbar">
+          <span class="grow"></span>
+          <span class="tabinfo">선택 시료의 중량 감소 단계 (평탄 구간 사이 손실)</span>
+        </div>
+        <div class="tablewrap"><table id="tStepTable"><thead><tr>
+          <th>시료</th><th>단계</th><th>구간 (°C)</th><th>손실 (%)</th><th>종료 중량 (%)</th>
+        </tr></thead><tbody></tbody></table></div>
+      </section>
+
+      <section class="panel" id="tpanel-log">
+        <div class="toolbar">
+          <button id="tClearLog" class="mini">로그 지우기</button>
+          <span class="grow"></span>
+          <span class="tabinfo">TGA 처리·경고 기록</span>
+        </div>
+        <div id="tLog" class="log"></div>
+      </section>
+    </div>
+  </main>
 </div>
 
 <input type="file" id="fileInput" multiple accept=".0,.1,.2,.3,.4,.5,.6,.7,.8,.9,.10,.11,.12,.13,.14,.15,.16,.17,.18,.19,.20,.dpt,.txt,.csv,.tsv,.asc,.dat" hidden>
@@ -825,7 +1019,18 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <li><b>Tg 구간</b>을 지정하면 스텝의 onset / 중간(반높이) / end 와 ΔCp를 계산합니다(ISO 11357-2 방식의 외삽 접선).</li>
     <li><b>결정화도</b>는 ΔHm ÷ ΔHm° × 100 입니다. ΔHm°는 재료를 고르면 관용값이 채워지지만 <b>문헌·grade별로 10 % 이상 차이가 나므로 반드시 확인 후 수정</b>하십시오.</li>
     <li>PNG 내보내기는 FT-IR 탭과 같이 <b>포맷(학술지 / PPT / 화면 그대로)</b>을 고를 수 있습니다. 저널 포맷은 DSC 세로 비율에 맞춰 높이를 따로 계산하고, <b>Tg·on/end 보조 라벨은 빼고 피크 온도만</b> 남깁니다(지면에서 글자가 겹치기 때문).</li>
+    <li><b>우측 요약 패널 (v1.4)</b>: 메인 곡선 오른쪽에 <b>전이 온도(Tm·Tc·Tg)와 ΔH만 따로 그린 작은 그래프</b>가 붙습니다. 시료 간 비교용이며, 시료가 많거나 폭이 좁아 글자가 안 들어가면 값 라벨은 자동으로 생략됩니다(표에 그대로 있음). 표시 설정에서 끌 수 있습니다.</li>
     <li>한계: 기준선이 곡선인 경우(열량 보정 전, Cp 변화가 큰 시료) 결과가 달라질 수 있습니다. 필요하면 OPUS/계측기 소프트웨어에서 베이스라인을 만든 뒤 다시 내보내세요.</li>
+  </ol>
+
+  <h3>7. TGA 탭 (v1.4 추가)</h3>
+  <ol>
+    <li>상단 <b>TGA</b> 탭 → 왼쪽으로 TGA ASCII(.txt .csv .tsv)를 끌어다 놓습니다. <b>온도 / 중량(%) 2~5열</b>을 읽고, 시간 열이 함께 있으면 자동으로 제외합니다.</li>
+    <li><b>자동 계산</b>: T5%·T10%·T50%(초기 수평부 대비 규정 감량에 도달하는 온도, 선형 보간), <b>Td,onset</b>(최대 기울기 구간 접선과 초기 수평선의 교점), <b>Tmax</b>(DTG 최대점), <b>잔량</b>(마지막 2 % 평균), <b>중량 감소 단계</b>(평탄 구간 사이 손실).</li>
+    <li><b>겹쳐보기</b>는 중량 % 축 하나에 모두 그리고, <b>스택</b>은 시료별로 띄워 그립니다. 스무딩(점 수)은 표시와 분석에 같이 적용됩니다.</li>
+    <li><b>우측 요약 패널</b>이 기본으로 켜져 있어 T5% · Td onset · 최종 잔량을 시료별 점으로 따로 보여 줍니다(첨부하신 DSC/TGA 슬라이드 형식). 시료 코드는 "요약 패널 시료 코드"에 쉼표로 넣어 바꿀 수 있습니다(예: AB, BB).</li>
+    <li>열 판정이 틀리면 <b>온도 열·중량 열</b> 번호를 직접 넣고 파일을 다시 불러오세요. 로그에 선택된 열과 구분자가 표시됩니다.</li>
+    <li>한계: 중량 %가 100 기준으로 정규화되지 않은 파일(절대 mg)은 초기 수평부를 100 %로 다시 맞춰 계산합니다. 승온속도는 결과에 들어가지 않으므로 kinetics(Ea) 계산은 하지 않습니다.</li>
   </ol>
 
   <div class="dlgfoot"><button id="btnHelpClose" class="primary">닫기</button></div>
@@ -2140,6 +2345,7 @@ window.FTIR_BANDS = {
     }
 
     const fs = state.view.fontSize || 13;
+    const fs0 = fs;
     const fsBig = state.view.legendScale || 1;
 
     // ---- 범례 폭 측정(바깥 배치 시 오른쪽 여백 확보)
@@ -2153,10 +2359,22 @@ window.FTIR_BANDS = {
       }
       legendBoxW = Math.min(Math.max(200, cssW * 0.33), Math.max(300, Math.ceil(wmax) + 54));
     }
-    const outside = legendOn && state.view.legendPos === 'out';
+    const sumOn = !!(state.summary && state.summary.panels && state.summary.panels.length);
+    const outside = legendOn && state.view.legendPos === 'out' && !sumOn;
     // 여백: 포맷(저널 300 dpi 등)에서는 글자 크기에 맞춰 o.margin 으로 덮어쓴다
     const m = Object.assign(
       { l: 70, r: outside ? legendBoxW + 22 : 26, t: 22, b: 46 }, o.margin || {});
+
+    // ---- 우측 요약(사이드) 패널 — 주요 지점만 따로 그리는 작은 그래프들
+    const sum = (state.summary && state.summary.panels && state.summary.panels.length) ? state.summary : null;
+    let sumRect = null;
+    if (sum) {
+      const sw = Math.max(150, Math.min(cssW * 0.34, Math.max(220, 300 * (fs0 / 13))));
+      m.r = sw + Math.max(24, m.l * 0.5);
+      m.t = Math.max(m.t, Math.round(fs0 * 2.0));     // 패널 제목 자리
+      m.b = Math.max(m.b, Math.round(fs0 * 3.0));     // x축 제목 자리
+      sumRect = { x: cssW - sw - 8, y: m.t, w: sw, h: cssH - m.t - m.b };
+    }
 
     // ---- 스택 오프셋 계산
     const stacked = !!state.view.stacked;
@@ -2253,9 +2471,11 @@ window.FTIR_BANDS = {
     }
     if (yTicks.length) {
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      const ys = yTicks.length > 1 ? Math.abs(yTicks[1] - yTicks[0]) : 1;
+      const yDec = ys >= 1 ? 0 : ys >= 0.1 ? 1 : ys >= 0.01 ? 2 : 3;
       for (const v of yTicks) {
         const py = Y(v);
-        ctx.fillText(v.toFixed(Math.abs(v) < 1 ? 3 : 2), m.l - 8, py);
+        ctx.fillText(v.toFixed(yDec), m.l - 8, py);
         ctx.strokeStyle = axisC; ctx.beginPath();
         ctx.moveTo(m.l - 5, py); ctx.lineTo(m.l, py); ctx.stroke();
       }
@@ -2443,7 +2663,9 @@ window.FTIR_BANDS = {
       const maxH = outside ? ph : ph - 20;
       let lh = lineH;
       if (boxH > maxH) { lh = Math.max(11, Math.floor((maxH - pad * 2) / order.length)); boxH = order.length * lh + pad * 2; }
-      const pos = state.view.legendPos || 'out';
+      // 요약 패널이 있으면 '바깥' 자리가 없으므로 안쪽 오른쪽 위로 옮긴다
+      let pos = state.view.legendPos || 'out';
+      if (pos === 'out') pos = sumOn ? 'tr' : 'out';
       let bx, by;
       if (outside) { bx = m.l + pw + 10; by = m.t; }
       else {
@@ -2484,7 +2706,145 @@ window.FTIR_BANDS = {
       ctx.restore();
     }
 
+    // ---- 우측 요약 패널 그리기
+    if (sumRect) drawSummary(ctx, sumRect, sum, { fg: fg, axis: axisC, grid: gridC, muted: mutedC }, fs);
+
     return { geom, legendRects };
+  }
+
+  /* =========================================================================
+   * 우측 요약(사이드) 패널 — 주요 지점만 따로 그리는 작은 산점도
+   *  summary = { panels: [{
+   *    title, yLabel, yUnit, yMin, yMax, yFmt,           // 축
+   *    categories: ['AB','BB'],                          // x 위치(범주)
+   *    legend: [{name, color, marker}],                  // 패널 상단 범례(선택)
+   *    points: [{cat, y, text, color, marker}]           // cat = categories 인덱스
+   *  }] }
+   * ========================================================================= */
+  function drawSummary(ctx, rect, summary, th, fs) {
+    const panels = summary.panels;
+    const gapY = Math.round(fs * 2.2);
+    const ph = (rect.h - gapY * (panels.length - 1)) / panels.length;
+    panels.forEach((pn, i) => {
+      const y0 = rect.y + i * (ph + gapY);
+      drawSummaryPanel(ctx, { x: rect.x, y: y0, w: rect.w, h: ph }, pn, th, fs,
+        i === panels.length - 1, ph > 120);
+    });
+  }
+
+  function marker(ctx, shape, x, y, r) {
+    ctx.beginPath();
+    if (shape === 'diamond') {
+      ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath();
+    } else if (shape === 'square') {
+      ctx.rect(x - r * 0.85, y - r * 0.85, r * 1.7, r * 1.7);
+    } else {
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  }
+
+  function drawSummaryPanel(ctx, r, pn, th, fs, last, roomy) {
+    const fg = th.fg, axisC = th.axis, gridC = th.grid, mutedC = th.muted;
+    const fSmall = Math.max(8, Math.round(fs * 0.72));
+    const fTitle = Math.max(9, Math.round(fs * 0.82));
+
+    // 제목
+    ctx.fillStyle = fg;
+    ctx.font = `${fTitle}px ${FONT}`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText(pn.title || '', r.x, r.y - Math.round(fs * 0.2));
+
+    const pl = Math.round(fs * 3.8), pb = Math.round(fs * (last ? 2.0 : 0.9)),
+      pt = Math.round(fs * ((pn.legend && roomy) ? 1.7 : 0.6));
+    const px0 = r.x + pl, py0 = r.y + pt, pw = r.w - pl - Math.round(fs * 0.4), phh = r.h - pt - pb;
+    if (pw < 20 || phh < 20) return;
+
+    // y 범위
+    let mn = Infinity, mx = -Infinity;
+    for (const p of pn.points) { if (isFinite(p.y)) { if (p.y < mn) mn = p.y; if (p.y > mx) mx = p.y; } }
+    if (!isFinite(mn)) { mn = 0; mx = 1; }
+    if (pn.yMin !== undefined) mn = Math.min(mn, pn.yMin);
+    if (pn.yMax !== undefined) mx = Math.max(mx, pn.yMax);
+    let pad = (mx - mn) * 0.18 || Math.abs(mx) * 0.1 || 1;
+    mn -= pad; mx += pad;
+    const Y = (v) => py0 + phh - ((v - mn) / ((mx - mn) || 1)) * phh;
+
+    // x 범주 위치
+    const cats = pn.categories && pn.categories.length ? pn.categories : [];
+    const nCat = Math.max(1, cats.length);
+    const X = (i) => px0 + (pw / nCat) * (i + 0.5);
+
+    // 축 + 격자
+    ctx.strokeStyle = axisC; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px0, py0); ctx.lineTo(px0, py0 + phh); ctx.lineTo(px0 + pw, py0 + phh); ctx.stroke();
+
+    const step = niceStep(mx - mn, 4);
+    ctx.font = `${fSmall}px ${FONT}`;
+    ctx.fillStyle = mutedC; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let v = Math.ceil(mn / step) * step; v <= mx; v += step) {
+      const yy = Y(v);
+      ctx.strokeStyle = gridC; ctx.beginPath(); ctx.moveTo(px0, yy); ctx.lineTo(px0 + pw, yy); ctx.stroke();
+      ctx.fillStyle = mutedC;
+      ctx.fillText(pn.yFmt === 0 ? String(Math.round(v)) : v.toFixed(1), px0 - 6, yy);
+    }
+
+    // x 범주 라벨 — 마지막 패널에만(공간 절약)
+    if (last) {
+      ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      const fCat = Math.max(7, Math.round(fs * 0.66));
+      ctx.font = `${fCat}px ${FONT}`;
+      cats.forEach((c, i) => {
+        let s = String(c);
+        while (s.length > 3 && ctx.measureText(s).width > (pw / nCat) - 4) s = s.slice(0, -2) + '…';
+        ctx.fillText(s, X(i), py0 + phh + 5);
+      });
+    }
+
+    // y축 라벨(회전)
+    if (pn.yLabel) {
+      ctx.save();
+      ctx.translate(r.x + Math.round(fs * 0.5), py0 + phh / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.font = `${fSmall}px ${FONT}`; ctx.fillStyle = fg;
+      ctx.fillText(pn.yLabel, 0, 0);
+      ctx.restore();
+    }
+
+    // 점 + 값 라벨 — 범주가 촘촘하면 값 라벨은 생략(표에서 확인)
+    const rad = Math.max(3, Math.round(fs * 0.3));
+    const showText = (pw / nCat) >= 52;
+    for (const p of pn.points) {
+      if (!isFinite(p.y)) continue;
+      const xx = X(p.cat || 0), yy = Y(p.y);
+      ctx.fillStyle = p.color || fg;
+      marker(ctx, p.marker || 'circle', xx, yy, rad);
+      const full = p.text !== undefined ? p.text : (pn.yFmt === 0 ? Math.round(p.y) : p.y.toFixed(1)) + (pn.yUnit || '');
+      ctx.font = `${fSmall}px ${FONT}`;
+      const slot = (pw / nCat) - 4;
+      let txt = full;
+      if (ctx.measureText(txt).width > slot && p.textShort) txt = p.textShort;
+      if (!p.alwaysText && ctx.measureText(txt).width > slot) continue;
+      ctx.textAlign = 'center'; ctx.textBaseline = p.below ? 'top' : 'bottom';
+      ctx.fillStyle = p.color || fg;
+      ctx.fillText(txt, Math.min(Math.max(xx, r.x + ctx.measureText(txt).width / 2), r.x + r.w - ctx.measureText(txt).width / 2),
+        p.below ? yy + rad + 2 : yy - rad - 2);
+    }
+
+    // 패널 범례(상단 오른쪽)
+    if (pn.legend && pn.legend.length && roomy) {
+      ctx.font = `${fSmall}px ${FONT}`;
+      ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      let lx = px0 + 4;
+      const ly = r.y + Math.round(fs * 0.6);
+      for (const lg of pn.legend) {
+        ctx.fillStyle = lg.color || fg;
+        marker(ctx, lg.marker || 'circle', lx + 3, ly, rad * 0.85);
+        ctx.fillText(lg.name, lx + 10, ly);
+        lx += 10 + ctx.measureText(lg.name).width + 12;
+      }
+    }
   }
 
   /* 내보내기 배경 프리셋
@@ -2548,8 +2908,8 @@ window.FTIR_BANDS = {
       return {
         width, height, scale: 1, bg: 'white', font: JOURNAL_FONT, nameMax: 26,
         margin: {
-          l: Math.round(46 * k), t: Math.round(16 * k),
-          b: Math.round(fs * 2.1 + 18 * k), r: Math.round(26 * k)
+          l: Math.round(fs * 2.3), t: Math.round(fs * 1.5),
+          b: Math.round(fs * 3.0 + 6), r: Math.round(26 * k)
         },
         view: {
           grid: false, legendOn: false, fontSize: fs,
@@ -2564,7 +2924,7 @@ window.FTIR_BANDS = {
     if (fmt === 'ppt') {
       return {
         width: o.width || 1600, height: o.height || 900, scale: 1, bg: 'transparent', font: PPT_FONT,
-        margin: { l: 56, t: 18, b: Math.round(26 * 2.1 + 18) }, nameMax: 26,
+        margin: { l: Math.round(26 * 2.5), t: Math.round(26 * 1.5), b: Math.round(26 * 2.9) }, nameMax: 26,
         view: {
           grid: true, legendOn: true, fontSize: 26,
           peaksOn: true, labelsOn: true,
@@ -3300,6 +3660,7 @@ window.FTIR_BANDS = {
 
     $('btnOpen').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.openFiles();
+      if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.openFiles();
       $('fileInput').click();
     };
     $('fileInput').onchange = (e) => { handleFiles(e.target.files); e.target.value = ''; };
@@ -3308,17 +3669,18 @@ window.FTIR_BANDS = {
     let dragDepth = 0;
     const dz = $('dropzone');
     dz.onclick = () => $('fileInput').click();
-    window.addEventListener('dragenter', (e) => { e.preventDefault(); if (window.APP_TAB === 'dsc') return; dragDepth++; dz.classList.add('over'); });
+    window.addEventListener('dragenter', (e) => { e.preventDefault(); if (window.APP_TAB === 'dsc' || window.APP_TAB === 'tga') return; dragDepth++; dz.classList.add('over'); });
     window.addEventListener('dragover', (e) => { e.preventDefault(); });
     window.addEventListener('dragleave', (e) => { e.preventDefault(); if (--dragDepth <= 0) dz.classList.remove('over'); });
     window.addEventListener('drop', (e) => {
       e.preventDefault(); dragDepth = 0; dz.classList.remove('over');
-      if (window.APP_TAB === 'dsc') return;          // DSC 탭은 자체 드롭핸들러가 처리
+      if (window.APP_TAB === 'dsc' || window.APP_TAB === 'tga') return;   // DSC/TGA 탭은 자체 드롭핸들러
       handleFiles(e.dataTransfer.files);
     });
 
     $('btnDemo').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.demo();
+      if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.demo();
       const d = window.FTIR_DEMO();
       state.traces = [];
       d.forEach((s) => newTrace(s.name, s.x, s.y));
@@ -3329,10 +3691,12 @@ window.FTIR_BANDS = {
 
     $('btnSave').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.saveProject();
+      if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.saveProject();
       saveProject();
     };
     $('btnLoad').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.loadProject();
+      if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.loadProject();
       const inp = document.createElement('input');
       inp.type = 'file'; inp.accept = '.json';
       inp.onchange = () => inp.files[0] && loadProject(inp.files[0]);
@@ -3340,6 +3704,7 @@ window.FTIR_BANDS = {
     };
     $('btnPNG').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.png();
+      if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.png();
       if (!state.traces.length) { log('내보낼 스펙트럼이 없습니다', 'warn'); return; }
       const fmt = state.view.exportFmt || 'journal';
       const o = {
@@ -3750,7 +4115,7 @@ window.FTIR_BANDS = {
     bind();
     renderAll();
     window.APP_TAB = 'ftir';
-    log('FT-IR Studio v1.3 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC 분석으로 전환할 수 있습니다.');
+    log('FT-IR Studio v1.4 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 
@@ -4248,7 +4613,7 @@ window.FTIR_BANDS = {
     traces: [], selectedId: null, geom: null, legendRects: [],
     view: {
       stacked: true, normHeight: true, gap: 0.35, rev: false, grid: true,
-      peaksOn: true, labelsOn: true, labelMinProm: 0,
+      peaksOn: true, labelsOn: true, labelMinProm: 0, summaryOn: true,
       lo: 20, hi: 320, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
       exportBg: 'transparent',
       exportFmt: 'journal', exportWidth: '180', exportDpi: 300,
@@ -4436,9 +4801,51 @@ window.FTIR_BANDS = {
   }
 
   /* ------------------------------------------------------------ 그리기 */
+  /* 우측 요약(사이드) 패널 — 전이점·ΔH만 따로 */
+  function summarySpec() {
+    if (!st.view.summaryOn) return null;
+    const vis = st.traces.filter((t) => t.visible && st.res[t.id]);
+    if (!vis.length) return null;
+    const names = vis.map((t) => (t.legend || t.name).replace(/\s*\(합성\)/, ''));
+    const auto = names.some((n) => n.length > 11);
+    const cats = names.map((n, i) => (auto ? ('S' + (i + 1)) : n));
+    const tPts = [], hPts = [];
+    vis.forEach((t, i) => {
+      const r = st.res[t.id] || {};
+      const pk = r.peak && r.peak.ok ? r.peak : null;
+      const tg = r.tg && r.tg.ok ? r.tg : null;
+      if (pk && isFinite(pk.peakX)) {
+        const endo = pk.sign >= 0;
+        tPts.push({ cat: i, y: pk.peakX, color: endo ? '#1f4e79' : '#b23a2e',
+          marker: endo ? 'circle' : 'diamond', below: !endo,
+          text: (endo ? 'Tm ' : 'Tc ') + pk.peakX.toFixed(1) + ' °C', textShort: pk.peakX.toFixed(1) });
+      }
+      if (tg && isFinite(tg.tgMid)) {
+        tPts.push({ cat: i, y: tg.tgMid, color: '#1f7a4d', marker: 'square',
+          text: 'Tg ' + tg.tgMid.toFixed(1), textShort: tg.tgMid.toFixed(1) });
+      }
+      if (pk && isFinite(pk.dH)) {
+        hPts.push({ cat: i, y: Math.abs(pk.dH), color: '#1f4e79', marker: 'circle',
+          text: Math.abs(pk.dH).toFixed(1) + ' J/g', textShort: Math.abs(pk.dH).toFixed(1) });
+      }
+    });
+    if (!tPts.length && !hPts.length) return null;
+    return {
+      panels: [
+        { title: '전이 온도 (Transition temperatures)', yLabel: 'Temperature (°C)', yFmt: 0, categories: cats,
+          legend: [{ name: 'Tm', color: '#1f4e79', marker: 'circle' },
+                   { name: 'Tc', color: '#b23a2e', marker: 'diamond' },
+                   { name: 'Tg', color: '#1f7a4d', marker: 'square' }],
+          points: tPts },
+        { title: '피크 면적 (ΔH)', yLabel: 'ΔH (J/g)', yFmt: 1, yMin: 0, categories: cats, points: hPts }
+      ]
+    };
+  }
+
   function renderPlot() {
     const cv = $('dPlot'); if (!cv) return;
     if (!cv.clientWidth) return;
+    st.summary = summarySpec();
     const out = P.render(cv, st, {});
     st.geom = cv._geom; st.legendRects = (out && out.legendRects) || [];
     updateTabInfo();
@@ -4701,6 +5108,7 @@ window.FTIR_BANDS = {
     $('dGrid').checked = st.view.grid;
     $('dPeaks').checked = st.view.peaksOn;
     $('dLabels').checked = st.view.labelsOn;
+    if ($('dSummary')) $('dSummary').checked = !!st.view.summaryOn;
     $('dLo').value = st.view.lo; $('dHi').value = st.view.hi;
     $('dFont').value = st.view.fontSize;
     $('dLegendPos').value = st.view.legendPos;
@@ -4780,6 +5188,7 @@ window.FTIR_BANDS = {
       st.view.grid = $('dGrid').checked;
       st.view.peaksOn = $('dPeaks').checked;
       st.view.labelsOn = $('dLabels').checked;
+      if ($('dSummary')) st.view.summaryOn = $('dSummary').checked;
       st.view.fontSize = Math.max(8, +$('dFont').value || 13);
       st.view.legendPos = $('dLegendPos').value;
       st.view.exportBg = $('dExportBg').value;
@@ -4790,7 +5199,7 @@ window.FTIR_BANDS = {
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 1) { st.view.lo = lo; st.view.hi = hi; }
       renderPlot();
     };
-    ['dViewMode', 'dGap', 'dNormH', 'dRev', 'dGrid', 'dPeaks', 'dLabels', 'dFont', 'dLegendPos',
+    ['dViewMode', 'dGap', 'dNormH', 'dRev', 'dGrid', 'dPeaks', 'dLabels', 'dSummary', 'dFont', 'dLegendPos',
       'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dLo', 'dHi'].forEach((id) => { $(id).onchange = onView; $(id).oninput = onView; });
 
     // 분석 설정
@@ -4951,6 +5360,896 @@ window.FTIR_BANDS = {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+</script>
+<script>
+/* ==== tga-core.js ==== */
+/* =========================================================================
+ * tga-core.js — TGA(열중량) 분석 엔진
+ *  · ASCII 파싱(온도·중량 2~5열, 탭/쉼표/세미콜론/공백, 소수점 쉼표)
+ *  · T5%·T10%·T50% (규정 중량 감소 온도), 잔량(residue)
+ *  · 외삽 분해개시온도(Td,onset), DTG 최대점(Tmax)
+ *  · 중량 감소 단계(step) 분해 — 단계별 손실량
+ *  · 합성 데모(실측 아님 — 알고리즘 검증용)
+ * 의존성 없음. window.TGAC 로 노출.
+ * ========================================================================= */
+(function () {
+  'use strict';
+
+  const NUMRE = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
+
+  const mean = (a) => a.length ? a.reduce((s, v) => s + v, 0) / a.length : NaN;
+  const stdev = (a) => {
+    if (a.length < 2) return 0;
+    const m = mean(a);
+    return Math.sqrt(a.reduce((s, v) => s + (v - m) * (v - m), 0) / (a.length - 1));
+  };
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+  function mode(arr) {
+    const m = new Map();
+    let best = arr[0], bn = -1;
+    for (const v of arr) { const c = (m.get(v) || 0) + 1; m.set(v, c); if (c > bn) { bn = c; best = v; } }
+    return best;
+  }
+
+  function smooth(y, win) {
+    const w = Math.max(1, win | 0);
+    if (w <= 1 || y.length < 3) return y.slice();
+    const h = w >> 1, out = new Array(y.length);
+    for (let i = 0; i < y.length; i++) {
+      let s = 0, c = 0;
+      for (let k = i - h; k <= i + h; k++) { if (k < 0 || k >= y.length) continue; s += y[k]; c++; }
+      out[i] = s / c;
+    }
+    return out;
+  }
+
+  /* 2차차분 요철도 — 축(시간·온도)은 매끄럽고 신호는 요철이 크다 */
+  function roughness(col) {
+    const n = col.length;
+    if (n < 5) return 0;
+    const mn = Math.min.apply(null, col), mx = Math.max.apply(null, col);
+    const span = (mx - mn) || 1;
+    let s = 0, c = 0;
+    for (let i = 1; i < n - 1; i++) { s += Math.abs(col[i + 1] - 2 * col[i] + col[i - 1]); c++; }
+    return (s / (c || 1)) / span;
+  }
+
+  /* ------------------------------------------------------------- 파싱 */
+  function parseText(text, name, opts) {
+    const O = opts || {};
+    const raw = String(text || '').replace(/^\uFEFF/, '');
+    const lines = raw.split(/\r?\n/);
+    const warnings = [];
+
+    const probe = lines.slice(0, 40);
+    const cnt = (ch) => probe.reduce((a, l) => a + (l.split(ch).length - 1), 0);
+    let delim = null;
+    if (cnt('\t') >= probe.length * 0.5) delim = '\t';
+    else if (cnt(';') >= probe.length * 0.5) delim = ';';
+    else if (cnt(',') >= probe.length * 0.5) delim = ',';
+    else delim = null;
+
+    let decComma = false;
+    if (delim !== ',') {
+      let hit = 0, tot = 0;
+      for (const l of probe) {
+        const toks = delim ? l.split(delim) : l.trim().split(/\s+/);
+        for (const t of toks) {
+          const s = t.trim().replace(/^["']|["']$/g, '');
+          if (/^[+-]?\d+,\d+$/.test(s)) hit++;
+          if (s) tot++;
+        }
+      }
+      decComma = tot > 0 && hit / tot > 0.25;
+    }
+
+    const rows = [];
+    let header = null;
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const toks = delim ? line.split(delim) : line.trim().split(/\s+/);
+      const nums = [];
+      for (let t of toks) {
+        t = t.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
+        if (!t) continue;
+        if (decComma && t.indexOf(',') > 0) t = t.replace(',', '.');
+        if (NUMRE.test(t)) nums.push(Number(t));
+      }
+      if (nums.length >= 2) rows.push(nums);
+      else if (!header && nums.length === 0) header = line.trim();
+      if (rows.length >= 200000) { warnings.push('행이 너무 많아 20만 행에서 자릅니다'); break; }
+    }
+    if (rows.length < 5) return { ok: false, reason: '숫자 2열 이상인 데이터 행을 찾지 못했습니다 (TGA ASCII 2~5열을 기대)' };
+
+    const width = mode(rows.map((r) => r.length));
+    const numRows = rows.filter((r) => r.length >= width).map((r) => r.slice(0, width));
+
+    // 온도 열 — 단조 증가, 범위 20~1200, 0에서 시작하면 감점(시간축)
+    let tempCol = 0, best = -1;
+    for (let c = 0; c < width; c++) {
+      const col = numRows.map((r) => r[c]);
+      const mn = Math.min.apply(null, col), mx = Math.max.apply(null, col);
+      const range = mx - mn;
+      if (range < 5 || mn < -300 || mx > 1500) continue;
+      let mono = 0;
+      for (let i = 1; i < col.length; i++) if (col[i] >= col[i - 1]) mono++;
+      let score = (mono / (col.length - 1)) * 2.2 + Math.min(1, range / 300);
+      if (mn >= -0.6 && mn <= 0.6) score -= 1.2;
+      if (score > best) { best = score; tempCol = c; }
+    }
+
+    // 중량 열 — 전체적으로 감소하고(초기 ≈100에 가까움), 값 범위가 -5~120
+    let wtCol = -1, bestW = -1;
+    for (let c = 0; c < width; c++) {
+      if (c === tempCol) continue;
+      const col = numRows.map((r) => r[c]);
+      const mn = Math.min.apply(null, col), mx = Math.max.apply(null, col);
+      if (mx > 200 || mn < -50) continue;
+      const drop = col[0] - col[col.length - 1];
+      let score = 0;
+      if (drop > 3) score += 2;
+      if (mx > 60) score += 1.5;                        // 초기 100 % 근처
+      if (mn >= -2 && mn <= 105) score += 1;
+      score += Math.min(1, Math.abs(drop) / 20);
+      if (score > bestW) { bestW = score; wtCol = c; }
+    }
+    if (wtCol < 0) return { ok: false, reason: '중량(%) 열을 찾지 못했습니다' };
+
+    // 보조 열(3열 이상이면 DTG 또는 시간) — 요철이 가장 큰 열
+    let auxCol = -1, bestR = -1;
+    for (let c = 0; c < width; c++) {
+      if (c === tempCol || c === wtCol) continue;
+      const rg = roughness(numRows.map((r) => r[c]));
+      if (rg > bestR) { bestR = rg; auxCol = c; }
+    }
+
+    if (O.tempCol !== undefined && O.tempCol !== null) tempCol = O.tempCol | 0;
+    if (O.wtCol !== undefined && O.wtCol !== null) wtCol = O.wtCol | 0;
+
+    const x = numRows.map((r) => r[tempCol]);
+    const y = numRows.map((r) => r[wtCol]);
+    // 온도 오름차순 정렬
+    const idx = x.map((v, i) => i).sort((a, b) => x[a] - x[b]);
+    const xs = idx.map((i) => x[i]), ys = idx.map((i) => y[i]);
+    if (stdev(xs.slice(1).map((v, i) => v - xs[i])) < 0) warnings.push('온도축이 단조 증가가 아닙니다');
+
+    const unit = (String(header || '').toLowerCase().indexOf('mg') >= 0) ? 'mg' : '%';
+    return {
+      ok: true, name: name || 'TGA', x: xs, y: ys, cols: width, tempCol, wtCol, auxCol,
+      delim: delim || '공백', header: header || '', unit, warnings
+    };
+  }
+
+  /* --------------------------------------------------------- 분석 */
+  function normalize(y) {
+    const k = Math.max(3, Math.round(y.length * 0.02));
+    const w0 = mean(y.slice(0, k));
+    const base = isFinite(w0) && Math.abs(w0) > 1e-6 ? w0 : 1;
+    return y.map((v) => (v / base) * 100);
+  }
+
+  /* 규정 감소율에 도달하는 온도 (선형 보간) */
+  function tAtLoss(x, w, pct) {
+    const target = 100 - pct;
+    for (let i = 1; i < w.length; i++) {
+      if (w[i] <= target && w[i - 1] > target) {
+        const d = (w[i - 1] - w[i]) || 1;
+        return x[i - 1] + (w[i - 1] - target) / d * (x[i] - x[i - 1]);
+      }
+    }
+    return (w[0] <= target) ? x[0] : null;
+  }
+
+  /* 잔량 — 마지막 2 % 구간 평균 */
+  function residue(x, w) {
+    const k = Math.max(3, Math.round(w.length * 0.02));
+    return mean(w.slice(w.length - k));
+  }
+
+  function derivate(x, w) {
+    const n = w.length;
+    const d = new Array(n);
+    for (let i = 0; i < n; i++) {
+      const a = Math.max(0, i - 1), b = Math.min(n - 1, i + 1);
+      d[i] = (w[b] - w[a]) / ((x[b] - x[a]) || 1);
+    }
+    return d;
+  }
+
+  /* DTG 최대점(가장 빠른 감소) — 온도 */
+  function dtgPeak(x, w) {
+    const d = smooth(derivate(x, w), 9);
+    let i = 0, mn = Infinity;
+    for (let k = 0; k < d.length; k++) if (d[k] < mn) { mn = d[k]; i = k; }
+    if (!isFinite(mn) || mn >= 0) return null;
+    return { t: x[i], rate: mn };
+  }
+
+  /* 외삽 분해개시온도 — 최대 기울기 구간의 접선과 초기 수평선의 교점 */
+  function onsetExtrap(x, w) {
+    const d = smooth(derivate(x, w), 9);
+    const n = d.length;
+    let mi = 0, mn = Infinity;
+    for (let i = 0; i < n; i++) if (d[i] < mn) { mn = d[i]; mi = i; }
+    if (!isFinite(mn) || mn >= -1e-6) return null;
+    const thr = mn * 0.3;                        // 최대 기울기의 30 % 이상인 구간
+    let a = mi, b = mi;
+    while (a > 0 && d[a - 1] < thr) a--;
+    while (b < n - 1 && d[b + 1] < thr) b++;
+    if (b - a < 2) { a = Math.max(0, mi - 2); b = Math.min(n - 1, mi + 2); }
+    // 그 구간에 직선 적합
+    let sx = 0, sy = 0, sxx = 0, sxy = 0, c = 0;
+    for (let i = a; i <= b; i++) { sx += x[i]; sy += w[i]; sxx += x[i] * x[i]; sxy += x[i] * w[i]; c++; }
+    const den = c * sxx - sx * sx;
+    if (!c || Math.abs(den) < 1e-9) return null;
+    const slope = (c * sxy - sx * sy) / den;
+    const inter = (sy - slope * sx) / c;
+    const k = Math.max(3, Math.round(w.length * 0.01));
+    const level = mean(w.slice(0, k));           // 초기 수평선
+    const t = (level - inter) / (slope || 1);
+    if (!isFinite(t) || t < x[0] || t > x[x.length - 1]) return null;
+    return { t: t, slope: slope, level: level, x0: x[a], x1: x[b] };
+  }
+
+  /* 중량 감소 단계 — 평탄 구간(plateau) 사이의 손실 */
+  function steps(x, w, opt) {
+    const O = Object.assign({ thr: 0.06, minRun: 4 }, opt || {});
+    const d = smooth(derivate(x, w), 9);
+    const n = d.length;
+    let maxAbs = 0;
+    for (const v of d) maxAbs = Math.max(maxAbs, Math.abs(v));
+    const thr = Math.max(O.thr, maxAbs * 0.12);
+    const flat = d.map((v) => Math.abs(v) < thr);
+    const runs = [];
+    let i = 0;
+    while (i < n) {
+      if (!flat[i]) { i++; continue; }
+      let j = i;
+      while (j < n - 1 && flat[j + 1]) j++;
+      if (j - i + 1 >= O.minRun) runs.push({ a: i, b: j });
+      i = j + 1;
+    }
+    // 연속 구간 중 인접한 것은 병합
+    const merged = [];
+    for (const r of runs) {
+      const last = merged[merged.length - 1];
+      if (last && x[r.a] - x[last.b] < (x[n - 1] - x[0]) * 0.02) last.b = r.b;
+      else merged.push({ a: r.a, b: r.b });
+    }
+    const out = [];
+    for (let k = 1; k < merged.length; k++) {
+      const p0 = stripped(merged[k - 1], x, w), p1 = stripped(merged[k], x, w);
+      const loss = p0 - p1;
+      if (loss < 0.5) continue;
+      out.push({
+        t0: x[merged[k - 1].b], t1: x[merged[k].a],
+        from: p0, to: p1, loss: loss
+      });
+    }
+    return out;
+
+    function stripped(r, xs, ws) {
+      let s = 0, c = 0;
+      for (let i = r.a; i <= r.b; i++) { s += ws[i]; c++; }
+      return c ? s / c : NaN;
+    }
+  }
+
+  function analyze(x, w, opt) {
+    const O = Object.assign({ smoothWin: 5 }, opt || {});
+    const ww = smooth(normalize(w), O.smoothWin | 0 || 1);
+    const res = residue(x, ww);
+    const dd = dtgPeak(x, ww);
+    const on = onsetExtrap(x, ww);
+    return {
+      x: x, w: ww,
+      t5: tAtLoss(x, ww, 5),
+      t10: tAtLoss(x, ww, 10),
+      t50: tAtLoss(x, ww, 50),
+      residue: res,
+      totalLoss: 100 - res,
+      td: on ? on.t : null,
+      onsetSlope: on ? on.slope : null,
+      tmax: dd ? dd.t : null,
+      rateMax: dd ? dd.rate : null,
+      steps: steps(x, ww)
+    };
+  }
+
+  /* --------------------------------------------------------- 데모 */
+  function build(steps_, opt) {
+    const O = Object.assign({ lo: 30, hi: 800, n: 620, noise: 0.06, seed: 7, hold: 25 }, opt || {});
+    let s = O.seed >>> 0;
+    const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+    const x = [], y = [];
+    for (let i = 0; i < O.n; i++) {
+      const T = O.lo + (O.hi - O.lo) * i / (O.n - 1);
+      let w = 100;
+      for (const st of steps_) w -= st.A / (1 + Math.exp(-(T - st.T) / st.s));
+      // 초기 수분 손실(약간) + 잡음
+      w -= 0.35 / (1 + Math.exp(-(T - O.lo - 12) / 6));
+      w += (rnd() - 0.5) * O.noise;
+      x.push(T); y.push(Math.max(-1, w));
+    }
+    return { x: x, y: y };
+  }
+
+  function synthDemo() {
+    const out = [];
+    const push = (name, spec, meta) => out.push(Object.assign({ name: name, data: build(spec) }, meta || {}));
+
+    // PA6-GF30: 주분해 420–500 (수지 68 %), 잔량 ≈ 30 % (유리섬유)
+    push('PA6-GF30 신품 (합성)', [
+      { A: 67, T: 455, s: 14 }, { A: 2.5, T: 640, s: 18 }
+    ], { note: '잔량 ≈ 30.5 %' });
+
+    // 열노화: 개시가 앞당겨지고 저분자 성분이 먼저 날아감 (T5 하강)
+    push('PA6-GF30 열노화 168h (합성)', [
+      { A: 4.5, T: 330, s: 22 }, { A: 64, T: 443, s: 16 }, { A: 2.5, T: 640, s: 18 }
+    ], { note: 'T5 하강' });
+
+    // PA6 neat: 단일 분해, 잔량 ≈ 1.5 %
+    push('PA6 순수 (합성)', [
+      { A: 96, T: 440, s: 13 }, { A: 2, T: 620, s: 16 }
+    ], { note: '잔량 ≈ 2 %' });
+
+    // PBT: 잔량 ≈ 1.5 %
+    push('PBT (합성)', [
+      { A: 62, T: 395, s: 11 }, { A: 36, T: 445, s: 12 }
+    ], { note: '2단 분해' });
+
+    // PPS-GF40: 고온 분해, 잔량 ≈ 42 %
+    push('PPS-GF40 (합성)', [
+      { A: 55, T: 545, s: 12 }, { A: 3, T: 690, s: 20 }
+    ], { note: '잔량 ≈ 42 %' });
+
+    // 에폭시 경화체: 잔량 ≈ 9 %
+    push('에폭시 경화체 (합성)', [
+      { A: 55, T: 370, s: 16 }, { A: 34, T: 520, s: 20 }
+    ], { note: '2단 분해, 잔량 ≈ 9 %' });
+
+    return out;
+  }
+
+  window.TGAC = {
+    parseText, smooth, mean, stdev, mode, normalize, tAtLoss, residue, derivate,
+    dtgPeak, onsetExtrap, steps, analyze, synthDemo, clamp
+  };
+})();
+
+</script>
+<script>
+/* ==== tga.js ==== */
+/* =========================================================================
+ * tga.js — TGA 탭 UI (그래프·목록·분석 표·단계 표·내보내기)
+ * 엔진: tga-core.js (window.TGAC), 렌더러: app-plot.js (window.FTIRPlot)
+ * ========================================================================= */
+(function () {
+  'use strict';
+  const P = window.FTIRPlot, T = window.TGAC;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fm = (v, d) => (v === null || v === undefined || !isFinite(v)) ? '—' : Number(v).toFixed(d === undefined ? 1 : d);
+  const now = () => new Date().toLocaleTimeString('ko-KR', { hour12: false });
+  const PALETTE = ['#4f9dff', '#ff7a59', '#3ddc97', '#c792ea', '#ffd166', '#67e8f9',
+    '#f472b6', '#a3e635', '#fb923c', '#94a3b8', '#e879f9', '#34d399'];
+
+  let uid = 0;
+  const st = {
+    traces: [], selectedId: null, geom: null, legendRects: [],
+    view: {
+      stacked: false, gap: 0.35, rev: false, grid: true,
+      peaksOn: true, labelsOn: false, labelMinProm: 0, summaryOn: true,
+      lo: 30, hi: 800, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
+      exportBg: 'transparent', exportFmt: 'journal', exportWidth: '180', exportDpi: 300,
+      xLabel: 'Temperature (°C)', yLabel: 'Weight (%)'
+    },
+    cfg: { smooth: 5, tempCol: null, wtCol: null, yLo: 0, yHi: 105, sumCodes: '' },
+    res: {}      /* id → analyze 결과 */
+  };
+
+  /* ------------------------------------------------------------- 로그 */
+  function log(msg, cls) {
+    const el = $('tLog'); if (!el) return;
+    const line = document.createElement('div');
+    if (cls) line.className = cls;
+    line.innerHTML = `<span class="t">${now()}</span>  ${esc(msg)}`;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  /* -------------------------------------------------------- trace 관리 */
+  function newTrace(name, x, y, meta) {
+    const t = {
+      id: 't' + (++uid), name: name, legend: '', color: PALETTE[st.traces.length % PALETTE.length],
+      width: 1.6, dash: 'solid', alpha: 1, visible: true,
+      x: x, y: y, peaks: [], meta: meta || {}
+    };
+    t.p = { x: x, y: y };
+    st.traces.push(t);
+    return t;
+  }
+  const getT = (id) => st.traces.find((t) => t.id === id) || null;
+  const sel = () => getT(st.selectedId);
+  const smoothedY = (y) => { const w = Math.max(1, Math.round(+st.cfg.smooth || 1)); return w > 1 ? T.smooth(y, w) : y; };
+
+  function refreshP(t) { t.p = { x: t.x, y: smoothedY(t.y) }; }
+
+  /* --------------------------------------------------------- 분석 */
+  function runAnalysis(t, quiet) {
+    if (!t || !t.x || t.x.length < 6) return null;
+    const r = T.analyze(t.x, t.y, { smoothWin: Math.max(1, Math.round(+st.cfg.smooth || 1)) });
+    st.res[t.id] = r;
+    // 주요 지점을 피크 마커로 표시 (T5 / Td onset / Tmax)
+    const pk = [];
+    const at = (xv) => {
+      const p = t.p; let best = 0;
+      for (let i = 0; i < p.x.length; i++) if (Math.abs(p.x[i] - xv) < Math.abs(p.x[best] - xv)) best = i;
+      return p.y[best];
+    };
+    if (r.t5 !== null) pk.push({ x: r.t5, y: at(r.t5), prom: 1, label: 'T5 ' + r.t5.toFixed(0), kind: 't5' });
+    if (r.td !== null) pk.push({ x: r.td, y: at(r.td), prom: 0.9, label: 'Td ' + r.td.toFixed(0), kind: 'td' });
+    if (r.tmax !== null) pk.push({ x: r.tmax, y: at(r.tmax), prom: 0.8, label: 'Tmax ' + r.tmax.toFixed(0), kind: 'tmax' });
+    t.peaks = pk;
+    if (!quiet) {
+      log(`${t.legend || t.name}: T5 ${fm(r.t5)} °C · Td,onset ${fm(r.td)} °C · Tmax ${fm(r.tmax)} °C · 잔량 ${fm(r.residue, 2)} % · 단계 ${r.steps.length}`, 'ok');
+    }
+    return r;
+  }
+
+  /* --------------------------------------------------- 요약(사이드) 패널 */
+  function summarySpec() {
+    if (!st.view.summaryOn) return null;
+    const vis = st.traces.filter((t) => t.visible && st.res[t.id]);
+    if (!vis.length) return null;
+    const names = vis.map((t) => (t.legend || t.name).replace(/\s*\(합성\)/, ''));
+    const manual = (st.cfg.sumCodes || '').split(',').map((s) => s.trim()).filter(Boolean);
+    const auto = names.some((n) => n.length > 11);
+    const cats = vis.map((t, i) => manual[i] || (auto ? ('S' + (i + 1)) : names[i]));
+    const mk = (key, color, marker, unit, fmt, below) => vis.map((t, i) => {
+      const r = st.res[t.id];
+      const v = key === 't5' ? r.t5 : key === 'td' ? r.td : key === 'residue' ? r.residue
+        : key === 'tmax' ? r.tmax : key === 't50' ? r.t50 : null;
+      return (v === null || !isFinite(v)) ? null : {
+        cat: i, y: v, color: color, marker: marker, below: !!below,
+        text: (fmt === 0 ? Math.round(v) : v.toFixed(fmt === undefined ? 1 : fmt)) + unit,
+        textShort: (fmt === 0 ? Math.round(v) : v.toFixed(fmt === undefined ? 1 : fmt))
+      };
+    }).filter(Boolean);
+
+    return {
+      panels: [
+        {
+          title: 'T5% — 규정 감량 온도',
+          yLabel: 'T5% (°C)', yFmt: 0, categories: cats,
+          points: mk('t5', '#1f4e79', 'circle', ' °C', 1)
+        },
+        {
+          title: 'Td onset — 분해 개시(외삽)',
+          yLabel: 'Td (°C)', yFmt: 0, categories: cats,
+          points: mk('td', '#b23a2e', 'diamond', ' °C', 1)
+        },
+        {
+          title: '최종 잔량 (Final residue)',
+          yLabel: 'Residue (%)', yFmt: 1, yMin: 0, categories: cats,
+          points: mk('residue', '#1f4e79', 'circle', ' %', 2)
+        }
+      ]
+    };
+  }
+
+  /* ------------------------------------------------------------ 그리기 */
+  function renderPlot() {
+    const cv = $('tPlot'); if (!cv) return;
+    const sum = summarySpec();
+    const state = {
+      traces: st.traces.map((t) => ({ id: t.id, name: t.name, legend: t.legend, color: t.color,
+        lineW: t.width, dash: t.dash, alpha: t.alpha, visible: t.visible, p: t.p, peaks: t.peaks })),
+      view: Object.assign({}, st.view),
+      theme: {}, selectedId: st.selectedId, summary: sum
+    };
+    // TGA 는 중량 % 축을 그대로 쓴다 → normHeight 끔, y 범위 지정
+    state.view.normHeight = false;
+    const g = P.render(cv, state, {});
+    st.geom = g.geom; st.legendRects = g.legendRects;
+  }
+
+  function renderList() {
+    const ul = $('tList'); if (!ul) return;
+    ul.innerHTML = '';
+    st.traces.forEach((t) => {
+      const li = document.createElement('li');
+      li.className = 'item' + (t.id === st.selectedId ? ' sel' : '');
+      li.innerHTML = `<span class="dot" style="background:${t.color}"></span>
+        <span class="nm">${esc(t.legend || t.name)}</span>
+        <span class="sub">${t.x.length}점 · ${fm(t.x[0], 0)}–${fm(t.x[t.x.length - 1], 0)} °C</span>
+        <span class="acts">
+          <button class="mini" data-act="vis" title="표시/숨김">${t.visible ? '◉' : '○'}</button>
+          <button class="mini" data-act="up" title="위로">↑</button>
+          <button class="mini" data-act="down" title="아래로">↓</button>
+          <button class="mini" data-act="del" title="삭제">×</button>
+        </span>`;
+      li.onclick = (e) => {
+        const act = e.target && e.target.getAttribute && e.target.getAttribute('data-act');
+        if (act === 'vis') { t.visible = !t.visible; renderAll(); return; }
+        if (act === 'del') { st.traces = st.traces.filter((z) => z !== t); delete st.res[t.id]; renderAll(); return; }
+        if (act === 'up' || act === 'down') {
+          const i = st.traces.indexOf(t), j = act === 'up' ? i - 1 : i + 1;
+          if (j >= 0 && j < st.traces.length) { st.traces[i] = st.traces[j]; st.traces[j] = t; renderAll(); }
+          return;
+        }
+        st.selectedId = t.id; renderAll();
+      };
+      ul.appendChild(li);
+    });
+    const n = $('tCount'); if (n) n.textContent = st.traces.length;
+    syncStyle();
+  }
+
+  function syncStyle() {
+    const t = sel();
+    const dis = !t;
+    ['tName', 'tLegend', 'tColor', 'tWidth', 'tDash', 'tAlpha'].forEach((id) => { if ($(id)) $(id).disabled = dis; });
+    if (!t) return;
+    $('tName').value = t.name; $('tLegend').value = t.legend || '';
+    $('tColor').value = t.color; $('tWidth').value = t.width;
+    $('tDash').value = t.dash; $('tAlpha').value = t.alpha;
+  }
+
+  function renderTables() {
+    const tb = $('tResTable'); if (!tb) return;
+    const body = tb.querySelector('tbody');
+    body.innerHTML = '';
+    const vis = st.traces;
+    if (!vis.length) {
+      body.innerHTML = '<tr><td colspan="9" class="muted">TGA 데이터를 불러오면 여기에 결과가 표시됩니다.</td></tr>';
+      const sb = $('tStepTable') && $('tStepTable').querySelector('tbody');
+      if (sb) sb.innerHTML = '';
+      return;
+    }
+    vis.forEach((t) => {
+      const r = st.res[t.id];
+      const tr = document.createElement('tr');
+      if (t.id === st.selectedId) tr.className = 'sel';
+      tr.innerHTML = `<td>${esc(t.legend || t.name)}</td>
+        <td>${r ? fm(r.t5) : '—'}</td>
+        <td>${r ? fm(r.t10) : '—'}</td>
+        <td>${r ? fm(r.t50) : '—'}</td>
+        <td>${r ? fm(r.td) : '—'}</td>
+        <td>${r ? fm(r.tmax) : '—'}</td>
+        <td>${r ? fm(r.residue, 2) : '—'}</td>
+        <td>${r ? fm(r.totalLoss, 2) : '—'}</td>
+        <td>${r ? (r.steps.length || '—') : '—'}</td>`;
+      tr.onclick = () => { st.selectedId = t.id; renderAll(); };
+      body.appendChild(tr);
+    });
+
+    // 단계 표
+    const stb = $('tStepTable');
+    if (stb) {
+      const sb = stb.querySelector('tbody');
+      sb.innerHTML = '';
+      const target = sel() || vis[0];
+      const r = target && st.res[target.id];
+      if (!r || !r.steps.length) {
+        sb.innerHTML = '<tr><td colspan="5" class="muted">선택 시료의 중량 감소 단계가 없습니다.</td></tr>';
+      } else {
+        r.steps.forEach((s, i) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${esc(target.legend || target.name)}</td><td>${i + 1}</td>
+            <td>${fm(s.t0, 0)}–${fm(s.t1, 0)}</td><td>${fm(s.loss, 1)}</td><td>${fm(s.to, 1)}</td>`;
+          sb.appendChild(tr);
+        });
+      }
+    }
+    updateTabInfo();
+  }
+
+  function updateTabInfo() {
+    const vis = st.traces.filter((t) => t.visible).length;
+    const el = $('tTabInfo');
+    if (el) el.textContent = `${st.traces.length} 시료 · 표시 ${vis} · 분석 ${Object.keys(st.res).length}`;
+  }
+
+  function renderAll() { renderList(); renderPlot(); renderTables(); }
+
+  /* ------------------------------------------------------------ 파일 */
+  function loadFiles(files) {
+    const list = Array.from(files || []);
+    if (!list.length) return;
+    let done = 0;
+    list.forEach((f) => {
+      const rd = new FileReader();
+      rd.onload = () => {
+        const p = T.parseText(String(rd.result || ''), f.name.replace(/\.[^.]+$/, ''), {
+          tempCol: st.cfg.tempCol, wtCol: st.cfg.wtCol
+        });
+        if (!p.ok) { log(`${f.name}: ${p.reason}`, 'warn'); return; }
+        const t = newTrace(p.name, p.x, p.y, { cols: p.cols, tempCol: p.tempCol, wtCol: p.wtCol, unit: p.unit });
+        refreshP(t);
+        runAnalysis(t, true);
+        log(`${f.name}: ${p.x.length}점 · ${fm(p.x[0], 0)}–${fm(p.x[p.x.length - 1], 0)} °C · 온도열 ${p.tempCol} / 중량열 ${p.wtCol} (${p.cols}열, ${p.delim})`, 'ok');
+        p.warnings.forEach((w) => log('  · ' + w, 'warn'));
+        st.selectedId = t.id;
+        renderAll();
+      };
+      rd.readAsText(f, 'utf-8');
+      done++;
+    });
+    if (done) log(`${done}개 파일 처리 시작`);
+  }
+
+  function openFiles() {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.txt,.csv,.tsv,.asc,.dat';
+    inp.multiple = true;
+    inp.onchange = () => loadFiles(inp.files);
+    inp.click();
+  }
+
+  function demo() {
+    const d = T.synthDemo();
+    st.traces = []; st.res = {}; st.selectedId = null;
+    d.forEach((s) => {
+      const t = newTrace(s.name, s.data.x, s.data.y, { note: s.note });
+      refreshP(t);
+      runAnalysis(t, true);
+    });
+    if (st.traces.length) st.selectedId = st.traces[0].id;
+    renderAll();
+    log(`데모 데이터 로드: ${d.length}개 (합성 TGA — 실측값 아님)`);
+  }
+
+  /* ------------------------------------------------------------ 내보내기 */
+  function toCSV() {
+    const rows = [['시료', 'T5 (°C)', 'T10 (°C)', 'T50 (°C)', 'Td onset (°C)', 'Tmax (°C)', '잔량 (%)', '총감량 (%)', '단계 수']];
+    st.traces.forEach((t) => {
+      const r = st.res[t.id]; if (!r) return;
+      rows.push([t.legend || t.name, fm(r.t5), fm(r.t10), fm(r.t50), fm(r.td), fm(r.tmax), fm(r.residue, 2), fm(r.totalLoss, 2), r.steps.length]);
+    });
+    rows.push([]);
+    rows.push(['시료', '단계', '구간 (°C)', '손실 (%)', '종료 중량 (%)']);
+    st.traces.forEach((t) => {
+      const r = st.res[t.id]; if (!r) return;
+      r.steps.forEach((s, i) => rows.push([t.legend || t.name, i + 1, `${fm(s.t0, 0)}–${fm(s.t1, 0)}`, fm(s.loss, 1), fm(s.to, 1)]));
+    });
+    const csv = rows.map((r) => r.join(',')).join('\r\n');
+    download('tga-result-' + Date.now() + '.csv', '\uFEFF' + csv, 'text/csv;charset=utf-8');
+    log('분석 결과 CSV 저장', 'ok');
+  }
+
+  function png() {
+    if (!st.traces.length) { log('내보낼 TGA 곡선이 없습니다', 'warn'); return; }
+    const fmt = st.view.exportFmt || 'journal';
+    const o = { wmm: parseInt(st.view.exportWidth, 10) || 180, dpi: parseInt(st.view.exportDpi, 10) || 300, labelMinProm: 0 };
+    const sum = summarySpec();
+    const base = {
+      traces: st.traces.map((t) => ({ id: t.id, name: t.name, legend: t.legend, color: t.color,
+        lineW: t.width, dash: t.dash, alpha: t.alpha, visible: t.visible, p: t.p, peaks: t.peaks })),
+      view: Object.assign({}, st.view, { normHeight: false }),
+      theme: {}, selectedId: null, summary: sum
+    };
+    let opts, s = base, tag;
+    if (fmt === 'screen') {
+      const bg = st.view.exportBg || 'transparent';
+      opts = { scale: 2, bg: bg };
+      tag = '화면 그대로 (2배) · 배경 ' + (bg === 'transparent' ? '투명' : bg === 'white' ? '흰색' : '앱 테마');
+    } else {
+      const pre = P.formatPreset(fmt, o);
+      s = P.stateForFormat(base, fmt, o);
+      // 저널 포맷은 기본적으로 범례를 숨기지만, 겹쳐보기(TGA 기본)에서는 시료 구분이 필요하다
+      if (fmt === 'journal' && !s.view.stacked) {
+        s.view = Object.assign({}, s.view, { legendOn: true, legendPos: 'tr', legendScale: 0.72 });
+      }
+      const h = fmt === 'journal' ? Math.round(pre.width * (o.wmm > 120 ? 0.46 : 0.58)) : pre.height;
+      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+      tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + h + ' px' : '');
+    }
+    const url = P.toPNG($('tPlot'), s, opts);
+    download('tga-plot-' + Date.now() + '.png', dataURLtoBlob(url), 'image/png');
+    log('PNG 내보내기 — ' + tag + (sum ? ' · 요약 패널 포함' : ''), 'ok');
+  }
+
+  function download(name, content, type) {
+    const blob = content instanceof Blob ? content : new Blob([content], { type: type || 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+  function dataURLtoBlob(url) {
+    const parts = url.split(',');
+    const bin = atob(parts[1]);
+    const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return new Blob([u8], { type: 'image/png' });
+  }
+
+  /* ------------------------------------------------------------ 프로젝트 */
+  function saveProject() {
+    const prj = {
+      app: 'ftir-studio', tab: 'tga', version: 1,
+      view: st.view, cfg: st.cfg,
+      traces: st.traces.map((t) => ({ name: t.name, legend: t.legend, color: t.color, width: t.width,
+        dash: t.dash, alpha: t.alpha, visible: t.visible, x: t.x, y: t.y }))
+    };
+    download('tga-project-' + Date.now() + '.json', JSON.stringify(prj), 'application/json');
+    log('프로젝트 저장', 'ok');
+  }
+
+  function loadProject() {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json';
+    inp.onchange = () => {
+      const f = inp.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        try {
+          const prj = JSON.parse(String(rd.result || '{}'));
+          if (!prj.traces) throw new Error('시료 데이터가 없습니다');
+          st.traces = []; st.res = {}; st.selectedId = null;
+          if (prj.view) Object.assign(st.view, prj.view);
+          if (prj.cfg) Object.assign(st.cfg, prj.cfg);
+          prj.traces.forEach((d) => {
+            const t = newTrace(d.name, d.x, d.y, {});
+            t.legend = d.legend || ''; t.color = d.color || t.color; t.width = d.width || 1.6;
+            t.dash = d.dash || 'solid'; t.alpha = d.alpha === undefined ? 1 : d.alpha;
+            t.visible = d.visible !== false;
+            refreshP(t); runAnalysis(t, true);
+          });
+          if (st.traces.length) st.selectedId = st.traces[0].id;
+          syncControls(); renderAll();
+          log('프로젝트 열기: ' + st.traces.length + ' 시료', 'ok');
+        } catch (e) { log('프로젝트 열기 실패: ' + e.message, 'warn'); }
+      };
+      rd.readAsText(f, 'utf-8');
+    };
+    inp.click();
+  }
+
+  /* ------------------------------------------------------------ 컨트롤 */
+  function syncControls() {
+    $('tViewMode').value = st.view.stacked ? 'stacked' : 'overlay';
+    $('tGap').value = st.view.gap;
+    $('tGrid').checked = !!st.view.grid;
+    $('tPeaks').checked = !!st.view.peaksOn;
+    $('tLabels').checked = !!st.view.labelsOn;
+    $('tSummary').checked = !!st.view.summaryOn;
+    $('tFont').value = st.view.fontSize;
+    $('tLegendPos').value = st.view.legendPos;
+    $('tExportFmt').value = st.view.exportFmt;
+    $('tExportWidth').value = String(st.view.exportWidth);
+    $('tExportDpi').value = String(st.view.exportDpi);
+    $('tExportBg').value = st.view.exportBg;
+    $('tLo').value = st.view.lo; $('tHi').value = st.view.hi;
+    $('tSmooth').value = st.cfg.smooth;
+    $('tSumCodes').value = st.cfg.sumCodes || '';
+  }
+
+  function rerunAll(quiet) {
+    st.traces.forEach((t) => runAnalysis(t, quiet));
+    renderAll();
+  }
+
+  function bind() {
+    if (!$('tList')) return;
+
+    const on = (id, fn) => { const e = $(id); if (e) e.onclick = fn; };
+
+    on('tOpen', openFiles);
+    on('tDemo', demo);
+    on('tShowAll', () => { st.traces.forEach((t) => t.visible = true); renderAll(); });
+    on('tHideAll', () => { st.traces.forEach((t) => t.visible = false); renderAll(); });
+    on('tClear', () => {
+      if (!st.traces.length) return;
+      st.traces = []; st.res = {}; st.selectedId = null; renderAll(); log('모든 TGA 시료 삭제');
+    });
+    on('tRunSel', () => { runAnalysis(sel(), false); renderAll(); });
+    on('tRunAll', () => { rerunAll(false); });
+    on('tCSV', toCSV);
+    on('tSave', saveProject);
+    on('tLoad', loadProject);
+
+    // 스타일
+    const onStyle = () => {
+      const t = sel(); if (!t) return;
+      t.name = $('tName').value || t.name;
+      t.legend = $('tLegend').value;
+      t.color = $('tColor').value;
+      t.width = Math.max(0.5, +$('tWidth').value || 1.6);
+      t.dash = $('tDash').value;
+      t.alpha = Math.min(1, Math.max(0.1, +$('tAlpha').value || 1));
+      renderAll();
+    };
+    ['tName', 'tLegend', 'tColor', 'tWidth', 'tDash', 'tAlpha'].forEach((id) => { $(id).oninput = onStyle; $(id).onchange = onStyle; });
+
+    // 표시 설정
+    const onView = () => {
+      st.view.stacked = $('tViewMode').value === 'stacked';
+      st.view.gap = Math.max(0, +$('tGap').value || 0);
+      st.view.grid = $('tGrid').checked;
+      st.view.peaksOn = $('tPeaks').checked;
+      st.view.labelsOn = $('tLabels').checked;
+      st.view.summaryOn = $('tSummary').checked;
+      st.view.fontSize = Math.max(8, +$('tFont').value || 13);
+      st.view.legendPos = $('tLegendPos').value;
+      st.view.exportFmt = $('tExportFmt').value;
+      st.view.exportWidth = parseInt($('tExportWidth').value, 10) || 180;
+      st.view.exportDpi = parseInt($('tExportDpi').value, 10) || 300;
+      st.view.exportBg = $('tExportBg').value;
+      const lo = +$('tLo').value, hi = +$('tHi').value;
+      if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 5) { st.view.lo = lo; st.view.hi = hi; }
+      const tc = $('tTempCol').value, wc = $('tWtCol').value;
+      st.cfg.tempCol = (tc === '' || tc === null) ? null : (parseInt(tc, 10) || 0);
+      st.cfg.wtCol = (wc === '' || wc === null) ? null : (parseInt(wc, 10) || 0);
+      const sm = +$('tSmooth').value;
+      if (isFinite(sm) && sm !== st.cfg.smooth) { st.cfg.smooth = Math.max(1, sm | 0); st.traces.forEach(refreshP); rerunAll(true); }
+      const codes = $('tSumCodes').value;
+      if (codes !== st.cfg.sumCodes) st.cfg.sumCodes = codes;
+      renderPlot(); renderTables();
+    };
+    ['tViewMode', 'tGap', 'tGrid', 'tPeaks', 'tLabels', 'tSummary', 'tFont', 'tLegendPos',
+      'tExportFmt', 'tExportWidth', 'tExportDpi', 'tExportBg', 'tLo', 'tHi', 'tSmooth', 'tSumCodes']
+      .forEach((id) => { const e = $(id); if (e) { e.onchange = onView; e.oninput = onView; } });
+
+    // 아래쪽 탭
+    document.querySelectorAll('#mainTga .dtag').forEach((b) => {
+      b.onclick = () => {
+        document.querySelectorAll('#mainTga .dtag').forEach((z) => z.classList.toggle('active', z === b));
+        document.querySelectorAll('#tBottom .panel').forEach((p) => p.classList.toggle('active', p.id === 'tpanel-' + b.dataset.dtag));
+      };
+    });
+    if ($('tClearLog')) $('tClearLog').onclick = () => { $('tLog').innerHTML = ''; };
+    if ($('tDemo2')) $('tDemo2').onclick = demo;
+    if ($('tOpen2')) $('tOpen2').onclick = openFiles;
+
+    // 아래 패널 높이 조절
+    const rz = $('tResizer'), main = $('mainTga');
+    if (rz && main) {
+      let drag = false, y0 = 0, h0 = 0;
+      const H = () => parseInt(getComputedStyle(main).getPropertyValue('--bottomH') || '300', 10) || 300;
+      rz.onmousedown = (e) => { drag = true; y0 = e.clientY; h0 = H(); e.preventDefault(); };
+      window.addEventListener('mousemove', (e) => {
+        if (!drag) return;
+        const h = Math.max(90, Math.min(window.innerHeight - 220, h0 - (e.clientY - y0)));
+        main.style.setProperty('--bottomH', h + 'px');
+      });
+      window.addEventListener('mouseup', () => { drag = false; });
+      rz.ondblclick = () => main.style.setProperty('--bottomH', H() < 60 ? '300px' : '34px');
+    }
+
+    // 드래그앤드롭
+    const dz = $('tDrop');
+    if (dz) {
+      dz.onclick = openFiles;
+      ['dragenter', 'dragover'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('hot'); }));
+      ['dragleave', 'drop'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('hot'); }));
+      dz.addEventListener('drop', (e) => loadFiles(e.dataTransfer.files));
+    }
+    window.addEventListener('dragover', (e) => { if (window.APP_TAB === 'tga') e.preventDefault(); });
+    window.addEventListener('drop', (e) => {
+      if (window.APP_TAB !== 'tga') return;
+      if (dz && e.target instanceof Node && dz.contains(e.target)) return;
+      e.preventDefault();
+      loadFiles(e.dataTransfer.files);
+    });
+  }
+
+  /* 창 크기·탭 전환 시 다시 그리기 */
+  let _rt = 0;
+  const redrawSoon = () => { clearTimeout(_rt); _rt = setTimeout(() => { renderPlot(); }, 80); };
+  window.addEventListener('resize', redrawSoon);
+  document.addEventListener('click', (e) => {
+    const b = e.target && e.target.closest && e.target.closest('.ttab');
+    if (b && b.dataset.ttab === 'tga') setTimeout(renderPlot, 60);
+  });
+
+  window.TGAUI = { openFiles, png, loadProject, saveProject, demo, bind, renderPlot, state: st };
+  document.addEventListener('DOMContentLoaded', () => { bind(); syncControls(); });
+  if (document.readyState !== 'loading') { bind(); syncControls(); }
+})();
+
 </script>
 </body>
 </html>

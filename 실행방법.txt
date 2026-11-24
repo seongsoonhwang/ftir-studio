@@ -1,4 +1,4 @@
-FTIR Studio v1.3 — 웹에서 바로 쓰기
+FTIR Studio v1.4 — 웹에서 바로 쓰기
 ====================================
 
 [가장 빠른 방법]
@@ -8,6 +8,18 @@ FTIR Studio v1.3 — 웹에서 바로 쓰기
 [화면 구성 — 상단 탭]
   · FT-IR : OPUS 원시 파일(.0/.1)과 ASCII(.dpt) 스펙트럼 — 정성 판정·열화 지수·차이 스펙트럼
   · DSC   : DSC ASCII(온도/열유량) — ΔH·onset/endset·Tg·ΔCp·결정화도  (v1.3 추가)
+  · TGA   : TGA ASCII(온도/중량) — T5%·T10%·T50%, Td onset, Tmax, 잔량, 감소 단계  (v1.4 추가)
+
+[v1.4에서 추가된 것]
+  · 우측 요약 패널 (DSC·TGA 공통) — 메인 곡선 오른쪽에 주요 지점만 따로 그린 작은 그래프
+      - DSC : 전이 온도(Tm●/Tc◆/Tg■) 패널 + ΔH 패널
+      - TGA : T5% 패널 + Td onset 패널 + 최종 잔량 패널
+    → 표시 설정에서 끌 수 있고, PNG(학술지/PPT) 내보내기에도 함께 그려집니다
+       (첨부하신 DSC·TGA 슬라이드처럼 "왼쪽 곡선 + 오른쪽 요약" 한 장 구성)
+  · TGA 분석 탭 — T5%·T10%·T50%(규정 감량 도달 온도), 외삽 분해개시온도 Td,onset,
+    DTG 최대점 Tmax, 최종 잔량, 중량 감소 단계 표, 결과 CSV·PNG
+  · 열 자동 판정 — 시간·온도·중량 3열이면 시간 열을 자동으로 제외(틀리면 열 번호 직접 지정)
+  · 요약 패널 시료 코드 입력(예: AB, BB) — 슬라이드에서 쓰는 시료 명칭 그대로 표시
 
 [v1.3에서 추가된 것]
   · DSC 분석 탭 — 피크 적분(ΔH, J/g), 외삽 onset/endset, Tg(시작/중간/끝)+ΔCp,
@@ -52,6 +64,12 @@ FTIR Studio v1.3 — 웹에서 바로 쓰기
   https://seongsoonhwang.github.io/ftir-studio/samples/dsc/Epoxy_uncured.txt
   https://seongsoonhwang.github.io/ftir-studio/samples/dsc/Epoxy_cured.txt
 
+[예제 데이터 — TGA]
+  https://seongsoonhwang.github.io/ftir-studio/samples/tga/PA6-GF30_신품.txt
+  https://seongsoonhwang.github.io/ftir-studio/samples/tga/PA6-GF30_열노화_168h.txt
+  https://seongsoonhwang.github.io/ftir-studio/samples/tga/PPS-GF40.txt
+  (한글 파일명이 번거로우면 데모 데이터 버튼으로 같은 6종을 바로 띄울 수 있습니다)
+
   (모두 합성 데모 데이터입니다. 실측 원본 파일은 공개 저장소에서 제외했습니다.
    실제 Bruker OPUS 스펙트럼·DSC ASCII는 도구 창에 그대로 끌어다 놓으면 됩니다.)
 
@@ -62,4 +80,6 @@ FTIR Studio v1.3 — 웹에서 바로 쓰기
 [소스]
   같은 폴더의 app*.js, lib-bands.js, demo.js, dsc-core.js, dsc.js, app.css 가 모듈 버전 소스입니다.
   tools/bundle.py 로 모듈을 다시 단일 파일로 묶을 수 있고,
-  tools/gen_samples.js (FT-IR), tools/gen_dsc_samples.js (DSC) 로 합성 데모를 재생성할 수 있습니다.
+  tools/gen_samples.js (FT-IR), tools/gen_dsc_samples.js (DSC), tools/gen_tga_samples.js (TGA)
+  로 합성 데모를 재생성할 수 있습니다.
+  TGA 탭 소스는 tga-core.js(엔진) + tga.js(UI) 입니다.

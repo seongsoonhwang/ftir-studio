@@ -12,12 +12,13 @@
     <div class="brand">
       <span class="logo">∿</span>
       <span class="title">FT-IR Studio</span>
-      <span class="ver">v1.3</span>
-      <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 &nbsp;|&nbsp; DSC: 피크 적분·Tg·결정화도</span>
+      <span class="ver">v1.4</span>
+      <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 | DSC: ΔH·Tg·결정화도 | TGA: T5%·Td·잔량</span>
     </div>
     <nav class="ttabs">
       <button class="ttab active" data-ttab="ftir">FT-IR</button>
       <button class="ttab" data-ttab="dsc">DSC</button>
+      <button class="ttab" data-ttab="tga">TGA</button>
     </nav>
     <div class="tools">
       <button id="btnOpen" class="primary">파일 열기</button>
@@ -370,6 +371,7 @@
         <label class="chk"><input id="dGrid" type="checkbox" checked> 격자</label>
         <label class="chk"><input id="dPeaks" type="checkbox" checked> 피크 마커</label>
         <label class="chk"><input id="dLabels" type="checkbox" checked> 피크 라벨</label>
+        <label class="chk"><input id="dSummary" type="checkbox" checked> <b>우측 요약 패널</b> (전이점·ΔH만 따로)</label>
         <div class="row2">
           <label class="fld"><span>X 최소 (°C)</span><input id="dLo" type="number" step="10" value="20"></label>
           <label class="fld"><span>X 최대 (°C)</span><input id="dHi" type="number" step="10" value="320"></label>
@@ -509,6 +511,176 @@
       </section>
     </div>
   </main>
+
+  <!-- ===================== TGA 탭 ===================== -->
+  <aside id="sideTga">
+    <details open>
+      <summary>TGA 시료 <span class="cnt" id="tCount">0</span></summary>
+      <div class="body">
+        <div id="tDrop" class="drop">
+          <strong>파일을 여기로 끌어다 놓기</strong>
+          <span>TGA ASCII(.txt/.csv/.tsv) · 온도·중량 2~5열</span>
+        </div>
+        <ul id="tList" class="tracelist"></ul>
+        <div class="row btns">
+          <button id="tShowAll" class="mini">전체 표시</button>
+          <button id="tHideAll" class="mini">전체 숨김</button>
+          <button id="tClear" class="mini danger">모두 삭제</button>
+        </div>
+        <div class="divider"></div>
+        <div class="subhead">선택 시료 스타일</div>
+        <label class="fld"><span>이름(범례)</span><input id="tName" type="text" placeholder="시료 선택"></label>
+        <label class="fld"><span>범례 문구</span><input id="tLegend" type="text" placeholder="비우면 이름 사용"></label>
+        <div class="row2">
+          <label class="fld"><span>색</span><input id="tColor" type="color" value="#4f9dff"></label>
+          <label class="fld"><span>굵기</span><input id="tWidth" type="number" min="0.5" max="8" step="0.1" value="1.6"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>선 형태</span>
+            <select id="tDash">
+              <option value="solid">실선</option>
+              <option value="dash">파선</option>
+              <option value="dot">점선</option>
+              <option value="dashdot">일점쇄선</option>
+            </select>
+          </label>
+          <label class="fld"><span>투명도</span><input id="tAlpha" type="number" min="0.1" max="1" step="0.05" value="1"></label>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>표시 설정</summary>
+      <div class="body">
+        <div class="row2">
+          <label class="fld"><span>배치</span>
+            <select id="tViewMode">
+              <option value="overlay">겹쳐보기 (중량 % 축)</option>
+              <option value="stacked">스택(한 화면)</option>
+            </select>
+          </label>
+          <label class="fld"><span>스택 간격</span><input id="tGap" type="number" min="0" max="1" step="0.05" value="0.35"></label>
+        </div>
+        <label class="chk"><input id="tGrid" type="checkbox" checked> 격자</label>
+        <label class="chk"><input id="tPeaks" type="checkbox" checked> 주요 지점 마커 (T5·Td·Tmax)</label>
+        <label class="chk"><input id="tLabels" type="checkbox"> 지점 라벨 (요약 패널과 중복되면 끄세요)</label>
+        <label class="chk"><input id="tSummary" type="checkbox" checked> <b>우측 요약 패널</b> (주요 지점만 따로)</label>
+        <div class="row2">
+          <label class="fld"><span>X 최소 (°C)</span><input id="tLo" type="number" step="10" value="30"></label>
+          <label class="fld"><span>X 최대 (°C)</span><input id="tHi" type="number" step="10" value="800"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>글꼴 크기</span><input id="tFont" type="number" min="8" max="24" step="1" value="13"></label>
+          <label class="fld"><span>범례 위치</span>
+            <select id="tLegendPos">
+              <option value="out">바깥 오른쪽</option>
+              <option value="tr">오른쪽 위</option>
+              <option value="tl">왼쪽 위</option>
+              <option value="br">오른쪽 아래</option>
+              <option value="bl">왼쪽 아래</option>
+            </select>
+          </label>
+        </div>
+        <label class="fld"><span>요약 패널 시료 코드 (쉼표로 구분, 비우면 이름)</span><input id="tSumCodes" type="text" placeholder="예: AB, BB"></label>
+        <label class="fld"><span>PNG 포맷</span>
+          <select id="tExportFmt">
+            <option value="journal">학술지 (인쇄용)</option>
+            <option value="ppt">PPT (16:9, 투명)</option>
+            <option value="screen">화면 그대로</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>저널 폭</span>
+            <select id="tExportWidth">
+              <option value="180">double 180 mm</option>
+              <option value="88">single 88 mm</option>
+            </select>
+          </label>
+          <label class="fld"><span>해상도</span>
+            <select id="tExportDpi">
+              <option value="300">300 dpi</option>
+              <option value="600">600 dpi</option>
+            </select>
+          </label>
+        </div>
+        <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
+          <select id="tExportBg">
+            <option value="transparent">투명 (기본)</option>
+            <option value="white">흰색</option>
+            <option value="dark">앱 테마(어두움)</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <details open>
+      <summary>분석 설정</summary>
+      <div class="body">
+        <label class="fld"><span>스무딩 (점 수, 1=없음)</span><input id="tSmooth" type="number" min="1" max="51" step="2" value="5"></label>
+        <div class="row2">
+          <label class="fld"><span>온도 열 (0부터)</span><input id="tTempCol" type="number" min="0" step="1" placeholder="자동"></label>
+          <label class="fld"><span>중량 열 (0부터)</span><input id="tWtCol" type="number" min="0" step="1" placeholder="자동"></label>
+        </div>
+        <div class="row btns">
+          <button id="tRunSel" class="mini primary">선택 분석</button>
+          <button id="tRunAll" class="mini">전체 분석</button>
+          <button id="tOpen2" class="mini">파일 열기</button>
+        </div>
+        <div class="divider"></div>
+        <p class="hint"><b>자동 계산</b> — T5/T10/T50은 초기 수평부 대비 규정 중량 감소에 도달하는 온도(선형 보간), <b>Td,onset</b>은 최대 기울기 구간의 접선과 초기 수평선의 교점, <b>Tmax</b>는 DTG 최대점, <b>잔량</b>은 마지막 2 % 구간 평균입니다.</p>
+        <p class="hint">중량 열은 <b>“초기 ≈100 %에서 전체적으로 감소”</b>하는 열을 자동 선택합니다. 시간·온도·중량 3열이면 시간 열을 자동으로 제외합니다. 판정이 틀리면 위 열 번호를 직접 넣고 파일을 다시 불러오세요.</p>
+      </div>
+    </details>
+  </aside>
+
+  <main id="mainTga">
+    <div id="tPlotWrap">
+      <canvas id="tPlot"></canvas>
+      <div id="tHint" class="plot-hint">드래그 확대 · 휠 줌 · 더블클릭 초기화</div>
+    </div>
+    <div id="tResizer" title="드래그: 아래 패널 높이 · 더블클릭: 접기"></div>
+    <div id="tBottom">
+      <nav class="tabs">
+        <button class="dtag active" data-dtag="result">분석 결과</button>
+        <button class="dtag" data-dtag="steps">단계 표</button>
+        <button class="dtag" data-dtag="log">로그</button>
+        <span class="grow"></span>
+        <span class="tabinfo" id="tTabInfo"></span>
+      </nav>
+
+      <section class="panel active" id="tpanel-result">
+        <div class="toolbar">
+          <button id="tDemo2" class="mini">데모 데이터</button>
+          <button id="tCSV" class="mini">CSV 저장</button>
+          <span class="grow"></span>
+          <span class="tabinfo">T5·T10·T50 · Td,onset · Tmax · 잔량</span>
+        </div>
+        <div class="tablewrap"><table id="tResTable"><thead><tr>
+          <th>시료</th><th>T5 (°C)</th><th>T10 (°C)</th><th>T50 (°C)</th><th>Td onset (°C)</th><th>Tmax (°C)</th>
+          <th>잔량 (%)</th><th>총감량 (%)</th><th>단계</th>
+        </tr></thead><tbody></tbody></table></div>
+      </section>
+
+      <section class="panel" id="tpanel-steps">
+        <div class="toolbar">
+          <span class="grow"></span>
+          <span class="tabinfo">선택 시료의 중량 감소 단계 (평탄 구간 사이 손실)</span>
+        </div>
+        <div class="tablewrap"><table id="tStepTable"><thead><tr>
+          <th>시료</th><th>단계</th><th>구간 (°C)</th><th>손실 (%)</th><th>종료 중량 (%)</th>
+        </tr></thead><tbody></tbody></table></div>
+      </section>
+
+      <section class="panel" id="tpanel-log">
+        <div class="toolbar">
+          <button id="tClearLog" class="mini">로그 지우기</button>
+          <span class="grow"></span>
+          <span class="tabinfo">TGA 처리·경고 기록</span>
+        </div>
+        <div id="tLog" class="log"></div>
+      </section>
+    </div>
+  </main>
 </div>
 
 <input type="file" id="fileInput" multiple accept=".0,.1,.2,.3,.4,.5,.6,.7,.8,.9,.10,.11,.12,.13,.14,.15,.16,.17,.18,.19,.20,.dpt,.txt,.csv,.tsv,.asc,.dat" hidden>
@@ -561,7 +733,18 @@
     <li><b>Tg 구간</b>을 지정하면 스텝의 onset / 중간(반높이) / end 와 ΔCp를 계산합니다(ISO 11357-2 방식의 외삽 접선).</li>
     <li><b>결정화도</b>는 ΔHm ÷ ΔHm° × 100 입니다. ΔHm°는 재료를 고르면 관용값이 채워지지만 <b>문헌·grade별로 10 % 이상 차이가 나므로 반드시 확인 후 수정</b>하십시오.</li>
     <li>PNG 내보내기는 FT-IR 탭과 같이 <b>포맷(학술지 / PPT / 화면 그대로)</b>을 고를 수 있습니다. 저널 포맷은 DSC 세로 비율에 맞춰 높이를 따로 계산하고, <b>Tg·on/end 보조 라벨은 빼고 피크 온도만</b> 남깁니다(지면에서 글자가 겹치기 때문).</li>
+    <li><b>우측 요약 패널 (v1.4)</b>: 메인 곡선 오른쪽에 <b>전이 온도(Tm·Tc·Tg)와 ΔH만 따로 그린 작은 그래프</b>가 붙습니다. 시료 간 비교용이며, 시료가 많거나 폭이 좁아 글자가 안 들어가면 값 라벨은 자동으로 생략됩니다(표에 그대로 있음). 표시 설정에서 끌 수 있습니다.</li>
     <li>한계: 기준선이 곡선인 경우(열량 보정 전, Cp 변화가 큰 시료) 결과가 달라질 수 있습니다. 필요하면 OPUS/계측기 소프트웨어에서 베이스라인을 만든 뒤 다시 내보내세요.</li>
+  </ol>
+
+  <h3>7. TGA 탭 (v1.4 추가)</h3>
+  <ol>
+    <li>상단 <b>TGA</b> 탭 → 왼쪽으로 TGA ASCII(.txt .csv .tsv)를 끌어다 놓습니다. <b>온도 / 중량(%) 2~5열</b>을 읽고, 시간 열이 함께 있으면 자동으로 제외합니다.</li>
+    <li><b>자동 계산</b>: T5%·T10%·T50%(초기 수평부 대비 규정 감량에 도달하는 온도, 선형 보간), <b>Td,onset</b>(최대 기울기 구간 접선과 초기 수평선의 교점), <b>Tmax</b>(DTG 최대점), <b>잔량</b>(마지막 2 % 평균), <b>중량 감소 단계</b>(평탄 구간 사이 손실).</li>
+    <li><b>겹쳐보기</b>는 중량 % 축 하나에 모두 그리고, <b>스택</b>은 시료별로 띄워 그립니다. 스무딩(점 수)은 표시와 분석에 같이 적용됩니다.</li>
+    <li><b>우측 요약 패널</b>이 기본으로 켜져 있어 T5% · Td onset · 최종 잔량을 시료별 점으로 따로 보여 줍니다(첨부하신 DSC/TGA 슬라이드 형식). 시료 코드는 "요약 패널 시료 코드"에 쉼표로 넣어 바꿀 수 있습니다(예: AB, BB).</li>
+    <li>열 판정이 틀리면 <b>온도 열·중량 열</b> 번호를 직접 넣고 파일을 다시 불러오세요. 로그에 선택된 열과 구분자가 표시됩니다.</li>
+    <li>한계: 중량 %가 100 기준으로 정규화되지 않은 파일(절대 mg)은 초기 수평부를 100 %로 다시 맞춰 계산합니다. 승온속도는 결과에 들어가지 않으므로 kinetics(Ea) 계산은 하지 않습니다.</li>
   </ol>
 
   <div class="dlgfoot"><button id="btnHelpClose" class="primary">닫기</button></div>
@@ -575,5 +758,7 @@
 <script src="app.js"></script>
 <script src="dsc-core.js"></script>
 <script src="dsc.js"></script>
+<script src="tga-core.js"></script>
+<script src="tga.js"></script>
 </body>
 </html>
