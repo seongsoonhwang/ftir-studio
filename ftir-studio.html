@@ -122,6 +122,18 @@
               <option value="600">600 dpi</option>
             </select>
           </label>
+          <label class="fld"><span>내보내기 서체</span>
+            <select id="viewExportFont">
+              <option value="">포맷 기본 (PPT: 맑은 고딕 / 학술지: Times)</option>
+              <option value="HDharmony L">현대하모니 L — 전체 적용</option>
+              <option value="HDharmony M">현대하모니 M — 전체 적용</option>
+              <option value="HDharmony B">현대하모니 B — 전체 적용</option>
+              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (라틴·숫자는 기본)</option>
+              <option value="Malgun Gothic">맑은 고딕</option>
+            </select>
+          </label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="viewExportBg">
@@ -408,6 +420,18 @@
               <option value="600">600 dpi</option>
             </select>
           </label>
+          <label class="fld"><span>내보내기 서체</span>
+            <select id="dExportFont">
+              <option value="">포맷 기본 (PPT: 맑은 고딕 / 학술지: Times)</option>
+              <option value="HDharmony L">현대하모니 L — 전체 적용</option>
+              <option value="HDharmony M">현대하모니 M — 전체 적용</option>
+              <option value="HDharmony B">현대하모니 B — 전체 적용</option>
+              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (라틴·숫자는 기본)</option>
+              <option value="Malgun Gothic">맑은 고딕</option>
+            </select>
+          </label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="dExportBg">
@@ -602,6 +626,18 @@
               <option value="600">600 dpi</option>
             </select>
           </label>
+          <label class="fld"><span>내보내기 서체</span>
+            <select id="tExportFont">
+              <option value="">포맷 기본 (PPT: 맑은 고딕 / 학술지: Times)</option>
+              <option value="HDharmony L">현대하모니 L — 전체 적용</option>
+              <option value="HDharmony M">현대하모니 M — 전체 적용</option>
+              <option value="HDharmony B">현대하모니 B — 전체 적용</option>
+              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (라틴·숫자는 기본)</option>
+              <option value="Malgun Gothic">맑은 고딕</option>
+            </select>
+          </label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="tExportBg">
@@ -708,6 +744,7 @@
     <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · 옅은 격자 · 이름표+범례 · 피크 라벨 8개까지.</li>
     <li><b>화면 그대로</b>: 보이는 그대로 2배 해상도. 배경은 투명/흰색/앱 테마 중 선택.</li>
     <li>내보내기에는 화면 전용 요소(선택 음영·크로스헤어)가 빠지고, 피크를 아직 검출하지 않은 시료도 자동으로 검출해 라벨을 붙입니다.</li>
+    <li><b>내보내기 서체</b>: 포맷과 별개로 글꼴만 바꿉니다. <b>현대하모니 L·M·B</b>는 <b>전체 적용</b>(라틴·숫자·한글 모두)과 <b>한글만</b>(라틴·숫자는 포맷 기본) 중에서 고릅니다 — PPT는 전체 적용, 학술지에서 한글 시료명만 맞출 때는 한글만을 쓰십시오. 사내 서체는 <code>fonts/</code> 폴더의 TTF를 직접 읽으므로 설치가 필요 없고, 폴더가 없으면 조용히 대체 서체로 저장되며 로그에 경고가 남습니다. 공개 웹 버전에는 서체 파일이 없어 대체 서체로 나옵니다(PNG는 글자가 픽셀로 굳으므로 받는 사람 PC에 서체가 없어도 동일).</li>
   </ul>
   <h3>4. 분석 흐름 권장</h3>
   <ol>

@@ -20,7 +20,7 @@
       peaksOn: true, labelsOn: true, labelMinProm: 0, summaryOn: true,
       lo: 20, hi: 320, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
       exportBg: 'transparent',
-      exportFmt: 'journal', exportWidth: '180', exportDpi: 300,
+      exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '',
       xLabel: 'Temperature (°C)', yLabel: 'Heat flow (mW/mg)'
     },
     cfg: {
@@ -415,14 +415,15 @@
     log('분석 결과 CSV 저장', 'ok');
   }
 
-  function png() {
+  async function png() {
     if (!st.traces.length) { log('내보낼 DSC 곡선이 없습니다', 'warn'); return; }
     const fmt = st.view.exportFmt || 'journal';
     const o = {
       wmm: parseInt(st.view.exportWidth, 10) || 180,
-      dpi: parseInt(st.view.exportDpi, 10) || 300,
+      dpi: parseInt(st.view.exportDpi, 10) || 300, fontFamily: st.view.exportFont || '',
       labelMinProm: st.view.labelMinProm
     };
+    if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
     let opts, s = st, tag;
     if (fmt === 'screen') {
       const bg = st.view.exportBg || 'transparent';
@@ -520,6 +521,7 @@
     if ($('dExportFmt')) $('dExportFmt').value = st.view.exportFmt || 'journal';
     if ($('dExportWidth')) $('dExportWidth').value = String(st.view.exportWidth || '180');
     if ($('dExportDpi')) $('dExportDpi').value = String(st.view.exportDpi || 300);
+    if ($('dExportFont')) $('dExportFont').value = st.view.exportFont || '';
     $('dMass').value = st.cfg.mass;
     $('dBeta').value = st.cfg.beta;
     $('dUnit').value = st.cfg.unit;
@@ -599,12 +601,13 @@
       if ($('dExportFmt')) st.view.exportFmt = $('dExportFmt').value;
       if ($('dExportWidth')) st.view.exportWidth = parseInt($('dExportWidth').value, 10) || 180;
       if ($('dExportDpi')) st.view.exportDpi = parseInt($('dExportDpi').value, 10) || 300;
+      if ($('dExportFont')) st.view.exportFont = $('dExportFont').value || '';
       const lo = +$('dLo').value, hi = +$('dHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 1) { st.view.lo = lo; st.view.hi = hi; }
       renderPlot();
     };
     ['dViewMode', 'dGap', 'dNormH', 'dRev', 'dGrid', 'dPeaks', 'dLabels', 'dSummary', 'dFont', 'dLegendPos',
-      'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dLo', 'dHi'].forEach((id) => { $(id).onchange = onView; $(id).oninput = onView; });
+      'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dExportFont', 'dLo', 'dHi'].forEach((id) => { if ($(id)) { $(id).onchange = onView; $(id).oninput = onView; } });
 
     // 분석 설정
     const onCfg = () => {

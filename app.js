@@ -21,7 +21,8 @@
       exportBg: 'transparent',
       exportFmt: 'journal',        // journal | ppt | screen
       exportWidth: '180',          // 저널 폭(mm): 180=double, 88=single
-      exportDpi: 300
+      exportDpi: 300,
+      exportFont: ''
     },
     pre: {
       smooth: { on: false, win: 9, order: 2 },
@@ -530,6 +531,7 @@
     if ($('viewExportFmt')) $('viewExportFmt').value = state.view.exportFmt || 'journal';
     if ($('viewExportWidth')) $('viewExportWidth').value = String(state.view.exportWidth || '180');
     if ($('viewExportDpi')) $('viewExportDpi').value = String(state.view.exportDpi || 300);
+    if ($('viewExportFont')) $('viewExportFont').value = state.view.exportFont || '';
     $('smoothOn').checked = state.pre.smooth.on;
     $('smoothWin').value = state.pre.smooth.win;
     $('smoothOrder').value = state.pre.smooth.order;
@@ -614,7 +616,7 @@
       inp.onchange = () => inp.files[0] && loadProject(inp.files[0]);
       inp.click();
     };
-    $('btnPNG').onclick = () => {
+    $('btnPNG').onclick = async () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.png();
       if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.png();
       if (!state.traces.length) { log('내보낼 스펙트럼이 없습니다', 'warn'); return; }
@@ -622,8 +624,10 @@
       const o = {
         wmm: parseInt(state.view.exportWidth, 10) || 180,
         dpi: parseInt(state.view.exportDpi, 10) || 300,
-        labelMinProm: state.view.labelMinProm
+        labelMinProm: state.view.labelMinProm,
+        fontFamily: state.view.exportFont || ''
       };
+      if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
       let opts, st = state, tag;
       if (fmt === 'screen') {
         const bg = state.view.exportBg || 'transparent';
@@ -683,13 +687,14 @@
       if ($('viewExportFmt')) state.view.exportFmt = $('viewExportFmt').value;
       if ($('viewExportWidth')) state.view.exportWidth = parseInt($('viewExportWidth').value, 10) || 180;
       if ($('viewExportDpi')) state.view.exportDpi = parseInt($('viewExportDpi').value, 10) || 300;
+      if ($('viewExportFont')) state.view.exportFont = $('viewExportFont').value || '';
       let lo = +$('viewLo').value, hi = +$('viewHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 20) { state.view.lo = lo; state.view.hi = hi; }
       renderPlot();
     };
     ['viewMode', 'viewGap', 'viewNormHeight', 'viewRev', 'viewGrid', 'viewPeaks', 'viewLabels',
       'viewFont', 'viewLegendPos', 'viewLegendOn', 'viewLegendScale', 'viewLo', 'viewHi', 'viewLabelMin',
-      'viewExportBg', 'viewExportFmt', 'viewExportWidth', 'viewExportDpi'].forEach((id) => {
+      'viewExportBg', 'viewExportFmt', 'viewExportWidth', 'viewExportDpi', 'viewExportFont'].forEach((id) => {
       $(id).onchange = onView; $(id).oninput = onView;
     });
     const setRange = (lo, hi) => {

@@ -20,6 +20,13 @@ FTIR Studio v1.4 — 웹에서 바로 쓰기
     DTG 최대점 Tmax, 최종 잔량, 중량 감소 단계 표, 결과 CSV·PNG
   · 열 자동 판정 — 시간·온도·중량 3열이면 시간 열을 자동으로 제외(틀리면 열 번호 직접 지정)
   · 요약 패널 시료 코드 입력(예: AB, BB) — 슬라이드에서 쓰는 시료 명칭 그대로 표시
+  · 내보내기 서체 선택 (표시 설정 → 내보내기 서체)
+      - 현대하모니 L·M·B 「전체 적용」 : 라틴·숫자·한글 모두 사내 서체 (PPT 슬라이드 권장)
+      - 현대하모니 L·M·B 「한글만」   : 라틴·숫자는 포맷 기본, 한글만 사내 서체 (저널 도판용)
+    → fonts/ 폴더의 TTF(HDharmony-L.ttf 등)를 직접 읽으므로 글꼴 설치가 필요 없습니다.
+      fonts/ 폴더가 없으면 조용히 대체 서체로 저장되고 로그에 경고가 남습니다.
+      (사내 CI 서체라 공개 저장소에는 넣지 않았습니다 — 웹 버전은 대체 서체로 나옵니다.
+       PNG는 글자가 픽셀로 굳으므로 받는 분 PC에 서체가 없어도 그림은 그대로입니다.)
 
 [v1.3에서 추가된 것]
   · DSC 분석 탭 — 피크 적분(ΔH, J/g), 외삽 onset/endset, Tg(시작/중간/끝)+ΔCp,
@@ -78,7 +85,7 @@ FTIR Studio v1.4 — 웹에서 바로 쓰기
   → 바탕화면 아이콘으로 실행 (실행.bat 과 동일한 효과)
 
 [소스]
-  같은 폴더의 app*.js, lib-bands.js, demo.js, dsc-core.js, dsc.js, app.css 가 모듈 버전 소스입니다.
+  같은 폴더의 app*.js, lib-bands.js, demo.js, dsc-core.js, dsc.js, tga-core.js, tga.js, app.css 가 모듈 버전 소스입니다.
   tools/bundle.py 로 모듈을 다시 단일 파일로 묶을 수 있고,
   tools/gen_samples.js (FT-IR), tools/gen_dsc_samples.js (DSC), tools/gen_tga_samples.js (TGA)
   로 합성 데모를 재생성할 수 있습니다.

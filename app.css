@@ -256,6 +256,25 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
 #dpanel-peaks.active{grid-template-rows:minmax(0,1fr)}
 #dpanel-log.active{grid-template-rows:auto minmax(0,1fr)}
 
+/* ---------- 사내 서체 (fonts/ 폴더에 파일이 있으면 자동 적용) ----------
+   현대하모니(HD Harmony) — 사내 CI 서체. 파일이 없으면 조용히 대체 서체로 넘어간다.
+   저작권: 사내 배포용. 공개 저장소에는 포함하지 않는다. */
+@font-face{
+  font-family:"HDharmony L";
+  src:url("fonts/HDharmony-L.ttf") format("truetype");
+  font-weight:normal; font-style:normal; font-display:block;
+}
+@font-face{
+  font-family:"HDharmony M";
+  src:url("fonts/HDharmony-M.ttf") format("truetype");
+  font-weight:normal; font-style:normal; font-display:block;
+}
+@font-face{
+  font-family:"HDharmony B";
+  src:url("fonts/HDharmony-B.ttf") format("truetype");
+  font-weight:normal; font-style:normal; font-display:block;
+}
+
 /* ---------- TGA 탭 ---------- */
 #app[data-tab="dsc"] #sideTga, #app[data-tab="dsc"] #mainTga,
 #app[data-tab="ftir"] #sideTga, #app[data-tab="ftir"] #mainTga{display:none}

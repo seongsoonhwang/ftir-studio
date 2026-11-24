@@ -263,6 +263,25 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
 #dpanel-peaks.active{grid-template-rows:minmax(0,1fr)}
 #dpanel-log.active{grid-template-rows:auto minmax(0,1fr)}
 
+/* ---------- 사내 서체 (fonts/ 폴더에 파일이 있으면 자동 적용) ----------
+   현대하모니(HD Harmony) — 사내 CI 서체. 파일이 없으면 조용히 대체 서체로 넘어간다.
+   저작권: 사내 배포용. 공개 저장소에는 포함하지 않는다. */
+@font-face{
+  font-family:"HDharmony L";
+  src:url("fonts/HDharmony-L.ttf") format("truetype");
+  font-weight:normal; font-style:normal; font-display:block;
+}
+@font-face{
+  font-family:"HDharmony M";
+  src:url("fonts/HDharmony-M.ttf") format("truetype");
+  font-weight:normal; font-style:normal; font-display:block;
+}
+@font-face{
+  font-family:"HDharmony B";
+  src:url("fonts/HDharmony-B.ttf") format("truetype");
+  font-weight:normal; font-style:normal; font-display:block;
+}
+
 /* ---------- TGA 탭 ---------- */
 #app[data-tab="dsc"] #sideTga, #app[data-tab="dsc"] #mainTga,
 #app[data-tab="ftir"] #sideTga, #app[data-tab="ftir"] #mainTga{display:none}
@@ -406,6 +425,18 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
             <select id="viewExportDpi">
               <option value="300">300 dpi</option>
               <option value="600">600 dpi</option>
+            </select>
+          </label>
+          <label class="fld"><span>내보내기 서체</span>
+            <select id="viewExportFont">
+              <option value="">포맷 기본 (PPT: 맑은 고딕 / 학술지: Times)</option>
+              <option value="HDharmony L">현대하모니 L — 전체 적용</option>
+              <option value="HDharmony M">현대하모니 M — 전체 적용</option>
+              <option value="HDharmony B">현대하모니 B — 전체 적용</option>
+              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (라틴·숫자는 기본)</option>
+              <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
         </div>
@@ -694,6 +725,18 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
               <option value="600">600 dpi</option>
             </select>
           </label>
+          <label class="fld"><span>내보내기 서체</span>
+            <select id="dExportFont">
+              <option value="">포맷 기본 (PPT: 맑은 고딕 / 학술지: Times)</option>
+              <option value="HDharmony L">현대하모니 L — 전체 적용</option>
+              <option value="HDharmony M">현대하모니 M — 전체 적용</option>
+              <option value="HDharmony B">현대하모니 B — 전체 적용</option>
+              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (라틴·숫자는 기본)</option>
+              <option value="Malgun Gothic">맑은 고딕</option>
+            </select>
+          </label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="dExportBg">
@@ -888,6 +931,18 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
               <option value="600">600 dpi</option>
             </select>
           </label>
+          <label class="fld"><span>내보내기 서체</span>
+            <select id="tExportFont">
+              <option value="">포맷 기본 (PPT: 맑은 고딕 / 학술지: Times)</option>
+              <option value="HDharmony L">현대하모니 L — 전체 적용</option>
+              <option value="HDharmony M">현대하모니 M — 전체 적용</option>
+              <option value="HDharmony B">현대하모니 B — 전체 적용</option>
+              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (라틴·숫자는 기본)</option>
+              <option value="Malgun Gothic">맑은 고딕</option>
+            </select>
+          </label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="tExportBg">
@@ -994,6 +1049,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · 옅은 격자 · 이름표+범례 · 피크 라벨 8개까지.</li>
     <li><b>화면 그대로</b>: 보이는 그대로 2배 해상도. 배경은 투명/흰색/앱 테마 중 선택.</li>
     <li>내보내기에는 화면 전용 요소(선택 음영·크로스헤어)가 빠지고, 피크를 아직 검출하지 않은 시료도 자동으로 검출해 라벨을 붙입니다.</li>
+    <li><b>내보내기 서체</b>: 포맷과 별개로 글꼴만 바꿉니다. <b>현대하모니 L·M·B</b>는 <b>전체 적용</b>(라틴·숫자·한글 모두)과 <b>한글만</b>(라틴·숫자는 포맷 기본) 중에서 고릅니다 — PPT는 전체 적용, 학술지에서 한글 시료명만 맞출 때는 한글만을 쓰십시오. 사내 서체는 <code>fonts/</code> 폴더의 TTF를 직접 읽으므로 설치가 필요 없고, 폴더가 없으면 조용히 대체 서체로 저장되며 로그에 경고가 남습니다. 공개 웹 버전에는 서체 파일이 없어 대체 서체로 나옵니다(PNG는 글자가 픽셀로 굳으므로 받는 사람 PC에 서체가 없어도 동일).</li>
   </ul>
   <h3>4. 분석 흐름 권장</h3>
   <ol>
@@ -2895,6 +2951,25 @@ window.FTIR_BANDS = {
    * ========================================================================= */
   const JOURNAL_FONT = '"Times New Roman",Times,"Liberation Serif",Georgia,serif';
   const PPT_FONT = '"Segoe UI","Malgun Gothic",system-ui,sans-serif';
+  /* 사용자가 고른 서체가 있으면 포맷 기본 서체를 덮어쓴다.
+     예: 'HDharmony L' (현대하모니 L) — PC에 설치된 이름 그대로 지정
+     '#ko:이름' 은 "한글만 사내 서체, 라틴·숫자는 포맷 기본" 모드 —
+     라틴 기본 서체 목록 뒤에 사내 서체를 붙이면, 글자별 폴백으로
+     라틴은 기본 서체, 한글만 사내 서체가 된다(저널 도판에 유용). */
+  const KO_PREFIX = '#ko:';
+  const LATIN_SERIF = '"Times New Roman",Times,"Liberation Serif",Georgia,serif';
+  const LATIN_SANS = '"Segoe UI",system-ui,sans-serif';
+  const fontOverride = (o, base) => {
+    const fam = o && o.fontFamily;
+    if (!fam) return base;
+    if (fam.indexOf(KO_PREFIX) === 0) {
+      const name = fam.slice(KO_PREFIX.length);
+      // 'sans-serif' 가 'Serif' 로 오인되지 않도록 구체적 패밀리 이름으로 판정
+      const latin = /Times New Roman|Liberation Serif|Georgia/.test(base) ? LATIN_SERIF : LATIN_SANS;
+      return latin + ',"' + name + '"';
+    }
+    return '"' + fam + '",' + base;
+  };
 
   function formatPreset(fmt, opts) {
     const o = opts || {};
@@ -2906,7 +2981,7 @@ window.FTIR_BANDS = {
       const fs = Math.round((7 * dpi) / 72);          // 7 pt
       const k = fs / 27;
       return {
-        width, height, scale: 1, bg: 'white', font: JOURNAL_FONT, nameMax: 26,
+        width, height, scale: 1, bg: 'white', font: fontOverride(o, JOURNAL_FONT), nameMax: 26,
         margin: {
           l: Math.round(fs * 2.3), t: Math.round(fs * 1.5),
           b: Math.round(fs * 3.0 + 6), r: Math.round(26 * k)
@@ -2923,7 +2998,8 @@ window.FTIR_BANDS = {
     }
     if (fmt === 'ppt') {
       return {
-        width: o.width || 1600, height: o.height || 900, scale: 1, bg: 'transparent', font: PPT_FONT,
+        width: o.width || 1600, height: o.height || 900, scale: 1, bg: 'transparent',
+        font: fontOverride(o, PPT_FONT),
         margin: { l: Math.round(26 * 2.5), t: Math.round(26 * 1.5), b: Math.round(26 * 2.9) }, nameMax: 26,
         view: {
           grid: true, legendOn: true, fontSize: 26,
@@ -2963,7 +3039,23 @@ window.FTIR_BANDS = {
     return s;
   }
 
-  window.FTIRPlot = { render, toPNG, exportTheme, formatPreset, stateForFormat, JOURNAL_FONT, PPT_FONT, dashArr, niceStep };
+  /* 사내 서체 등 @font-face 로 넣은 글꼴을 내보내기 전에 확실히 로드한다.
+     (내보내기가 동기라, 로드 전에 그리면 대체 서체로 굳어 버린다) */
+  async function ensureFont(family) {
+    if (!family) return true;
+    family = String(family).replace(/^#ko:/, '');
+    try {
+      await document.fonts.load('32px "' + family + '"');
+      // 실제로 적용됐는지 확인: 기준 서체와 폭이 다르면 적용된 것
+      const cv = document.createElement('canvas').getContext('2d');
+      const s = '현대하모니 Test 123';
+      cv.font = '40px "' + family + '"'; const a = cv.measureText(s).width;
+      cv.font = '40px "__no_such_font__"'; const b = cv.measureText(s).width;
+      return Math.abs(a - b) > 0.5;
+    } catch (e) { return false; }
+  }
+
+  window.FTIRPlot = { render, toPNG, exportTheme, formatPreset, stateForFormat, JOURNAL_FONT, PPT_FONT, dashArr, niceStep, ensureFont };
 })();
 
 </script>
@@ -3109,7 +3201,8 @@ window.FTIR_BANDS = {
       exportBg: 'transparent',
       exportFmt: 'journal',        // journal | ppt | screen
       exportWidth: '180',          // 저널 폭(mm): 180=double, 88=single
-      exportDpi: 300
+      exportDpi: 300,
+      exportFont: ''
     },
     pre: {
       smooth: { on: false, win: 9, order: 2 },
@@ -3618,6 +3711,7 @@ window.FTIR_BANDS = {
     if ($('viewExportFmt')) $('viewExportFmt').value = state.view.exportFmt || 'journal';
     if ($('viewExportWidth')) $('viewExportWidth').value = String(state.view.exportWidth || '180');
     if ($('viewExportDpi')) $('viewExportDpi').value = String(state.view.exportDpi || 300);
+    if ($('viewExportFont')) $('viewExportFont').value = state.view.exportFont || '';
     $('smoothOn').checked = state.pre.smooth.on;
     $('smoothWin').value = state.pre.smooth.win;
     $('smoothOrder').value = state.pre.smooth.order;
@@ -3702,7 +3796,7 @@ window.FTIR_BANDS = {
       inp.onchange = () => inp.files[0] && loadProject(inp.files[0]);
       inp.click();
     };
-    $('btnPNG').onclick = () => {
+    $('btnPNG').onclick = async () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.png();
       if (window.APP_TAB === 'tga' && window.TGAUI) return window.TGAUI.png();
       if (!state.traces.length) { log('내보낼 스펙트럼이 없습니다', 'warn'); return; }
@@ -3710,8 +3804,10 @@ window.FTIR_BANDS = {
       const o = {
         wmm: parseInt(state.view.exportWidth, 10) || 180,
         dpi: parseInt(state.view.exportDpi, 10) || 300,
-        labelMinProm: state.view.labelMinProm
+        labelMinProm: state.view.labelMinProm,
+        fontFamily: state.view.exportFont || ''
       };
+      if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
       let opts, st = state, tag;
       if (fmt === 'screen') {
         const bg = state.view.exportBg || 'transparent';
@@ -3771,13 +3867,14 @@ window.FTIR_BANDS = {
       if ($('viewExportFmt')) state.view.exportFmt = $('viewExportFmt').value;
       if ($('viewExportWidth')) state.view.exportWidth = parseInt($('viewExportWidth').value, 10) || 180;
       if ($('viewExportDpi')) state.view.exportDpi = parseInt($('viewExportDpi').value, 10) || 300;
+      if ($('viewExportFont')) state.view.exportFont = $('viewExportFont').value || '';
       let lo = +$('viewLo').value, hi = +$('viewHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 20) { state.view.lo = lo; state.view.hi = hi; }
       renderPlot();
     };
     ['viewMode', 'viewGap', 'viewNormHeight', 'viewRev', 'viewGrid', 'viewPeaks', 'viewLabels',
       'viewFont', 'viewLegendPos', 'viewLegendOn', 'viewLegendScale', 'viewLo', 'viewHi', 'viewLabelMin',
-      'viewExportBg', 'viewExportFmt', 'viewExportWidth', 'viewExportDpi'].forEach((id) => {
+      'viewExportBg', 'viewExportFmt', 'viewExportWidth', 'viewExportDpi', 'viewExportFont'].forEach((id) => {
       $(id).onchange = onView; $(id).oninput = onView;
     });
     const setRange = (lo, hi) => {
@@ -4616,7 +4713,7 @@ window.FTIR_BANDS = {
       peaksOn: true, labelsOn: true, labelMinProm: 0, summaryOn: true,
       lo: 20, hi: 320, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
       exportBg: 'transparent',
-      exportFmt: 'journal', exportWidth: '180', exportDpi: 300,
+      exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '',
       xLabel: 'Temperature (°C)', yLabel: 'Heat flow (mW/mg)'
     },
     cfg: {
@@ -5011,14 +5108,15 @@ window.FTIR_BANDS = {
     log('분석 결과 CSV 저장', 'ok');
   }
 
-  function png() {
+  async function png() {
     if (!st.traces.length) { log('내보낼 DSC 곡선이 없습니다', 'warn'); return; }
     const fmt = st.view.exportFmt || 'journal';
     const o = {
       wmm: parseInt(st.view.exportWidth, 10) || 180,
-      dpi: parseInt(st.view.exportDpi, 10) || 300,
+      dpi: parseInt(st.view.exportDpi, 10) || 300, fontFamily: st.view.exportFont || '',
       labelMinProm: st.view.labelMinProm
     };
+    if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
     let opts, s = st, tag;
     if (fmt === 'screen') {
       const bg = st.view.exportBg || 'transparent';
@@ -5116,6 +5214,7 @@ window.FTIR_BANDS = {
     if ($('dExportFmt')) $('dExportFmt').value = st.view.exportFmt || 'journal';
     if ($('dExportWidth')) $('dExportWidth').value = String(st.view.exportWidth || '180');
     if ($('dExportDpi')) $('dExportDpi').value = String(st.view.exportDpi || 300);
+    if ($('dExportFont')) $('dExportFont').value = st.view.exportFont || '';
     $('dMass').value = st.cfg.mass;
     $('dBeta').value = st.cfg.beta;
     $('dUnit').value = st.cfg.unit;
@@ -5195,12 +5294,13 @@ window.FTIR_BANDS = {
       if ($('dExportFmt')) st.view.exportFmt = $('dExportFmt').value;
       if ($('dExportWidth')) st.view.exportWidth = parseInt($('dExportWidth').value, 10) || 180;
       if ($('dExportDpi')) st.view.exportDpi = parseInt($('dExportDpi').value, 10) || 300;
+      if ($('dExportFont')) st.view.exportFont = $('dExportFont').value || '';
       const lo = +$('dLo').value, hi = +$('dHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 1) { st.view.lo = lo; st.view.hi = hi; }
       renderPlot();
     };
     ['dViewMode', 'dGap', 'dNormH', 'dRev', 'dGrid', 'dPeaks', 'dLabels', 'dSummary', 'dFont', 'dLegendPos',
-      'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dLo', 'dHi'].forEach((id) => { $(id).onchange = onView; $(id).oninput = onView; });
+      'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dExportFont', 'dLo', 'dHi'].forEach((id) => { if ($(id)) { $(id).onchange = onView; $(id).oninput = onView; } });
 
     // 분석 설정
     const onCfg = () => {
@@ -5742,7 +5842,7 @@ window.FTIR_BANDS = {
       stacked: false, gap: 0.35, rev: false, grid: true,
       peaksOn: true, labelsOn: false, labelMinProm: 0, summaryOn: true,
       lo: 30, hi: 800, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
-      exportBg: 'transparent', exportFmt: 'journal', exportWidth: '180', exportDpi: 300,
+      exportBg: 'transparent', exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '',
       xLabel: 'Temperature (°C)', yLabel: 'Weight (%)'
     },
     cfg: { smooth: 5, tempCol: null, wtCol: null, yLo: 0, yHi: 105, sumCodes: '' },
@@ -6019,10 +6119,12 @@ window.FTIR_BANDS = {
     log('분석 결과 CSV 저장', 'ok');
   }
 
-  function png() {
+  async function png() {
     if (!st.traces.length) { log('내보낼 TGA 곡선이 없습니다', 'warn'); return; }
     const fmt = st.view.exportFmt || 'journal';
-    const o = { wmm: parseInt(st.view.exportWidth, 10) || 180, dpi: parseInt(st.view.exportDpi, 10) || 300, labelMinProm: 0 };
+    const o = { wmm: parseInt(st.view.exportWidth, 10) || 180, dpi: parseInt(st.view.exportDpi, 10) || 300,
+      labelMinProm: 0, fontFamily: st.view.exportFont || '' };
+    if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
     const sum = summarySpec();
     const base = {
       traces: st.traces.map((t) => ({ id: t.id, name: t.name, legend: t.legend, color: t.color,
@@ -6121,6 +6223,7 @@ window.FTIR_BANDS = {
     $('tExportFmt').value = st.view.exportFmt;
     $('tExportWidth').value = String(st.view.exportWidth);
     $('tExportDpi').value = String(st.view.exportDpi);
+    if ($('tExportFont')) $('tExportFont').value = st.view.exportFont || '';
     $('tExportBg').value = st.view.exportBg;
     $('tLo').value = st.view.lo; $('tHi').value = st.view.hi;
     $('tSmooth').value = st.cfg.smooth;
@@ -6177,6 +6280,7 @@ window.FTIR_BANDS = {
       st.view.exportFmt = $('tExportFmt').value;
       st.view.exportWidth = parseInt($('tExportWidth').value, 10) || 180;
       st.view.exportDpi = parseInt($('tExportDpi').value, 10) || 300;
+      if ($('tExportFont')) st.view.exportFont = $('tExportFont').value || '';
       st.view.exportBg = $('tExportBg').value;
       const lo = +$('tLo').value, hi = +$('tHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 5) { st.view.lo = lo; st.view.hi = hi; }
@@ -6190,7 +6294,7 @@ window.FTIR_BANDS = {
       renderPlot(); renderTables();
     };
     ['tViewMode', 'tGap', 'tGrid', 'tPeaks', 'tLabels', 'tSummary', 'tFont', 'tLegendPos',
-      'tExportFmt', 'tExportWidth', 'tExportDpi', 'tExportBg', 'tLo', 'tHi', 'tSmooth', 'tSumCodes']
+      'tExportFmt', 'tExportWidth', 'tExportDpi', 'tExportFont', 'tExportBg', 'tLo', 'tHi', 'tSmooth', 'tSumCodes']
       .forEach((id) => { const e = $(id); if (e) { e.onchange = onView; e.oninput = onView; } });
 
     // 아래쪽 탭

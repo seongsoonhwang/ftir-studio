@@ -621,6 +621,25 @@
    * ========================================================================= */
   const JOURNAL_FONT = '"Times New Roman",Times,"Liberation Serif",Georgia,serif';
   const PPT_FONT = '"Segoe UI","Malgun Gothic",system-ui,sans-serif';
+  /* 사용자가 고른 서체가 있으면 포맷 기본 서체를 덮어쓴다.
+     예: 'HDharmony L' (현대하모니 L) — PC에 설치된 이름 그대로 지정
+     '#ko:이름' 은 "한글만 사내 서체, 라틴·숫자는 포맷 기본" 모드 —
+     라틴 기본 서체 목록 뒤에 사내 서체를 붙이면, 글자별 폴백으로
+     라틴은 기본 서체, 한글만 사내 서체가 된다(저널 도판에 유용). */
+  const KO_PREFIX = '#ko:';
+  const LATIN_SERIF = '"Times New Roman",Times,"Liberation Serif",Georgia,serif';
+  const LATIN_SANS = '"Segoe UI",system-ui,sans-serif';
+  const fontOverride = (o, base) => {
+    const fam = o && o.fontFamily;
+    if (!fam) return base;
+    if (fam.indexOf(KO_PREFIX) === 0) {
+      const name = fam.slice(KO_PREFIX.length);
+      // 'sans-serif' 가 'Serif' 로 오인되지 않도록 구체적 패밀리 이름으로 판정
+      const latin = /Times New Roman|Liberation Serif|Georgia/.test(base) ? LATIN_SERIF : LATIN_SANS;
+      return latin + ',"' + name + '"';
+    }
+    return '"' + fam + '",' + base;
+  };
 
   function formatPreset(fmt, opts) {
     const o = opts || {};
@@ -632,7 +651,7 @@
       const fs = Math.round((7 * dpi) / 72);          // 7 pt
       const k = fs / 27;
       return {
-        width, height, scale: 1, bg: 'white', font: JOURNAL_FONT, nameMax: 26,
+        width, height, scale: 1, bg: 'white', font: fontOverride(o, JOURNAL_FONT), nameMax: 26,
         margin: {
           l: Math.round(fs * 2.3), t: Math.round(fs * 1.5),
           b: Math.round(fs * 3.0 + 6), r: Math.round(26 * k)
@@ -649,7 +668,8 @@
     }
     if (fmt === 'ppt') {
       return {
-        width: o.width || 1600, height: o.height || 900, scale: 1, bg: 'transparent', font: PPT_FONT,
+        width: o.width || 1600, height: o.height || 900, scale: 1, bg: 'transparent',
+        font: fontOverride(o, PPT_FONT),
         margin: { l: Math.round(26 * 2.5), t: Math.round(26 * 1.5), b: Math.round(26 * 2.9) }, nameMax: 26,
         view: {
           grid: true, legendOn: true, fontSize: 26,
@@ -689,5 +709,21 @@
     return s;
   }
 
-  window.FTIRPlot = { render, toPNG, exportTheme, formatPreset, stateForFormat, JOURNAL_FONT, PPT_FONT, dashArr, niceStep };
+  /* 사내 서체 등 @font-face 로 넣은 글꼴을 내보내기 전에 확실히 로드한다.
+     (내보내기가 동기라, 로드 전에 그리면 대체 서체로 굳어 버린다) */
+  async function ensureFont(family) {
+    if (!family) return true;
+    family = String(family).replace(/^#ko:/, '');
+    try {
+      await document.fonts.load('32px "' + family + '"');
+      // 실제로 적용됐는지 확인: 기준 서체와 폭이 다르면 적용된 것
+      const cv = document.createElement('canvas').getContext('2d');
+      const s = '현대하모니 Test 123';
+      cv.font = '40px "' + family + '"'; const a = cv.measureText(s).width;
+      cv.font = '40px "__no_such_font__"'; const b = cv.measureText(s).width;
+      return Math.abs(a - b) > 0.5;
+    } catch (e) { return false; }
+  }
+
+  window.FTIRPlot = { render, toPNG, exportTheme, formatPreset, stateForFormat, JOURNAL_FONT, PPT_FONT, dashArr, niceStep, ensureFont };
 })();
