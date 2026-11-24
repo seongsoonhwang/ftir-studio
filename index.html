@@ -1,0 +1,3243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>FT-IR Studio — 열가소성·고무·열경화성 스펙트럼 분석</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#0b0e13; --panel:#121821; --panel2:#161e29; --line:#243040;
+  --fg:#d7e0ec; --fg2:#93a3b8; --accent:#4f9dff; --accent2:#3ddc97;
+  --warn:#ffb454; --danger:#ff6b6b; --radius:8px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:"Malgun Gothic","Segoe UI",system-ui,-apple-system,sans-serif;
+  font-size:13px; overflow:hidden;
+}
+#app{
+  display:grid; grid-template-columns:340px minmax(0,1fr);
+  grid-template-rows:52px minmax(0,1fr); height:100vh;
+}
+/* ---------- header ---------- */
+header{
+  grid-column:1 / -1; display:flex; align-items:center; gap:14px;
+  padding:0 14px; background:linear-gradient(180deg,#141b25,#10161f);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex; align-items:baseline; gap:8px; min-width:0}
+.brand .logo{color:var(--accent); font-size:19px; line-height:1}
+.brand .title{font-weight:700; letter-spacing:.2px; font-size:15px}
+.brand .ver{color:var(--fg2); font-size:11px; border:1px solid var(--line); padding:1px 5px; border-radius:99px}
+.brand .sub{color:var(--fg2); font-size:11.5px; margin-left:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.tools{display:flex; align-items:center; gap:6px; margin-left:auto; flex-wrap:nowrap}
+.tools .sep{width:1px; height:20px; background:var(--line); margin:0 4px}
+
+button{
+  font-family:inherit; font-size:12.5px; color:var(--fg);
+  background:#1b2431; border:1px solid var(--line); border-radius:6px;
+  padding:6px 11px; cursor:pointer; transition:background .12s, border-color .12s, transform .05s;
+  white-space:nowrap;
+}
+button:hover{background:#22303f; border-color:#33465c}
+button:active{transform:translateY(1px)}
+button.primary{background:#1d3a5c; border-color:#2f5c8f; color:#dcecff}
+button.primary:hover{background:#24486f}
+button.mini{padding:4px 9px; font-size:12px}
+button.danger:hover{background:#3a1f22; border-color:#6b3038; color:#ffb3b3}
+button:disabled{opacity:.45; cursor:default}
+
+/* ---------- sidebar ---------- */
+#side{
+  background:var(--panel); border-right:1px solid var(--line);
+  overflow-y:auto; overflow-x:hidden; padding:6px 0 40px;
+}
+#side::-webkit-scrollbar,.tablewrap::-webkit-scrollbar,#log::-webkit-scrollbar{width:9px;height:9px}
+#side::-webkit-scrollbar-thumb,.tablewrap::-webkit-scrollbar-thumb,#log::-webkit-scrollbar-thumb{
+  background:#2a3849; border-radius:6px;
+}
+details{border-bottom:1px solid var(--line)}
+summary{
+  cursor:pointer; padding:9px 14px; font-weight:600; font-size:12.5px;
+  color:#cfe0f2; list-style:none; display:flex; align-items:center; gap:8px;
+  user-select:none;
+}
+summary::-webkit-details-marker{display:none}
+summary::before{
+  content:"▸"; color:var(--fg2); font-size:10px; transition:transform .15s;
+}
+details[open] summary::before{transform:rotate(90deg)}
+summary .cnt{
+  margin-left:auto; font-weight:400; font-size:11px; color:var(--fg2);
+  background:#1b2431; border:1px solid var(--line); border-radius:99px; padding:1px 7px;
+}
+details .body{padding:2px 14px 14px}
+.subhead{font-size:11.5px; color:var(--fg2); margin:10px 0 6px; text-transform:none}
+.divider{height:1px; background:var(--line); margin:12px 0}
+.hint{font-size:11px; color:var(--fg2); line-height:1.5; margin:8px 0 0}
+.panel > .hint{margin:5px 12px; font-size:10.5px; line-height:1.45; color:#7d90a6}
+
+.fld{display:flex; flex-direction:column; gap:3px; margin-bottom:8px; min-width:0}
+.fld>span{font-size:11.5px; color:var(--fg2)}
+.fld input,.fld select,.inl input,.inl select{
+  font-family:inherit; font-size:12.5px; color:var(--fg);
+  background:#0e141c; border:1px solid var(--line); border-radius:6px;
+  padding:5px 8px; width:100%; min-width:0;
+}
+.fld input:focus,.fld select:focus,.inl input:focus,.inl select:focus{
+  outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(79,157,255,.15)
+}
+input[type=color]{
+  padding:1px; height:28px; background:#0e141c; cursor:pointer;
+}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.row{display:flex; gap:6px; align-items:center}
+.row.btns{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:8px}
+.chk{display:flex; align-items:center; gap:8px; font-size:12.5px; color:#c2cfe0; margin:7px 0; cursor:pointer}
+.chk input{width:14px; height:14px; accent-color:var(--accent); margin:0}
+
+.drop{
+  border:1px dashed #2f4055; border-radius:var(--radius); padding:12px;
+  text-align:center; color:var(--fg2); display:flex; flex-direction:column; gap:4px;
+  margin:4px 0 10px; transition:border-color .15s, background .15s; cursor:pointer;
+}
+.drop.over{border-color:var(--accent); background:rgba(79,157,255,.08)}
+.drop strong{color:#cfe0f2; font-weight:600; font-size:12.5px}
+.drop span{font-size:11px}
+
+.tracelist{list-style:none; margin:0 0 6px; padding:0; max-height:280px; overflow-y:auto}
+.tracelist li{
+  display:flex; align-items:center; gap:7px; padding:5px 6px; border-radius:6px;
+  cursor:pointer; border:1px solid transparent;
+}
+.tracelist li:hover{background:#18212d}
+.tracelist li.sel{background:#16283c; border-color:#2f5c8f}
+.tracelist .sw{width:12px;height:12px;border-radius:3px;flex:none;border:1px solid rgba(255,255,255,.25)}
+.tracelist .nm{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px}
+.tracelist .nm small{color:var(--fg2); font-size:10.5px; display:block; line-height:1.2}
+.tracelist .ico{
+  background:none; border:none; color:var(--fg2); padding:1px 3px; font-size:11px;
+  cursor:pointer; border-radius:4px; line-height:1;
+}
+.tracelist .ico:hover{background:#243040; color:var(--fg)}
+.tracelist li.hidden-trace .nm{opacity:.45}
+
+/* ---------- main ---------- */
+main{
+  display:grid; grid-template-rows:minmax(0,1fr) 6px var(--bottomH,300px);
+  min-height:0; min-width:0;
+}
+#vresizer{
+  background:#151d27; border-top:1px solid var(--line); cursor:row-resize;
+  position:relative;
+}
+#vresizer:hover{background:#1f2a38}
+#vresizer::after{
+  content:""; position:absolute; left:50%; top:2px; width:44px; height:2px;
+  margin-left:-22px; background:#33465c; border-radius:2px;
+}
+#plotWrap{position:relative; min-height:0; min-width:0; background:#0f1319}
+#plot{width:100%; height:100%; display:block; cursor:crosshair}
+.plot-hint{
+  position:absolute; right:12px; bottom:8px; font-size:10.5px; color:#54657d;
+  pointer-events:none; user-select:none;
+}
+.tooltip{
+  position:absolute; pointer-events:none; z-index:20;
+  background:rgba(10,16,23,.95); border:1px solid #2b3d52; border-radius:6px;
+  padding:7px 9px; font-size:11.5px; color:var(--fg); line-height:1.5;
+  box-shadow:0 6px 18px rgba(0,0,0,.45); min-width:120px; max-width:280px;
+}
+.tooltip b{color:#fff; font-weight:600}
+.tooltip .trow{display:flex; gap:6px; align-items:center}
+.tooltip .d{width:8px; height:8px; border-radius:2px; flex:none}
+.hidden{display:none !important}
+
+/* ---------- bottom ---------- */
+#bottom{
+  border-top:1px solid var(--line); background:var(--panel);
+  display:grid; grid-template-rows:34px minmax(0,1fr); min-height:0;
+}
+.tabs{display:flex; align-items:center; gap:2px; padding:0 8px; border-bottom:1px solid var(--line)}
+.tab{
+  background:none; border:none; border-bottom:2px solid transparent; border-radius:0;
+  padding:8px 12px 7px; color:var(--fg2); font-size:12.5px;
+}
+.tab:hover{background:#18212d; color:var(--fg)}
+.tab.active{color:#dcecff; border-bottom-color:var(--accent); background:#151e29}
+.grow{flex:1}
+.tabinfo{font-size:11px; color:var(--fg2)}
+
+.panel{display:none; min-height:0; overflow:auto; padding:0}
+.panel.active{display:grid; grid-template-rows:auto minmax(0,1fr)}
+#panel-index.active,#panel-peaks.active{grid-template-rows:auto minmax(0,1fr) auto}
+#panel-ident.active,#panel-lib.active{grid-template-rows:auto minmax(0,1fr)}
+.toolbar{
+  display:flex; align-items:center; gap:9px; padding:7px 10px;
+  border-bottom:1px solid var(--line); background:#101720; flex-wrap:wrap;
+}
+.inl{display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--fg2); white-space:nowrap}
+.inl input[type=number]{width:78px}
+.inl select{width:auto; min-width:90px}
+.inl input[type=select]{width:auto}
+
+.tablewrap{overflow:auto; min-height:0}
+table{border-collapse:collapse; width:100%; font-size:12px}
+th,td{padding:5px 9px; text-align:left; border-bottom:1px solid #1c2531; white-space:nowrap}
+th{
+  position:sticky; top:0; background:#121a24; color:var(--fg2); font-weight:600;
+  font-size:11.5px; z-index:2; border-bottom:1px solid var(--line);
+}
+tbody tr:hover{background:#18212d}
+tbody tr.sel{background:#16283c}
+td.num{text-align:right; font-variant-numeric:tabular-nums}
+td .bar{display:inline-block; height:6px; border-radius:3px; background:linear-gradient(90deg,#2f6fbf,#4f9dff)}
+.badge{
+  display:inline-block; padding:1px 6px; border-radius:99px; font-size:10.5px;
+  border:1px solid var(--line); color:var(--fg2);
+}
+.badge.hi{color:#9ff0c4; border-color:#2b6b4a; background:#10281d}
+.badge.mid{color:#ffd79a; border-color:#6b5426; background:#2a2110}
+.badge.lo{color:#ffb3b3; border-color:#6b3038; background:#2a1518}
+td input.lbl{
+  width:74px; background:#0e141c; border:1px solid transparent; color:var(--fg);
+  font-family:inherit; font-size:11.5px; padding:2px 5px; border-radius:4px;
+}
+td input.lbl:focus{outline:none; border-color:var(--accent); background:#0b1118}
+
+.idwrap{display:grid; grid-template-rows:minmax(0,1fr) auto; min-height:0}
+.detail{padding:8px 12px; font-size:11.5px; color:var(--fg2); border-top:1px solid var(--line); max-height:76px; overflow:auto; line-height:1.6}
+.detail b{color:#dbe7f5}
+.log{
+  padding:10px 14px; font-family:ui-monospace,Consolas,monospace; font-size:11.5px;
+  color:#9fb0c4; overflow:auto; line-height:1.65; white-space:pre-wrap;
+}
+.log .warn{color:#ffc178}
+.log .err{color:#ff9b9b}
+.log .ok{color:#8fe0b0}
+.log .t{color:#5f7288}
+
+/* ---------- dialog ---------- */
+dialog{
+  background:var(--panel); color:var(--fg); border:1px solid var(--line);
+  border-radius:12px; padding:22px 26px; max-width:720px; width:92vw; max-height:86vh;
+  overflow:auto; box-shadow:0 24px 60px rgba(0,0,0,.6);
+}
+dialog::backdrop{background:rgba(4,7,11,.72)}
+dialog h2{margin:0 0 14px; font-size:17px}
+dialog h3{margin:16px 0 6px; font-size:13px; color:#bcd2ea}
+dialog ol,dialog ul{margin:6px 0; padding-left:22px; line-height:1.75; font-size:12.5px}
+dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11.5px}
+.dlgfoot{display:flex; justify-content:flex-end; margin-top:18px}
+
+@media (max-width:1100px){
+  #app{grid-template-columns:300px minmax(0,1fr)}
+  .brand .sub{display:none}
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <span class="logo">∿</span>
+      <span class="title">FT-IR Studio</span>
+      <span class="ver">v1.1</span>
+      <span class="sub">Bruker OPUS 바이너리·ASCII · 스택 비교 · 정성/열화 판정</span>
+    </div>
+    <div class="tools">
+      <button id="btnOpen" class="primary">파일 열기</button>
+      <button id="btnDemo">데모 데이터</button>
+      <span class="sep"></span>
+      <button id="btnSave">프로젝트 저장</button>
+      <button id="btnLoad">프로젝트 열기</button>
+      <span class="sep"></span>
+      <button id="btnPNG">PNG 내보내기</button>
+      <button id="btnHelp">도움말</button>
+    </div>
+  </header>
+
+  <aside id="side">
+    <details open>
+      <summary>시료 <span class="cnt" id="traceCount">0</span></summary>
+      <div class="body">
+        <div id="dropzone" class="drop">
+          <strong>파일을 여기로 끌어다 놓기</strong>
+          <span>OPUS 원시 파일(<b>.0 .1 .2</b>) · ASCII(.dpt/.txt/.csv)</span>
+        </div>
+        <ul id="traceList" class="tracelist"></ul>
+        <div class="row btns">
+          <button id="btnShowAll" class="mini">전체 표시</button>
+          <button id="btnHideAll" class="mini">전체 숨김</button>
+          <button id="btnClear" class="mini danger">모두 삭제</button>
+        </div>
+        <div class="divider"></div>
+        <div class="subhead">선택한 시료 스타일</div>
+        <label class="fld"><span>이름(범례)</span><input id="styName" type="text" placeholder="시료 선택"></label>
+        <label class="fld"><span>범례 문구</span><input id="styLegend" type="text" placeholder="비우면 이름 사용"></label>
+        <div class="row2">
+          <label class="fld"><span>색</span><input id="styColor" type="color" value="#4f9dff"></label>
+          <label class="fld"><span>굵기</span><input id="styWidth" type="number" min="0.5" max="8" step="0.1" value="1.6"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>선 형태</span>
+            <select id="styDash">
+              <option value="solid">실선</option>
+              <option value="dash">파선</option>
+              <option value="dot">점선</option>
+              <option value="dashdot">일점쇄선</option>
+            </select>
+          </label>
+          <label class="fld"><span>투명도</span><input id="styAlpha" type="number" min="0.1" max="1" step="0.05" value="1"></label>
+        </div>
+        <p class="hint">그래프의 범례를 클릭해도 해당 시료가 선택됩니다.</p>
+      </div>
+    </details>
+
+    <details open>
+      <summary>표시 설정</summary>
+      <div class="body">
+        <div class="row2">
+          <label class="fld"><span>배치</span>
+            <select id="viewMode">
+              <option value="stacked">스택(한 화면)</option>
+              <option value="overlay">겹쳐보기</option>
+            </select>
+          </label>
+          <label class="fld"><span>간격</span><input id="viewGap" type="number" min="0" max="1" step="0.05" value="0.35"></label>
+        </div>
+        <label class="chk"><input id="viewNormHeight" type="checkbox" checked> 시료별 높이 정규화</label>
+        <label class="chk"><input id="viewRev" type="checkbox" checked> X축 역순 (4000 → 400)</label>
+        <label class="chk"><input id="viewGrid" type="checkbox" checked> 격자</label>
+        <label class="chk"><input id="viewPeaks" type="checkbox" checked> 피크 마커</label>
+        <label class="chk"><input id="viewLabels" type="checkbox" checked> 피크 라벨</label>
+        <div class="row2">
+          <label class="fld"><span>X 최소</span><input id="viewLo" type="number" step="10" value="400"></label>
+          <label class="fld"><span>X 최대</span><input id="viewHi" type="number" step="10" value="4000"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>글꼴 크기</span><input id="viewFont" type="number" min="8" max="24" step="1" value="13"></label>
+          <label class="fld"><span>범례 위치</span>
+            <select id="viewLegendPos">
+              <option value="out">바깥 오른쪽</option>
+              <option value="tr">오른쪽 위</option>
+              <option value="tl">왼쪽 위</option>
+              <option value="br">오른쪽 아래</option>
+              <option value="bl">왼쪽 아래</option>
+            </select>
+          </label>
+        </div>
+        <label class="chk"><input id="viewLegendOn" type="checkbox" checked> 범례 표시</label>
+        <label class="fld"><span>피크 라벨 기준 (prominence/전체높이)</span><input id="viewLabelMin" type="number" min="0" max="0.5" step="0.005" value="0.03"></label>
+        <div class="row2">
+          <label class="fld"><span>범례 크기</span><input id="viewLegendScale" type="number" min="0.6" max="2" step="0.1" value="1"></label>
+          <button id="btnResetView" class="mini" style="align-self:end">X축 초기화</button>
+        </div>
+        <div class="row btns">
+          <button id="btnRangeFull" class="mini">전체 4000–400</button>
+          <button id="btnRangeFingerprint" class="mini">지문 1800–700</button>
+          <button id="btnRangeCH" class="mini">C–H 3100–2700</button>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>전처리 <span class="cnt" id="preBadge">기본</span></summary>
+      <div class="body">
+        <label class="chk"><input id="smoothOn" type="checkbox"> Savitzky–Golay 스무딩</label>
+        <div class="row2">
+          <label class="fld"><span>창 길이</span><input id="smoothWin" type="number" min="3" max="101" step="2" value="9"></label>
+          <label class="fld"><span>차수</span><input id="smoothOrder" type="number" min="1" max="5" step="1" value="2"></label>
+        </div>
+        <div class="divider"></div>
+        <label class="fld"><span>베이스라인</span>
+          <select id="baseMode">
+            <option value="none">없음</option>
+            <option value="linear">선형 (두 점)</option>
+            <option value="poly">다항식</option>
+            <option value="rubber">러버밴드</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>점1 (cm⁻¹)</span><input id="baseP1" type="number" value="4000"></label>
+          <label class="fld"><span>점2 (cm⁻¹)</span><input id="baseP2" type="number" value="400"></label>
+        </div>
+        <label class="fld"><span>다항식 차수</span><input id="baseDeg" type="number" min="1" max="8" step="1" value="3"></label>
+        <div class="divider"></div>
+        <label class="chk"><input id="atrOn" type="checkbox"> ATR 보정 (A · ν/1000)</label>
+        <div class="row2">
+          <label class="fld"><span>결정 n₁</span><input id="atrN1" type="number" step="0.01" value="2.40"></label>
+          <label class="fld"><span>시료 n₂</span><input id="atrN2" type="number" step="0.01" value="1.52"></label>
+        </div>
+        <p class="hint">diamond/n=2.40, ZnSe/n=2.40, Ge/n=4.0. 보정 시 vs 미보정 CI 차이를 지수 탭에서 함께 표시합니다.</p>
+        <div class="divider"></div>
+        <label class="fld"><span>정규화</span>
+          <select id="normMode">
+            <option value="none">없음</option>
+            <option value="max">최대값</option>
+            <option value="minmax">0–1</option>
+            <option value="vector">벡터(norm)</option>
+            <option value="band">특정 밴드 면적</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>밴드1</span><input id="normB1" type="number" value="1440"></label>
+          <label class="fld"><span>밴드2</span><input id="normB2" type="number" value="1480"></label>
+        </div>
+        <p class="hint">전처리는 <b>모든 시료에 동일 적용</b>됩니다. 시료별 개별 처리가 필요하면 시료를 따로 불러 전처리를 바꿔 다시 저장하세요.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>비교 (차이 스펙트럼)</summary>
+      <div class="body">
+        <label class="fld"><span>A (예: 노화 후)</span><select id="cmpA"></select></label>
+        <label class="fld"><span>B (예: 초기)</span><select id="cmpB"></select></label>
+        <label class="fld"><span>정규화 기준</span>
+          <select id="cmpNorm">
+            <option value="band">기준 밴드 면적</option>
+            <option value="max">최대 흡광도</option>
+            <option value="none">없음</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>기준밴드1</span><input id="cmpB1" type="number" value="1440"></label>
+          <label class="fld"><span>기준밴드2</span><input id="cmpB2" type="number" value="1480"></label>
+        </div>
+        <div class="row btns">
+          <button id="btnDiff" class="mini primary">A − B 계산</button>
+          <button id="btnDiffClear" class="mini">차이 제거</button>
+        </div>
+      </div>
+    </details>
+  </aside>
+
+  <main>
+    <div id="plotWrap">
+      <canvas id="plot"></canvas>
+      <div id="tooltip" class="tooltip hidden"></div>
+      <div id="plotHint" class="plot-hint">드래그 확대 · 휠 줌 · 더블클릭 초기화</div>
+    </div>
+
+    <div id="vresizer" title="드래그: 아래 패널 높이 · 더블클릭: 접기"></div>
+
+    <div id="bottom">
+      <nav class="tabs">
+        <button class="tab active" data-tab="peaks">피크 표</button>
+        <button class="tab" data-tab="ident">정성 판정</button>
+        <button class="tab" data-tab="index">열화 지수</button>
+        <button class="tab" data-tab="lib">라이브러리</button>
+        <button class="tab" data-tab="log">로그</button>
+        <span class="grow"></span>
+        <span class="tabinfo" id="tabInfo"></span>
+      </nav>
+
+      <section class="panel active" id="panel-peaks">
+        <div class="toolbar">
+          <button id="btnPick" class="mini primary">피크 검출</button>
+          <label class="inl">최소 prominence <input id="peakMinProm" type="number" min="0.001" max="0.3" step="0.002" value="0.015"></label>
+          <label class="inl">최소 간격(cm⁻¹) <input id="peakMinSep" type="number" min="1" max="60" step="1" value="8"></label>
+          <label class="inl">대상 <select id="peakScope"><option value="sel">선택 시료</option><option value="all">전체 시료</option></select></label>
+          <span class="grow"></span>
+          <button id="btnPeakCSV" class="mini">CSV 저장</button>
+        </div>
+        <div class="tablewrap"><table id="peakTable"><thead><tr>
+          <th>시료</th><th>cm⁻¹</th><th>강도</th><th>prominence</th><th>귀속 후보</th><th>라벨</th>
+        </tr></thead><tbody></tbody></table></div>
+      </section>
+
+      <section class="panel" id="panel-ident">
+        <div class="toolbar">
+          <label class="inl">대상 <select id="idTrace"></select></label>
+          <button id="btnId" class="mini primary">마커 밴드 점수 계산</button>
+          <button id="btnIdCSV" class="mini">결과 CSV</button>
+          <span class="grow"></span>
+          <span class="tabinfo">점수 = 마커 밴드 가중치 충족률 (3=필수, 2=강, 1=보조)</span>
+        </div>
+        <div class="idwrap">
+          <div class="tablewrap"><table id="idTable"><thead><tr>
+            <th>후보</th><th>점수</th><th>충족</th><th>미검출 마커</th><th>비고</th>
+          </tr></thead><tbody></tbody></table></div>
+          <div id="idDetail" class="detail"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-index">
+        <div class="toolbar">
+          <label class="inl">지수 <select id="idxPreset"></select></label>
+          <label class="inl"><input id="idxAtr" type="checkbox"> ATR 보정 적용</label>
+          <label class="inl">대상 <select id="idxTrace"></select></label>
+          <button id="btnIndex" class="mini primary">계산</button>
+          <button id="btnIndexAll" class="mini">전체 시료 계산</button>
+          <span class="grow"></span>
+          <button id="btnIndexCSV" class="mini">CSV 저장</button>
+        </div>
+        <div class="tablewrap"><table id="idxTable"><thead><tr>
+          <th>시료</th><th>지수</th><th>값</th><th>ATR 미보정</th><th>분자(면적)</th><th>분모(면적)</th><th>비고</th>
+        </tr></thead><tbody></tbody></table></div>
+        <p class="hint" id="idxNote"></p>
+      </section>
+
+      <section class="panel" id="panel-lib">
+        <div class="toolbar">
+          <button id="btnAddRef" class="mini primary">선택 시료를 표준으로 등록</button>
+          <label class="inl">대상 <select id="libTrace"></select></label>
+          <button id="btnLibMatch" class="mini">라이브러리 대조</button>
+          <span class="grow"></span>
+          <button id="btnLibExport" class="mini">JSON 내보내기</button>
+          <button id="btnLibImport" class="mini">JSON 가져오기</button>
+          <input type="file" id="libFile" accept=".json" hidden>
+        </div>
+        <div class="idwrap">
+          <div class="tablewrap"><table id="libTable"><thead><tr>
+            <th>표준 시료</th><th>등록일</th><th>점수(0–1000)</th><th>R(원)</th><th>R(1차미분)</th><th></th>
+          </tr></thead><tbody></tbody></table></div>
+          <div id="libInfo" class="detail"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-log">
+        <div class="toolbar">
+          <button id="btnClearLog" class="mini">로그 지우기</button>
+          <span class="grow"></span>
+          <span class="tabinfo">수행한 처리·경고 기록</span>
+        </div>
+        <div id="log" class="log"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="fileInput" multiple accept=".0,.1,.2,.3,.4,.5,.6,.7,.8,.9,.10,.11,.12,.13,.14,.15,.16,.17,.18,.19,.20,.dpt,.txt,.csv,.tsv,.asc,.dat" hidden>
+
+<dialog id="helpDlg">
+  <h2>FT-IR Studio — 사용 안내</h2>
+  <h3>1. 데이터 불러오기</h3>
+  <ol>
+    <li><b>OPUS 원시 바이너리(<code>.0</code>, <code>.1</code> …)를 그대로 끌어다 놓으면 됩니다.</b> 별도 변환 없이 읽습니다.</li>
+    <li>파일 안에 인터페로그램·단일채널·흡광도가 함께 들어 있으면 <b>흡광도(결과 스펙트럼)</b>를 자동 선택합니다. 무엇을 선택했는지 로그에 표시됩니다.</li>
+    <li>읽은 뒤 <b>파일 내부의 MNY/MXY(저장된 최소·최대값)와 실제 계산값을 대조</b>합니다. 불일치하면 값을 신뢰할 수 없으므로 불러오지 않고 로그에 실패로 남깁니다.</li>
+    <li>ASCII(<code>.dpt .txt .csv</code>, 2열) 파일도 그대로 지원합니다 — 둘 중 편한 쪽을 쓰세요.</li>
+    <li>지원하지 않는 것: 3D 시계열(series) 블록, 라이브러리 검색·정량 리포트 블록, OPUS가 아닌 다른 제조사 포맷.</li>
+  </ol>
+  <h3>2. 화면 조작</h3>
+  <ul>
+    <li>드래그: X 구간 확대 · 휠: 확대/축소 · 더블클릭: 초기화</li>
+    <li>범례 클릭 → 해당 시료 선택 (왼쪽에서 색·굵기·선형태·범례 문구 수정)</li>
+    <li>스택 모드에서 시료 순서는 왼쪽 목록의 ↑↓로 바꿉니다.</li>
+  </ul>
+  <h3>3. 분석 흐름 권장</h3>
+  <ol>
+    <li><b>전처리</b>: 스무딩 → 베이스라인(러버밴드 권장) → (ATR이면) ATR 보정 → 정규화</li>
+    <li><b>피크 표</b>: 검출 후 귀속 후보 확인, 필요 없으면 라벨 편집</li>
+    <li><b>정성 판정</b>: 마커 밴드 점수로 후보 순위 → 상위 후보를 <b>라이브러리</b> 상관으로 재확인</li>
+    <li><b>열화 지수</b>: CI(Dong 2010) 등 프리셋으로 정량 비교, ATR 보정 유무 값 병기</li>
+    <li><b>비교</b>: A−B 차이 스펙트럼으로 노화/공정 문제 밴드 특정</li>
+  </ol>
+  <h3>4. 한계</h3>
+  <ul>
+    <li>마커 점수는 <b>규칙 기반</b>입니다. 실제 배합 grade 판정에는 표준시료 라이브러리가 필요합니다.</li>
+    <li>충전제(GF·탈크·CaCO₃·카본블랙)는 수지 밴드를 가립니다. 1000–1100 cm⁻¹ 광범위 흡수는 GF 가능성을 먼저 의심하세요.</li>
+    <li>ATR 보정은 단순형(A·ν/1000)입니다. 정밀 정량에는 파수 의존 n 분산을 반영한 상용 보정과 차이가 있을 수 있습니다.</li>
+    <li>OPUS 바이너리 리더는 공개 포맷 문서와 오픈소스 구현(brukeropus·openreadout)을 근거로 작성했습니다. 사내 OPUS 버전·3D 파일처럼 검증하지 못한 변형이 있으면 로그에 실패로 표시됩니다.</li>
+  </ul>
+  <div class="dlgfoot"><button id="btnHelpClose" class="primary">닫기</button></div>
+</dialog>
+
+<script>
+/* ==== lib-bands.js ==== */
+/* =========================================================================
+ * lib-bands.js — FT-IR 밴드 라이브러리 (엔지니어링 플라스틱 · 고무 · 열경화성)
+ * -------------------------------------------------------------------------
+ * 원칙:
+ *  - 위치(cm⁻¹)는 문헌·일반 귀속의 **대표값**이며 범위로 준다. 실제 시료는
+ *    결정형·수소결합·충전제·첨가제 때문에 몇 cm⁻¹~수십 cm⁻¹ 이동한다.
+ *  - w(가중치): 3=필수 마커, 2=강한 특징, 1=보조.
+ *  - 완벽한 스펙트럼 상관 라이브러리가 아니라 **마커 밴드 규칙 점수**다.
+ *    (사용자가 측정한 표준시료를 '라이브러리' 탭에 등록하면 상관계수 대조도 가능)
+ * ========================================================================= */
+window.FTIR_BANDS = {
+  version: '1.0',
+  note: '밴드 위치는 문헌 대표값(범위 표기). 정성 판정은 마커 점수 + 사용자 라이브러리 상관으로 보조한다.',
+
+  materials: [
+    /* ---------------- 열가소성 엔지니어링 플라스틱 ---------------- */
+    { id:'pa6', ko:'PA6 (나일론 6)', en:'Polyamide 6', cls:'열가소성', note:'PA66과 FTIR 단독 구분 어려움(1470/1410, 935 미세차). DSC·용해도 병행 권장.',
+      markers:[
+        {r:[3290,3310], t:'N–H str (amide A)', w:3},
+        {r:[2920,2945], t:'CH₂ asym str', w:1},
+        {r:[1625,1650], t:'Amide I (C=O str)', w:3},
+        {r:[1528,1550], t:'Amide II (N–H bend + C–N)', w:3},
+        {r:[1455,1480], t:'CH₂ scissor', w:1},
+        {r:[1400,1425], t:'CH₂ wag / C–C', w:1},
+        {r:[1355,1385], t:'Amide III / CH₂', w:1},
+        {r:[1250,1275], t:'Amide III', w:2},
+        {r:[1185,1210], t:'C–C / C–N skeletal', w:1},
+        {r:[1105,1140], t:'C–C skeletal', w:1},
+        {r:[920,940],  t:'Amide IV (CONH)', w:2},
+        {r:[675,700],  t:'Amide V (N–H oop)', w:2}
+      ]},
+    { id:'pa66', ko:'PA66 (나일론 66)', en:'Polyamide 66', cls:'열가소성', note:'PA6과 구분: 1475/1410 쌍, 935 위치. 단독 판정보다 비율·DSC 병행.',
+      markers:[
+        {r:[3290,3315], t:'N–H str (amide A)', w:3},
+        {r:[2925,2945], t:'CH₂ asym str', w:1},
+        {r:[1630,1652], t:'Amide I (C=O)', w:3},
+        {r:[1530,1550], t:'Amide II', w:3},
+        {r:[1465,1485], t:'CH₂ scissor', w:2},
+        {r:[1400,1420], t:'CH₂ wag / C–N', w:1},
+        {r:[1255,1285], t:'Amide III', w:2},
+        {r:[1185,1210], t:'skeletal', w:1},
+        {r:[925,945],  t:'Amide IV', w:2},
+        {r:[675,700],  t:'Amide V', w:2}
+      ]},
+    { id:'pa9t', ko:'PA9T / PPA (방향족 PA)', en:'Aromatic polyamide (PA9T, PA6T/6I, PPA)', cls:'열가소성',
+      note:'방향족 고리 밴드(1600/1500/820)가 지방족 PA와의 결정적 차이. PPA 계열 내 개별 grade 구분은 어려움.',
+      markers:[
+        {r:[3280,3320], t:'N–H str', w:3},
+        {r:[1630,1652], t:'Amide I', w:3},
+        {r:[1530,1555], t:'Amide II', w:3},
+        {r:[1595,1615], t:'Aromatic ring (C=C)', w:2},
+        {r:[1495,1512], t:'Aromatic ring', w:2},
+        {r:[815,832],   t:'p-phenylene C–H oop', w:3},
+        {r:[1290,1310], t:'C–N / ring', w:1}
+      ]},
+    { id:'pps', ko:'PPS (폴리페닐렌설파이드)', en:'Polyphenylene sulfide', cls:'열가소성', note:'823 cm⁻¹ 단일 강밴드 + 1573 특유. 충전제(GF) 있으면 1100–1000 광범위.',
+      markers:[
+        {r:[1570,1585], t:'Aromatic C=C', w:3},
+        {r:[1465,1478], t:'Ring vibration', w:2},
+        {r:[1380,1395], t:'Ring / CH₂', w:2},
+        {r:[1080,1100], t:'C–S / ring', w:2},
+        {r:[1005,1025], t:'Ring breathing', w:2},
+        {r:[815,832],   t:'p-phenylene C–H oop', w:3},
+        {r:[740,755],   t:'C–S', w:1}
+      ]},
+    { id:'pbt', ko:'PBT (폴리부틸렌테레프탈레이트)', en:'Polybutylene terephthalate', cls:'열가소성', note:'PET와 구분: PBT는 1470/1410 강하고 1340/1240 약함, 917 존재.',
+      markers:[
+        {r:[1710,1728], t:'Ester C=O str', w:3},
+        {r:[1460,1475], t:'CH₂ bend', w:2},
+        {r:[1405,1420], t:'Ring / CH₂', w:1},
+        {r:[1260,1285], t:'C–O–C asym', w:2},
+        {r:[1090,1115], t:'C–O–C sym', w:2},
+        {r:[1005,1025], t:'Ring', w:1},
+        {r:[910,925],   t:'CH₂ rock', w:2},
+        {r:[805,820],   t:'p-phenylene oop', w:2},
+        {r:[725,742],   t:'CH₂ rock', w:1}
+      ]},
+    { id:'pet', ko:'PET (폴리에틸렌테레프탈레이트)', en:'PET', cls:'열가소성',
+      markers:[
+        {r:[1710,1730], t:'Ester C=O', w:3},
+        {r:[1230,1250], t:'C–O–C asym', w:3},
+        {r:[1090,1110], t:'C–O–C sym', w:2},
+        {r:[1330,1345], t:'CH₂ wag (결정/비정)', w:2},
+        {r:[870,880],   t:'Ring oop', w:1},
+        {r:[720,735],   t:'Ring / CH₂', w:1}
+      ]},
+    { id:'mppo', ko:'mPPO (PPE/PS 얼로이)', en:'Modified PPO (PPE/HIPS)', cls:'열가소성',
+      note:'PPE의 1190(C–O) + 1025, PS의 698/760이 함께 보이면 얼로이. 698/760 증가 = PS 비율↑.',
+      markers:[
+        {r:[1185,1195], t:'Aryl ether C–O (PPE)', w:3},
+        {r:[1018,1035], t:'Aromatic ring (PPE)', w:2},
+        {r:[1485,1500], t:'Aromatic ring', w:1},
+        {r:[690,705],   t:'Mono-subst. ring oop (PS)', w:3},
+        {r:[750,765],   t:'Mono-subst. ring oop (PS)', w:2},
+        {r:[1455,1470], t:'CH₂ scissor', w:1}
+      ]},
+    { id:'pc', ko:'PC (폴리카보네이트)', en:'Polycarbonate', cls:'열가소성', note:'1775/1740 두 C=O 밴드가 특징.',
+      markers:[
+        {r:[1770,1785], t:'C=O (free)', w:3},
+        {r:[1735,1750], t:'C=O (H-bonded)', w:2},
+        {r:[1595,1610], t:'Aromatic ring', w:1},
+        {r:[1495,1512], t:'Aromatic ring', w:1},
+        {r:[1220,1245], t:'C–O–C asym', w:2},
+        {r:[1155,1170], t:'C–O', w:1},
+        {r:[825,840],   t:'p-phenylene oop', w:1}
+      ]},
+    { id:'abs', ko:'ABS / SAN (스티렌-아크릴로니트릴)', en:'ABS, SAN', cls:'열가소성', note:'2237 C≡N이 결정적. SAN/ABS 비율은 2237/698 강도비로 대략 추정(정량 아님).',
+      markers:[
+        {r:[2230,2245], t:'C≡N str', w:3},
+        {r:[1595,1610], t:'Aromatic ring', w:1},
+        {r:[1485,1500], t:'Aromatic ring', w:1},
+        {r:[755,765],   t:'Mono-subst. ring oop', w:1},
+        {r:[690,705],   t:'Mono-subst. ring oop', w:2}
+      ]},
+    { id:'ps', ko:'PS (폴리스티렌)', en:'Polystyrene', cls:'열가소성',
+      markers:[
+        {r:[3020,3035], t:'Aromatic C–H str', w:2},
+        {r:[2915,2935], t:'CH₂ str', w:1},
+        {r:[1595,1610], t:'Ring quadrant', w:2},
+        {r:[1488,1500], t:'Ring semicircle', w:2},
+        {r:[1448,1460], t:'CH₂ scissor', w:1},
+        {r:[755,765],   t:'Mono-subst. oop', w:3},
+        {r:[692,705],   t:'Ring oop (out-of-plane)', w:3}
+      ]},
+    { id:'pp', ko:'PP (폴리프로필렌)', en:'Polypropylene', cls:'열가소성', note:'1456/1377 쌍 + 1167. 이중 결합·카르닐 없음이 열화 판정의 기준선.',
+      markers:[
+        {r:[2945,2960], t:'CH₃ asym str', w:2},
+        {r:[2915,2930], t:'CH₂ asym str', w:3},
+        {r:[2835,2850], t:'CH₂ sym str', w:2},
+        {r:[1450,1462], t:'CH₂ scissor', w:3},
+        {r:[1370,1385], t:'CH₃ sym bend', w:3},
+        {r:[1160,1175], t:'C–C skeletal', w:1},
+        {r:[990,1000],  t:'CH₃ rock', w:1},
+        {r:[965,980],   t:'CH₃ rock', w:1},
+        {r:[800,815],   t:'C–C', w:1}
+      ]},
+    { id:'pe', ko:'PE (HDPE/LDPE)', en:'Polyethylene', cls:'열가소성', note:'720/730 이중선의 상대강도로 결정화도 경향 판단(정량 아님).',
+      markers:[
+        {r:[2910,2925], t:'CH₂ asym str', w:3},
+        {r:[2845,2860], t:'CH₂ sym str', w:3},
+        {r:[1462,1475], t:'CH₂ scissor', w:3},
+        {r:[1370,1385], t:'CH₃ (branch) bend', w:1},
+        {r:[715,735],   t:'CH₂ rock (720/730)', w:3}
+      ]},
+    { id:'pom', ko:'POM (폴리아세탈)', en:'Polyoxymethylene', cls:'열가소성', note:'1090 부근 강한 C–O–C. 1234/1090 조합이 특징.',
+      markers:[
+        {r:[1235,1250], t:'C–O–C str', w:2},
+        {r:[1075,1100], t:'C–O–C asym str', w:3},
+        {r:[1020,1040], t:'C–O–C sym str', w:2},
+        {r:[925,945],   t:'CH₂ rock', w:2},
+        {r:[1455,1470], t:'CH₂ scissor', w:1}
+      ]},
+    { id:'pmma', ko:'PMMA (아크릴)', en:'PMMA', cls:'열가소성',
+      markers:[
+        {r:[1720,1740], t:'C=O ester', w:3},
+        {r:[1260,1280], t:'C–O–C', w:2},
+        {r:[1225,1250], t:'C–O–C', w:2},
+        {r:[1135,1155], t:'C–O–C', w:2},
+        {r:[1040,1070], t:'C–C', w:1},
+        {r:[980,1000],  t:'CH₃ rock', w:1},
+        {r:[830,850],   t:'C–C', w:2},
+        {r:[740,760],   t:'CH₂ rock', w:1}
+      ]},
+    { id:'pvc', ko:'PVC (경질/연질)', en:'PVC', cls:'열가소성', note:'C–Cl 615 부근. 가소제(DOP) 있으면 1730 C=O 등장.',
+      markers:[
+        {r:[1420,1440], t:'CH₂ bend', w:2},
+        {r:[1320,1340], t:'CH bend', w:1},
+        {r:[1245,1265], t:'CH₂ wag', w:2},
+        {r:[1075,1100], t:'C–C', w:2},
+        {r:[955,975],   t:'trans CH₂ rock', w:1},
+        {r:[680,700],   t:'C–Cl str', w:2},
+        {r:[605,625],   t:'C–Cl str', w:3}
+      ]},
+    { id:'tpu', ko:'TPU (폴리우레탄 탄성체)', en:'Thermoplastic polyurethane', cls:'열가소성',
+      note:'경화 우레탄(열경화)과 스펙트럼 유사 — 열이력/용해도로 구분.',
+      markers:[
+        {r:[3320,3345], t:'N–H str', w:2},
+        {r:[1725,1742], t:'Ester C=O', w:3},
+        {r:[1695,1715], t:'H-bonded C=O (우레탄)', w:2},
+        {r:[1525,1540], t:'Amide II / NH bend', w:2},
+        {r:[1210,1230], t:'C–O–C', w:2},
+        {r:[760,775],   t:'Aromatic oop', w:1}
+      ]},
+    { id:'pa11', ko:'PA11 / PA12 / PA610 (장쇄 지방족 PA)', en:'Long-chain aliphatic polyamides', cls:'열가소성', note:'화학 구조상 PA6/PA66과 매우 유사 — CH₂/NH 비율로 경향만 판단.',
+      markers:[
+        {r:[3290,3315], t:'N–H str', w:3},
+        {r:[1630,1650], t:'Amide I', w:3},
+        {r:[1530,1555], t:'Amide II', w:3},
+        {r:[1460,1480], t:'CH₂ scissor', w:2},
+        {r:[1255,1275], t:'Amide III', w:2},
+        {r:[675,700],   t:'Amide V', w:2}
+      ]},
+    { id:'peek', ko:'PEEK', en:'Polyether ether ketone', cls:'열가소성',
+      markers:[
+        {r:[1640,1660], t:'Aromatic C=O', w:3},
+        {r:[1485,1500], t:'Aromatic ring', w:2},
+        {r:[1210,1230], t:'C–O–C asym', w:2},
+        {r:[1175,1195], t:'C–O–C', w:2},
+        {r:[1005,1020], t:'Ring', w:1},
+        {r:[860,875],   t:'Ring oop', w:1}
+      ]},
+    { id:'psu', ko:'PSU / PES (폴리설폰)', en:'Polysulfone / Polyethersulfone', cls:'열가소성', note:'1150 부근 S=O 대칭 + 1240 비대칭.',
+      markers:[
+        {r:[1230,1250], t:'C–O–C / S=O asym', w:3},
+        {r:[1140,1160], t:'S=O sym', w:3},
+        {r:[1485,1500], t:'Aromatic ring', w:1},
+        {r:[1005,1020], t:'Ring breathing', w:1},
+        {r:[825,845],   t:'p-phenylene oop', w:1}
+      ]},
+
+    /* ---------------- 열경화성 ---------------- */
+    { id:'epoxy', ko:'에폭시 (DGEBA 계)', en:'Epoxy (DGEBA)', cls:'열경화성',
+      note:'915(oxirane) 소실 = 경화 진행 지표. 1510/1610 쌍 + 1245가 DGEBA 특유.',
+      markers:[
+        {r:[3400,3520], t:'O–H str (경화 후)', w:1},
+        {r:[1605,1615], t:'Aromatic ring', w:2},
+        {r:[1503,1513], t:'Aromatic ring (DGEBA)', w:3},
+        {r:[1235,1255], t:'Aryl–O–C asym', w:3},
+        {r:[1175,1195], t:'Aryl–O–C', w:1},
+        {r:[1030,1045], t:'C–O–C', w:2},
+        {r:[905,922],   t:'Epoxide ring (미경화 지표)', w:3},
+        {r:[825,840],   t:'p-phenylene oop', w:2}
+      ]},
+    { id:'up', ko:'불포화 폴리에스터 (UPR)', en:'Unsaturated polyester', cls:'열경화성',
+      note:'1645 C=C 소실 = 경화. 스티렌 잔류(990/700) 확인 가능.',
+      markers:[
+        {r:[1718,1735], t:'Ester C=O', w:3},
+        {r:[1635,1655], t:'C=C (경화 소실)', w:3},
+        {r:[1445,1460], t:'CH₂', w:1},
+        {r:[1280,1300], t:'C–O', w:1},
+        {r:[1110,1130], t:'C–O–C', w:1},
+        {r:[975,995],   t:'Styrene =CH₂', w:1},
+        {r:[690,710],   t:'Styrene ring oop', w:1}
+      ]},
+    { id:'phenolic', ko:'페놀수지 (노볼락/레졸)', en:'Phenolic resin', cls:'열경화성',
+      note:'1610/1590/1510 삼중 밴드 + 1230 넓은 C–O. 경화도는 1000/1010 부근과 OH로 보조 판단.',
+      markers:[
+        {r:[3350,3450], t:'O–H str (넓음)', w:1},
+        {r:[1605,1615], t:'Aromatic ring', w:2},
+        {r:[1585,1595], t:'Aromatic ring', w:2},
+        {r:[1505,1515], t:'Aromatic ring', w:3},
+        {r:[1465,1480], t:'CH₂ bend', w:1},
+        {r:[1220,1245], t:'C–O str (넓음)', w:2},
+        {r:[1090,1110], t:'C–O', w:1},
+        {r:[815,830],   t:'p-subst. oop', w:1},
+        {r:[685,700],   t:'Ring oop', w:1}
+      ]},
+    { id:'silicone', ko:'실리콘 (PDMS)', en:'Silicone / PDMS', cls:'열경화성',
+      note:'1260 Si–CH₃ + 1010–1100 Si–O–Si 이중 특유. 충전 실리카와 겹침 주의.',
+      markers:[
+        {r:[1255,1268], t:'Si–CH₃ sym bend', w:3},
+        {r:[1000,1100], t:'Si–O–Si asym str (넓음)', w:3},
+        {r:[790,812],   t:'Si–C str / CH₃ rock', w:2},
+        {r:[695,710],   t:'Si–CH₃ rock', w:1},
+        {r:[2950,2975], t:'C–H str', w:1}
+      ]},
+
+    /* ---------------- 고무(엘라스토머) ---------------- */
+    { id:'nr', ko:'NR (천연고무, cis-1,4)', en:'Natural rubber', cls:'고무',
+      note:'1663 C=C + 840 cis =CH oop이 조합. 가황 후에도 1663 유지(소량), 산화 시 1710 대역 상승.',
+      markers:[
+        {r:[3025,3045], t:'=C–H str', w:2},
+        {r:[2920,2940], t:'CH₂ asym str', w:3},
+        {r:[2845,2865], t:'CH₂ sym str', w:2},
+        {r:[1655,1670], t:'C=C str', w:3},
+        {r:[1440,1455], t:'CH₂ scissor', w:2},
+        {r:[1365,1380], t:'CH₃ sym bend', w:1},
+        {r:[1030,1045], t:'C–C / 가황계', w:1},
+        {r:[828,845],   t:'cis-1,4 =C–H oop', w:3}
+      ]},
+    { id:'sbr', ko:'SBR (스티렌-부타디엔)', en:'SBR', cls:'고무',
+      note:'스티렌 698/760과 966 trans C=C 동시 존재가 NR과의 차이.',
+      markers:[
+        {r:[3055,3070], t:'Aromatic C–H str', w:1},
+        {r:[3020,3035], t:'Aromatic C–H str', w:1},
+        {r:[2915,2935], t:'CH₂ asym str', w:2},
+        {r:[1595,1610], t:'Aromatic ring', w:2},
+        {r:[1488,1500], t:'Aromatic ring', w:2},
+        {r:[955,975],   t:'trans-1,4 C=C oop', w:3},
+        {r:[755,765],   t:'Mono-subst. oop', w:2},
+        {r:[690,705],   t:'Mono-subst. oop', w:2}
+      ]},
+    { id:'br', ko:'BR (부타디엔 고무)', en:'Polybutadiene', cls:'고무',
+      note:'966(trans) + 910(1,2-vinyl) + 735(cis).',
+      markers:[
+        {r:[2905,2925], t:'CH₂ str', w:3},
+        {r:[2840,2860], t:'CH₂ sym str', w:2},
+        {r:[1650,1670], t:'C=C str', w:1},
+        {r:[1445,1460], t:'CH₂ scissor', w:1},
+        {r:[955,975],   t:'trans-1,4 oop', w:2},
+        {r:[900,920],   t:'1,2-vinyl oop', w:2}
+      ]},
+    { id:'epdm', ko:'EPDM', en:'Ethylene-propylene-diene rubber', cls:'고무',
+      note:'포화 탄화수소 — 1600/1000/700 대역에 특징 밴드가 없다는 점이 오히려 식별 근거.',
+      markers:[
+        {r:[2915,2935], t:'CH₂ asym str', w:3},
+        {r:[2845,2865], t:'CH₂ sym str', w:2},
+        {r:[1455,1470], t:'CH₂ scissor', w:3},
+        {r:[1370,1385], t:'CH₃ sym bend', w:2},
+        {r:[715,730],   t:'CH₂ rock', w:1}
+      ]},
+    { id:'nbr', ko:'NBR (니트릴 고무)', en:'NBR / HNBR', cls:'고무',
+      note:'2237 C≡N 세기 = ACN 함량 경향. HNBR은 C=C(966) 감소.',
+      markers:[
+        {r:[2225,2245], t:'C≡N str', w:3},
+        {r:[2915,2935], t:'CH₂ asym str', w:2},
+        {r:[2845,2865], t:'CH₂ sym str', w:1},
+        {r:[1432,1462], t:'CH₂ scissor', w:1},
+        {r:[955,975],   t:'trans C=C oop', w:1}
+      ]},
+    { id:'cr', ko:'CR (클로로프렌 고무)', en:'Polychloroprene', cls:'고무',
+      markers:[
+        {r:[1655,1675], t:'C=C str', w:2},
+        {r:[1440,1455], t:'CH₂', w:1},
+        {r:[1300,1315], t:'CH bend', w:1},
+        {r:[1105,1125], t:'C–C', w:1},
+        {r:[955,975],   t:'trans C=C oop', w:1},
+        {r:[680,700],   t:'C–Cl str', w:1},
+        {r:[820,840],   t:'C–Cl / =CH', w:1}
+      ]},
+    { id:'iir', ko:'IIR (부틸 고무)', en:'Butyl rubber', cls:'고무',
+      note:'1365/1390 쌍(이소프로필)과 1225가 특징. 1660은 약함.',
+      markers:[
+        {r:[2940,2960], t:'CH₃ asym str', w:2},
+        {r:[2905,2925], t:'CH₂ asym str', w:2},
+        {r:[1465,1480], t:'CH₂ scissor', w:2},
+        {r:[1380,1395], t:'CH₃ sym bend', w:2},
+        {r:[1358,1372], t:'gem-dimethyl', w:2},
+        {r:[1215,1235], t:'C–C skeletal', w:1},
+        {r:[940,960],   t:'C=C oop', w:1}
+      ]},
+    { id:'fkm', ko:'FKM (불소고무)', en:'Fluoroelastomer', cls:'고무',
+      note:'1150–1220 C–F 광범위 흡수가 지문. 1400 부근과 조합.',
+      markers:[
+        {r:[1390,1410], t:'C–C / CF', w:1},
+        {r:[1200,1220], t:'C–F str', w:3},
+        {r:[1145,1165], t:'C–F str', w:3},
+        {r:[1095,1115], t:'C–F str', w:2},
+        {r:[875,895],   t:'C–F', w:1}
+      ]},
+
+    /* ---------------- 무기 충전제 / 보강재 ---------------- */
+    { id:'gf', ko:'유리섬유 (E-glass)', en:'Glass fiber', cls:'무기충전제',
+      note:'1000–1100 넓은 Si–O 흡수가 PA/PBT 등 수지 밴드와 겹친다 — 정량 시 주의.',
+      markers:[
+        {r:[1000,1120], t:'Si–O–Si (넓음)', w:2},
+        {r:[780,815],   t:'Si–O', w:1},
+        {r:[450,480],   t:'Si–O bend', w:1}
+      ]},
+    { id:'talc', ko:'탈크', en:'Talc', cls:'무기충전제',
+      note:'3676 Mg–OH는 탈크 확인의 결정적 밴드.',
+      markers:[
+        {r:[3665,3685], t:'Mg–OH str', w:3},
+        {r:[1005,1030], t:'Si–O str', w:3},
+        {r:[660,680],   t:'Si–O bend', w:1},
+        {r:[455,475],   t:'Si–O bend', w:1}
+      ]},
+    { id:'caco3', ko:'탄산칼슘', en:'Calcium carbonate', cls:'무기충전제',
+      note:'1420 넓은 CO₃ + 872 단일 밴드 조합이 특징.',
+      markers:[
+        {r:[1400,1440], t:'CO₃²⁻ asym str (넓음)', w:3},
+        {r:[865,880],   t:'CO₃²⁻ oop bend', w:3},
+        {r:[705,720],   t:'CO₃²⁻ bend', w:1}
+      ]},
+    { id:'silica', ko:'실리카', en:'Silica', cls:'무기충전제',
+      markers:[
+        {r:[1080,1120], t:'Si–O–Si asym', w:2},
+        {r:[790,812],   t:'Si–O sym', w:2},
+        {r:[460,480],   t:'Si–O bend', w:1}
+      ]},
+    { id:'carbonblack', ko:'카본블랙', en:'Carbon black', cls:'무기충전제',
+      note:'고유 밴드 없음. 전체 흡광도 상승·기울기·노이즈 증가로만 보인다(정성 식별 불가).',
+      markers:[] },
+
+    /* ---------------- 첨가제 ---------------- */
+    { id:'stearate', ko:'금속 스테아레이트 (활제/이형제)', en:'Metal stearate', cls:'첨가제',
+      note:'1570–1590 / 1530–1550 카르복실레이트 쌍. PA·POM·PP에 흔함.',
+      markers:[
+        {r:[1570,1592], t:'COO⁻ asym str', w:2},
+        {r:[1530,1552], t:'COO⁻ sym str', w:2},
+        {r:[1458,1475], t:'CH₂ scissor', w:1},
+        {r:[1305,1330], t:'CH₂ wag', w:1}
+      ]},
+    { id:'erucamide', ko:'에루카마이드 (슬립제)', en:'Erucamide', cls:'첨가제',
+      note:'N–H 3300 + amide I 1640이 PA 밴드와 겹친다 — 블룸(bloom) 시 PA로 오판 주의.',
+      markers:[
+        {r:[3280,3320], t:'N–H str', w:2},
+        {r:[1630,1650], t:'Amide I', w:2},
+        {r:[1535,1558], t:'Amide II', w:2}
+      ]},
+    { id:'antioxidant', ko:'페놀계 산화방지제', en:'Hindered phenol AO', cls:'첨가제',
+      note:'자유 OH 3630–3650은 미량·약함. 통상 ATR로는 검출 한계 이하.',
+      markers:[
+        {r:[3620,3652], t:'Free O–H str', w:1}
+      ]},
+
+    /* ---------------- 열화·산화 생성물 ---------------- */
+    { id:'oxidation', ko:'산화 생성물 (카르보닐/OH)', en:'Oxidation products', cls:'열화',
+      note:'카르보닐 대역은 케톤(1715)/알데하이드(1725)/에스터(1735)/산(1750)이 겹친다 — 단일 밴드 귀속 단정 금지.',
+      markers:[
+        {r:[1700,1770], t:'C=O str (케톤·산·에스터·락톤)', w:3},
+        {r:[3200,3500], t:'O–H / hydroperoxide (넓음)', w:2},
+        {r:[1600,1645], t:'C=C 공액', w:1},
+        {r:[1150,1200], t:'C–O (산화)', w:1}
+      ]}
+  ],
+
+  /* 지수 프리셋 — 사용자 볼트의 CI 정의(Dong 2010,PA6)를 그대로 포함 */
+  indices: [
+    { id:'ci_dong', name:'CI — Dong 2010 (PA6, ATR 보정)', short:'CI',
+      num:[1710,1760], numBase:[1780,1690], den:[1458,1468], denBase:[1495,1435],
+      atr:true, unit:'면적비',
+      note:'I(1710–1760)/I(1458–1468). ATR 보정하면 미보정 대비 약 1/1.17 (Dong 2010 방식).' },
+    { id:'ci_ketone', name:'CI_ketone (1차 열산화)', short:'CI_ket',
+      num:[1710,1720], numBase:[1780,1690], den:[1458,1468], denBase:[1495,1435], atr:true, unit:'면적비',
+      note:'케톤 대역만 적분 — 산화 vs 가수분해 구분용(귀속 가정 하).' },
+    { id:'ci_acid', name:'CI_acid (카르복실산)', short:'CI_acid',
+      num:[1745,1755], numBase:[1780,1690], den:[1458,1468], denBase:[1495,1435], atr:true, unit:'면적비',
+      note:'산 대역. 가수분해도 여기를 올린다.' },
+    { id:'hbond', name:'H-bond index A(3440)/A(3300)', short:'Hbond',
+      type:'point', a:3440, b:3300, atr:false, unit:'흡광도비',
+      note:'자유 N–H / 수소결합 N–H. 수분 흡수 시 하락(가역) — 피크 높이 비(베이스라인 미적용).' },
+    { id:'ci_pe', name:'CI — PE/PP 범용', short:'CI_PE',
+      num:[1710,1725], numBase:[1750,1680], den:[2010,2030], denBase:[2050,1980], atr:false, unit:'면적비',
+      note:'A(1715)/A(2020) 관례. 폴리올레핀 열화 모니터링.' },
+    { id:'oi_rubber', name:'OI — 고무 산화지수', short:'OI_rubber',
+      num:[1700,1740], numBase:[1760,1680], den:[1440,1475], denBase:[1490,1420], atr:true, unit:'면적비',
+      note:'카르보닐/CH₂ scissor. NR·SBR·EPDM 열산화 비교용.' }
+  ]
+};
+
+</script>
+<script>
+/* ==== app-opus.js ==== */
+/* FTIR Studio — Bruker OPUS 원시 바이너리(.0/.1/.2 …) 리더 v1.0
+ *
+ * 출처(공개 스펙·오픈소스 구현 대조):
+ *   - brukeropus (MIT) 저수준 파서  https://joshduran.github.io/brukeropus/brukeropus/file/parse.html
+ *   - openreadout OPUS 포맷 노트      https://openreadout.github.io/openreadout/formats/bruker-opus.html
+ *
+ * 파일 구조
+ *   [0..4)   0A 0A FE FE
+ *   [4..12)  f64 포맷 버전
+ *   [12..16) i32 디렉터리 시작 오프셋
+ *   [16..20) i32 디렉터리 슬롯 수
+ *   [20..24) i32 사용 블록 수
+ *   디렉터리: 블록당 12바이트 (type u32, size(4바이트 워드) u32, start u32), start<=0 이면 끝
+ *
+ * type 워드 비트: part 0-1 · role 2-3 · params 4-9 · data 10-16 · deriv 17-18 · ext 19-21
+ *   params 0 = 데이터 블록, 1 = 데이터 스테이터스(파라미터), 2~11 = 기기/광학/획득/시료 파라미터
+ *   data   1 single channel · 2 interferogram · 3 phase · 4 absorbance · 5 transmittance · 16 ATR …
+ *   role   1 sample · 2 reference · 3 result
+ *
+ * 파라미터 블록: 레코드 = 3자 이름 + (1바이트 패딩) + i16 dtype + i16 크기(2바이트 워드) + 값, 'END'까지
+ *   dtype 0=i32, 1=f64, 2~4=문자열
+ * 데이터 블록: float32(DPF=1) 또는 int32(DPF=2) 원시값, y = 저장값 × CSF, x = linspace(FXV, LXV, NPT)
+ */
+(function (root) {
+  'use strict';
+
+  var KIND = {
+    1: ['single channel', '단일채널'], 2: ['interferogram', '인터페로그램'], 3: ['phase', '위상'],
+    4: ['absorbance', '흡광도'], 5: ['transmittance', '투과율'], 6: ['Kubelka-Munk', 'K-M'],
+    7: ['trace', '트레이스'], 8: ['GC interferogram', 'GC 간섭'], 9: ['GC spectrum', 'GC 스펙트럼'],
+    10: ['Raman', '라만'], 11: ['emission', '발광'], 12: ['reflectance', '반사율'], 14: ['power', '파워'],
+    15: ['log reflectance', 'log 반사'], 16: ['ATR', 'ATR'], 17: ['photoacoustic', '광음향'],
+    18: ['result', '연산결과'], 19: ['result', '연산결과'], 22: ['match', '매치']
+  };
+  var ROLE = { 1: 'sample', 2: 'reference', 3: 'result' };
+  var PGROUP = {
+    1: 'data_status', 2: 'instrument', 3: 'acquisition', 4: 'fourier', 5: 'display',
+    6: 'optics', 7: 'gc', 8: 'library', 9: 'comm', 10: 'sample', 11: 'lab'
+  };
+
+  function isOpus(u8) {
+    return !!u8 && u8.length > 32 &&
+      u8[0] === 0x0A && u8[1] === 0x0A && u8[2] === 0xFE && u8[3] === 0xFE;
+  }
+
+  function decodeType(t) {
+    t = t >>> 0;
+    return {
+      part: t & 3, role: (t >>> 2) & 3, params: (t >>> 4) & 0x3F,
+      data: (t >>> 10) & 0x7F, deriv: (t >>> 17) & 3, ext: (t >>> 19) & 7
+    };
+  }
+
+  var maskParams = function (t) { return ((t & ~(0x3F << 4)) >>> 0); };
+
+  function bytesToStr(u8, from, len) {
+    var out = '', high = false;
+    for (var i = 0; i < len; i++) {
+      var c = u8[from + i];
+      if (c === 0) break;
+      if (c > 0x7F) high = true;
+      out += String.fromCharCode(c);
+    }
+    if (!high) return out;
+    var slice = u8.subarray(from, from + len);
+    if (typeof TextDecoder !== 'undefined') {
+      var encs = ['utf-8', 'euc-kr'];
+      for (var e = 0; e < encs.length; e++) {
+        try { return new TextDecoder(encs[e], { fatal: true }).decode(slice).replace(/\u0000.*$/, ''); } catch (err) { /* next */ }
+      }
+    }
+    return out;
+  }
+
+  function parseParams(u8) {
+    var dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+    var p = {}, loc = 0, guard = 0;
+    while (loc + 8 <= u8.length && guard++ < 5000) {
+      var key = '';
+      for (var k = 0; k < 3; k++) {
+        var c = u8[loc + k];
+        if (c === 0) break;
+        key += String.fromCharCode(c);
+      }
+      if (!key || key === 'END') break;
+      var dt = dv.getInt16(loc + 4, true);
+      var size = dv.getInt16(loc + 6, true) * 2;
+      if (size < 0 || loc + 8 + size > u8.length) break;
+      var val;
+      if (dt === 0) val = dv.getInt32(loc + 8, true);
+      else if (dt === 1) val = dv.getFloat64(loc + 8, true);
+      else val = bytesToStr(u8, loc + 8, size);
+      p[key] = val;
+      loc += 8 + size;
+    }
+    return p;
+  }
+
+  function pickScore(b) {
+    var kind = b.d.data, role = b.d.role;
+    if (kind === 2 || kind === 3) return 1;            // 간섭도·위상은 스펙트럼이 아님
+    if (role === 3) return kind === 4 ? 100 : kind === 16 ? 95 : kind === 5 ? 90 : 70;
+    if (role === 1) return kind === 4 ? 60 : kind === 16 ? 58 : kind === 5 ? 56 : kind === 1 ? 40 : 10;
+    if (role === 2) return 5;
+    return 3;
+  }
+
+  /**
+   * OPUS 파일을 읽는다.
+   * @param {ArrayBuffer} buffer
+   * @param {{name?:string, blockIndex?:number}} [opts]
+   * @returns {object} parseText()와 동일한 형태 + info/blocks
+   */
+  function parse(buffer, opts) {
+    opts = opts || {};
+    var u8 = new Uint8Array(buffer);
+    if (!isOpus(u8)) return { error: 'OPUS 시그니처(0A 0A FE FE)가 아닙니다 — ASCII(.dpt) 또는 실제 OPUS 파일인지 확인하세요.' };
+    var dv = new DataView(buffer);
+    var version = dv.getFloat64(4, true);
+    var dirStart = dv.getInt32(12, true);
+    var maxBlocks = dv.getInt32(16, true);
+    var numBlocks = dv.getInt32(20, true);
+    var warnings = [];
+    if (!(dirStart >= 24 && dirStart < u8.length)) return { error: '디렉터리 오프셋이 비정상입니다 (' + dirStart + ')' };
+    var n = Math.min(numBlocks, maxBlocks, 4096);
+    if (!(n > 0)) return { error: '블록 수가 0입니다.' };
+
+    var blocks = [], i, rec, type, sizeWords, start, bytes;
+    for (i = 0; i < n; i++) {
+      rec = dirStart + i * 12;
+      if (rec + 12 > u8.length) break;
+      type = dv.getInt32(rec, true);
+      sizeWords = dv.getInt32(rec + 4, true);
+      start = dv.getInt32(rec + 8, true);
+      if (start <= 0) break;
+      if (start === dirStart) continue;                    // 디렉터리 블록 자신
+      bytes = sizeWords * 4;
+      if (bytes <= 0 || start + bytes > u8.length) { warnings.push('블록 ' + i + ' 범위 초과 — 건너뜀'); continue; }
+      blocks.push({ i: i, type: type >>> 0, d: decodeType(type), size: bytes, start: start });
+    }
+    if (!blocks.length) return { error: '블록을 하나도 읽지 못했습니다.' };
+
+    var dataBlocks = [], info = {}, sampleName = '';
+    for (i = 0; i < blocks.length; i++) {
+      var b = blocks[i];
+      var sub = new Uint8Array(buffer, b.start, b.size);
+      if (b.d.params === 0 && b.d.data > 0 && b.d.ext !== 5) {
+        dataBlocks.push(b);
+      } else if (b.d.params > 0) {
+        b.p = parseParams(sub);
+        var g = PGROUP[b.d.params];
+        if (g === 'sample' && b.p.SNM) sampleName = String(b.p.SNM);
+        if (g === 'instrument') { info.instrument = b.p.INS; info.serial = b.p.SRN; }
+        if (g === 'acquisition') {
+          if (b.p.RES != null) info.resolution = b.p.RES;
+          if (b.p.NSS != null) info.scans = b.p.NSS;          // 시료측 스캔 수 우선
+          else if (b.p.NSR != null && info.scans == null) info.scans = b.p.NSR;
+          if (b.p.PLF != null) info.result = b.p.PLF;
+        }
+        if (g === 'optics') { info.accessory = b.p.ACC; info.beamsplitter = b.p.BMS; info.source = b.p.SRC; info.detector = b.p.DTC; info.aperture = b.p.APT; }
+      }
+    }
+
+    var statusOf = function (b) {
+      var want = maskParams(b.type);
+      for (var j = 0; j < blocks.length; j++) {
+        if (blocks[j].d.params === 1 && maskParams(blocks[j].type) === want) return blocks[j];
+      }
+      return null;
+    };
+
+    var t = new DataView(buffer), tol;
+    var decoded = [];
+    for (i = 0; i < dataBlocks.length; i++) {
+      b = dataBlocks[i];
+      var st = statusOf(b);
+      var p = st ? st.p : null;
+      var label = (KIND[b.d.data] ? KIND[b.d.data][1] : 'kind' + b.d.data) + ' / ' + (ROLE[b.d.role] || 'role' + b.d.role);
+      if (!p || typeof p.NPT !== 'number') { warnings.push(label + ': 스테이터스 블록 없음 — 건너뜀'); continue; }
+      var npt = p.NPT | 0;
+      if (!(npt > 1)) { warnings.push(label + ': NPT 비정상 — 건너뜀'); continue; }
+      var csf = (typeof p.CSF === 'number' && isFinite(p.CSF)) ? p.CSF : 1;
+      var dpf = (p.DPF | 0) || 1;
+      var total = Math.floor(b.size / 4);
+      var off = (b.d.ext === 4) ? Math.max(0, total - npt) : 0;   // compact 블록은 뒤쪽 NPT개
+      if (off + npt > total) { warnings.push(label + ': 데이터 길이 부족(' + total + ' < ' + npt + ') — 건너뜀'); continue; }
+
+      var xs = new Float64Array(npt), ys = new Float64Array(npt), base = b.start;
+      var mn = Infinity, mx = -Infinity;
+      for (var k2 = 0; k2 < npt; k2++) {
+        var o = base + (off + k2) * 4;
+        var v = (dpf === 2) ? t.getInt32(o, true) : t.getFloat32(o, true);
+        v *= csf;
+        ys[k2] = v;
+        if (v < mn) mn = v;
+        if (v > mx) mx = v;
+      }
+      var fxv = p.FXV, lxv = p.LXV;
+      if (typeof fxv !== 'number' || typeof lxv !== 'number') { warnings.push(label + ': 축 범위(FXV/LXV) 없음 — 건너뜀'); continue; }
+      var step = (lxv - fxv) / (npt - 1);
+      var dxu = String(p.DXU || '').toUpperCase();
+      for (k2 = 0; k2 < npt; k2++) {
+        var xv = fxv + step * k2;
+        if (dxu === 'MI') xv = 10000 / xv;          // µm → cm⁻¹
+        else if (dxu === 'NM') xv = 1e7 / xv;       // nm → cm⁻¹
+        xs[k2] = xv;
+      }
+
+      // 무결성 검증: 파일 내부 MNY/MXY와 실제 최소·최대 대조
+      var verify = 'none';
+      if (typeof p.MNY === 'number' && typeof p.MXY === 'number') {
+        var span = Math.abs(p.MXY - p.MNY) || 1;
+        tol = Math.max(1e-6, 0.01 * span);
+        verify = (Math.abs(mn - p.MNY) <= tol && Math.abs(mx - p.MXY) <= tol) ? 'ok' : 'fail';
+        if (verify === 'fail') {
+          warnings.push(label + ': 무결성 검사 실패 (계산 ' + mn.toFixed(5) + '–' + mx.toFixed(5) +
+            ' vs 파일 ' + p.MNY.toFixed(5) + '–' + p.MXY.toFixed(5) + ') — 값 신뢰 불가, 불러오지 않음');
+          continue;
+        }
+      }
+
+      var unit = 'abs';
+      if (b.d.data === 5) {
+        // OPUS 투과율은 %(0~100) 또는 0~1 두 가지 — 값 범위로 판정해 %로 통일
+        if (mx <= 1.5) { for (k2 = 0; k2 < npt; k2++) ys[k2] *= 100; }
+        unit = 'trans';
+      }
+      decoded.push({
+        label: label, kind: b.d.data, role: b.d.role, ext: b.d.ext,
+        unit: unit, npt: npt, x: xs, y: ys, dxu: dxu, verify: verify,
+        date: p.DAT, time: p.TIM, score: pickScore(b)
+      });
+    }
+
+    if (!decoded.length) {
+      return { error: '사용 가능한 스펙트럼 블록이 없습니다. ' + (warnings.length ? warnings[warnings.length - 1] : '') };
+    }
+
+    var chosen = null;
+    if (typeof opts.blockIndex === 'number' && decoded[opts.blockIndex]) chosen = decoded[opts.blockIndex];
+    if (!chosen) {
+      chosen = decoded[0];
+      for (i = 1; i < decoded.length; i++) if (decoded[i].score > chosen.score) chosen = decoded[i];
+    }
+    if (chosen.unit === 'abs' && chosen.kind === 1) {
+      warnings.push('단일채널(Single Channel) 원시 스펙트럼입니다 — 흡광도가 아니므로 CI 등 지수 계산에 쓰지 마세요.');
+    }
+    if (chosen.dxu && chosen.dxu !== 'WN' && chosen.dxu !== 'MI' && chosen.dxu !== 'NM') {
+      warnings.push('X축 단위 코드가 ' + chosen.dxu + ' 입니다 — 파수(cm⁻¹)가 아닐 수 있습니다.');
+    }
+    if (chosen.verify === 'none') warnings.push('내부 무결성 검사값(MNY/MXY)이 없어 값 검증을 못 했습니다.');
+
+    // x 오름차순 정렬 (앱 내부 규약)
+    var order = new Array(chosen.npt);
+    for (i = 0; i < chosen.npt; i++) order[i] = i;
+    if (chosen.x[0] > chosen.x[chosen.npt - 1]) order.reverse();
+    var X = new Array(chosen.npt), Y = new Array(chosen.npt);
+    for (i = 0; i < chosen.npt; i++) { X[i] = chosen.x[order[i]]; Y[i] = chosen.y[order[i]]; }
+
+    var baseName = (opts.name || '').replace(/\.[^.]+$/, '');
+    var name = sampleName || baseName || 'OPUS';
+    if (sampleName && baseName && sampleName !== baseName) name = sampleName;
+
+    var others = decoded.filter(function (d) { return d !== chosen; })
+      .map(function (d) { return d.label + '(' + d.npt + 'pt)'; });
+
+    return {
+      name: name,
+      x: X, y: Y, unit: chosen.unit, n: chosen.npt,
+      warnings: warnings,
+      source: 'opus',
+      info: {
+        version: version, blocks: blocks.length, spectrum: chosen.label,
+        kind: chosen.kind, verify: chosen.verify, others: others,
+        instrument: info.instrument, serial: info.serial,
+        resolution: info.resolution, scans: info.scans,
+        accessory: info.accessory, beamsplitter: info.beamsplitter,
+        source_: info.source, detector: info.detector,
+        date: chosen.date, time: chosen.time, sampleName: sampleName
+      }
+    };
+  }
+
+  root.FTIROpus = { isOpus: isOpus, parse: parse, decodeType: decodeType, parseParams: parseParams };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* ==== app-core.js ==== */
+/* =========================================================================
+ * app-core.js — 파싱 · 전처리 · 피크 · 지수 · 정성판정 · 라이브러리
+ * 의존성 없음(순수 JS). window.FTIRC 로 노출.
+ * ========================================================================= */
+(function () {
+  'use strict';
+
+  /* ---------------------------------------------------------------- utils */
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const median = (arr) => { const s = arr.slice().sort((a, b) => a - b); return s[s.length >> 1]; };
+
+  function interpAt(x, y, xi) {            // x: 오름차순
+    if (!x.length) return NaN;
+    if (xi <= x[0]) return y[0];
+    if (xi >= x[x.length - 1]) return y[y.length - 1];
+    let lo = 0, hi = x.length - 1;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (x[mid] <= xi) lo = mid; else hi = mid;
+    }
+    const dx = x[hi] - x[lo];
+    if (dx === 0) return y[lo];
+    const t = (xi - x[lo]) / dx;
+    return y[lo] + t * (y[hi] - y[lo]);
+  }
+
+  function areaTrap(x, y, lo, hi) {        // lo<hi 가정, 범위 내 적분
+    let s = 0;
+    for (let i = 0; i < x.length - 1; i++) {
+      const x0 = x[i], x1 = x[i + 1];
+      if (x1 < lo || x0 > hi) continue;
+      const a = Math.max(x0, lo), b = Math.min(x1, hi);
+      if (b <= a) continue;
+      const t0 = (a - x0) / (x1 - x0), t1 = (b - x0) / (x1 - x0);
+      const y0 = y[i] + t0 * (y[i + 1] - y[i]);
+      const y1 = y[i] + t1 * (y[i + 1] - y[i]);
+      s += 0.5 * (y0 + y1) * (b - a);
+    }
+    return s;
+  }
+
+  /* 선형 베이스라인 위 밴드 면적 (앵커 두 점 사이 직선) */
+  function bandArea(x, y, lo, hi, b1, b2) {
+    const lo1 = Math.min(b1, b2), hi1 = Math.max(b1, b2);
+    const y1 = interpAt(x, y, lo1), y2 = interpAt(x, y, hi1);
+    const slope = (y2 - y1) / (hi1 - lo1 || 1);
+    const base = (xi) => y1 + slope * (xi - lo1);
+    let s = 0;
+    for (let i = 0; i < x.length - 1; i++) {
+      const x0 = x[i], x1 = x[i + 1];
+      if (x1 < lo || x0 > hi) continue;
+      const a = Math.max(x0, lo), b = Math.min(x1, hi);
+      if (b <= a) continue;
+      const f = (xi) => interpAt(x, y, xi) - base(xi);
+      s += 0.5 * (f(a) + f(b)) * (b - a);
+    }
+    return s;
+  }
+
+  /* --- Savitzky–Golay --- */
+  function sgCoeffs(win, order) {
+    if (win % 2 === 0) win += 1;
+    const half = (win - 1) / 2;
+    const A = [], b = [];
+    for (let i = 0; i < win; i++) { A.push([]); b.push(0); }
+    for (let i = 0; i < win; i++) {
+      const xx = i - half;
+      for (let j = 0; j < order + 1; j++) {
+        for (let k = 0; k < order + 1; k++) A[j][k] = (A[j][k] || 0) + Math.pow(xx, j + k);
+        b[j] = (b[j] || 0) + Math.pow(xx, j);
+      }
+    }
+    // 가우스 소거 (order+1 x order+1)
+    const n = order + 1, M = [];
+    for (let i = 0; i < n; i++) { M.push(A[i].slice(0, n).concat([b[i]])); }
+    for (let c = 0; c < n; c++) {
+      let p = c;
+      for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      [M[c], M[p]] = [M[p], M[c]];
+      const piv = M[c][c] || 1e-12;
+      for (let r = 0; r < n; r++) {
+        if (r === c) continue;
+        const f = M[r][c] / piv;
+        for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k];
+      }
+    }
+    const c0 = M.map((row, i) => row[n] / (M[i][i] || 1e-12));  // 0차 계수 = 스무딩 커널
+    return c0;
+  }
+  function sgSmooth(y, win, order) {
+    if (win < 3 || y.length < win) return y.slice();
+    const k = sgCoeffs(win, Math.min(order, 5));
+    const half = (k.length - 1) / 2;
+    const out = y.slice();
+    for (let i = half; i < y.length - half; i++) {
+      let s = 0;
+      for (let j = 0; j < k.length; j++) s += k[j] * y[i - half + j];
+      out[i] = s;
+    }
+    return out;
+  }
+
+  /* --- 다항식 베이스라인 --- */
+  function polyFit(x, y, deg) {
+    const n = deg + 1, A = [], b = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) A.push(new Array(n).fill(0));
+    for (let p = 0; p < x.length; p++) {
+      const xp = [1];
+      for (let j = 1; j < 2 * n; j++) xp.push(xp[j - 1] * x[p]);
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) A[i][j] += xp[i + j];
+        b[i] += xp[i] * y[p];
+      }
+    }
+    for (let c = 0; c < n; c++) {
+      let piv = c;
+      for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[piv][c])) piv = r;
+      [A[c], A[piv]] = [A[piv], A[c]]; [b[c], b[piv]] = [b[piv], b[c]];
+      if (Math.abs(A[c][c]) < 1e-14) continue;
+      for (let r = 0; r < n; r++) {
+        if (r === c) continue;
+        const f = A[r][c] / A[c][c];
+        for (let k = c; k < n; k++) A[r][k] -= f * A[c][k];
+        b[r] -= f * b[c];
+      }
+    }
+    return b.map((v, i) => (Math.abs(A[i][i]) < 1e-14 ? 0 : v / A[i][i]));
+  }
+  const polyVal = (c, x) => c.reduce((s, v, i) => s + v * Math.pow(x, i), 0);
+
+  /* --- 러버밴드(볼록 껍질 아래 포락선) --- */
+  function rubberband(x, y) {
+    const n = x.length;
+    if (n < 3) return new Array(n).fill(0);
+    // 흡광도 기준: 아래쪽 볼록 껍질 = 최소 포락선
+    const hull = [];
+    for (let i = 0; i < n; i++) {
+      while (hull.length >= 2) {
+        const a = hull[hull.length - 2], b = hull[hull.length - 1];
+        const cross = (x[b] - x[a]) * (y[i] - y[a]) - (y[b] - y[a]) * (x[i] - x[a]);
+        if (cross <= 0) hull.pop(); else break;
+      }
+      hull.push(i);
+    }
+    const base = new Array(n).fill(0);
+    let h = 0;
+    for (let i = 0; i < n; i++) {
+      while (h < hull.length - 1 && x[hull[h + 1]] < x[i]) h++;
+      if (h >= hull.length - 1) { base[i] = y[hull[hull.length - 1]]; continue; }
+      const a = hull[h], b = hull[h + 1];
+      const t = (x[i] - x[a]) / ((x[b] - x[a]) || 1);
+      base[i] = y[a] + t * (y[b] - y[a]);
+    }
+    return base;
+  }
+
+  /* ------------------------------------------------------------- parsing */
+  function splitNums(line) {
+    const parts = line.trim().split(/[\s,;]+/).filter((s) => s.length);
+    const nums = [];
+    for (const p of parts) {
+      const v = Number(p.replace(/^\+/, ''));
+      if (!isFinite(v)) { if (nums.length >= 2) break; return []; }
+      nums.push(v);
+    }
+    return nums;
+  }
+
+  function parseText(text, name) {
+    const lines = text.replace(/\r\n?/g, '\n').split('\n');
+    const warnings = [];
+    let headerHasTrans = false, headerHasAbs = false, headerLines = 0;
+    const rows = [];
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) continue;
+      if (/^[#;%]|^[A-Za-z]/.test(line)) {
+        headerLines++;
+        if (/%\s*T|transmission|투과율/i.test(line)) headerHasTrans = true;
+        if (/absorbance|흡광도/i.test(line)) headerHasAbs = true;
+        continue;
+      }
+      const nums = splitNums(line);
+      if (nums.length >= 2) rows.push(nums);
+    }
+    if (!rows.length) return { error: '숫자 2열을 찾지 못했습니다. OPUS에서 ASCII(.dpt/.txt)로 내보낸 파일인지 확인하세요.' };
+
+    const maxCols = Math.max(...rows.map((r) => r.length));
+    let ci = 0, yi = 1;
+    if (maxCols >= 3) {
+      // 첫 열이 1,2,3… 순번이면 건너뛴다
+      let seq = true;
+      for (let i = 0; i < Math.min(rows.length, 50); i++) {
+        if (Math.abs(rows[i][0] - (i + 1)) > 1e-6) { seq = false; break; }
+      }
+      if (seq) { ci = 1; yi = 2; warnings.push('3열 형식: 1열(순번) 무시, 2–3열 사용'); }
+    }
+
+    const pts = [];
+    let skipped = 0;
+    for (const r of rows) {
+      const x = r[ci], y = r[yi];
+      if (!isFinite(x) || !isFinite(y)) { skipped++; continue; }
+      pts.push([x, y]);
+    }
+    if (skipped) warnings.push(`${skipped}행 무시(비수치)`);
+    if (pts.length < 10) return { error: '데이터 점이 너무 적습니다(' + pts.length + '점).' };
+
+    pts.sort((a, b) => a[0] - b[0]);
+    const xs = [], ys = [];
+    for (const p of pts) {
+      if (xs.length && Math.abs(p[0] - xs[xs.length - 1]) < 1e-9) { ys[ys.length - 1] = p[1]; continue; }
+      xs.push(p[0]); ys.push(p[1]);
+    }
+
+    const yMed = median(ys), yMax = Math.max(...ys), yMin = Math.min(...ys);
+    let unit = 'abs';
+    if (headerHasTrans) unit = 'trans';
+    else if (headerHasAbs) unit = 'abs';
+    else if (yMax > 1.6 || (yMin > 0.5 && yMax <= 110 && yMax - yMin > 3)) unit = 'trans';
+    if (unit === 'trans') warnings.push('투과율(%T)로 판단 → 흡광도로 변환합니다');
+
+    const xRangeOk = xs[0] > 100 && xs[xs.length - 1] < 5000;
+    if (!xRangeOk) warnings.push(`X 범위 확인 필요: ${xs[0]}–${xs[xs.length - 1]}`);
+
+    return { name: name || 'spectrum', x: xs, y: ys, unit, warnings, headerLines, n: xs.length };
+  }
+
+  /* ------------------------------------------------------------ spectrum */
+  function spectrumFromParsed(p) {
+    let y = p.y.slice();
+    if (p.unit === 'trans') y = y.map((v) => -Math.log10(clamp(v / 100, 1e-6, 1.5)));
+    // 흡광도 페데스탈(음수 오프셋) 제거는 하지 않는다 — 사용자가 베이스라인으로 처리
+    const x = p.x;
+    // ATR 보정 후 음수가 될 수 있으므로 최소값 유지
+    return { x, y };
+  }
+
+  function atrCorrect(x, y, n1, n2) {
+    // 단순 ATR 보정: 침투깊이 ∝ 1/ν → A_corr = A · ν/1000
+    return y.map((v, i) => v * (x[i] / 1000));
+  }
+
+  function applyPipeline(spec, pre) {
+    let x = spec.x, y = spec.y.slice();
+    if (pre.atr && pre.atr.on) y = atrCorrect(x, y, pre.atr.n1 || 2.40, pre.atr.n2 || 1.52);
+    if (pre.smooth && pre.smooth.on) y = sgSmooth(y, pre.smooth.win | 0 || 9, pre.smooth.order | 0);
+    const bm = pre.baseline ? pre.baseline.mode : 'none';
+    if (bm === 'linear') {
+      const p1 = pre.baseline.p1, p2 = pre.baseline.p2;
+      const y1 = interpAt(x, y, p1), y2 = interpAt(x, y, p2);
+      const sl = (y2 - y1) / ((p2 - p1) || 1);
+      y = y.map((v, i) => v - (y1 + sl * (x[i] - p1)));
+    } else if (bm === 'poly') {
+      const c = polyFit(x, y, pre.baseline.deg | 0 || 3);
+      y = y.map((v, i) => v - polyVal(c, x[i]));
+    } else if (bm === 'rubber') {
+      const base = rubberband(x, y);
+      y = y.map((v, i) => v - base[i]);
+    }
+    const nm = pre.norm || 'none';
+    if (nm !== 'none') {
+      let ref = 1;
+      if (nm === 'max') ref = Math.max(...y.map(Math.abs)) || 1;
+      else if (nm === 'minmax') {
+        const mn = Math.min(...y), mx = Math.max(...y);
+        ref = (mx - mn) || 1;
+        y = y.map((v) => (v - mn) / ref); ref = 1;
+      } else if (nm === 'vector') {
+        ref = Math.sqrt(y.reduce((s, v) => s + v * v, 0)) || 1;
+      } else if (nm === 'band') {
+        const b = pre.normBand || [1440, 1480];
+        ref = Math.abs(bandArea(x, y, Math.min(...b), Math.max(...b), Math.min(...b), Math.max(...b))) || 1;
+      }
+      if (nm !== 'minmax') y = y.map((v) => v / ref);
+    }
+    return { x, y };
+  }
+
+  /* --------------------------------------------------------------- peaks */
+  function findPeaks(x, y, opts) {
+    const o = Object.assign({ minProm: 0.02, minSep: 6, maxPeaks: 300 }, opts || {});
+    const n = y.length;
+    if (n < 5) return [];
+    const ymin = Math.min(...y), ymax = Math.max(...y);
+    const span = (ymax - ymin) || 1;
+    const prom = new Array(n).fill(0);
+    for (let i = 1; i < n - 1; i++) {
+      if (!(y[i] > y[i - 1] && y[i] >= y[i + 1])) continue;
+      let l = i, r = i;
+      while (l > 0 && y[l - 1] <= y[i]) l--;
+      while (r < n - 1 && y[r + 1] <= y[i]) r++;
+      let minL = y[i], minR = y[i];
+      for (let k = l; k < i; k++) minL = Math.min(minL, y[k]);
+      for (let k = i + 1; k <= r; k++) minR = Math.min(minR, y[k]);
+      prom[i] = y[i] - Math.max(minL, minR);
+    }
+    const cand = [];
+    for (let i = 1; i < n - 1; i++) {
+      if (prom[i] <= 0) continue;
+      if (prom[i] / span < o.minProm) continue;
+      // 포물선 보간으로 x 정밀화
+      const y0 = y[i - 1], y1 = y[i], y2 = y[i + 1];
+      const den = (y0 - 2 * y1 + y2);
+      const d = den !== 0 ? 0.5 * (y0 - y2) / den : 0;
+      const xp = x[i] + d * (x[i + 1] - x[i]);
+      const yp = y1 - 0.25 * (y0 - y2) * d;
+      cand.push({ x: xp, y: yp, prom: prom[i], i });
+    }
+    cand.sort((a, b) => b.prom - a.prom);
+    const kept = [];
+    for (const c of cand) {
+      if (kept.length >= o.maxPeaks) break;
+      if (kept.some((k) => Math.abs(k.x - c.x) < o.minSep)) continue;
+      kept.push(c);
+    }
+    kept.sort((a, b) => b.x - a.x);
+    return kept;
+  }
+
+  /* ------------------------------------------------------------ indices */
+  function prepForIndex(spec, atrOn) {
+    let x = spec.x, y = spec.y.slice();
+    if (atrOn) y = atrCorrect(x, y, 2.40, 1.52);
+    return { x, y };
+  }
+
+  function calcIndex(spec, preset, opts) {
+    const o = opts || {};
+    const atrOn = o.atr !== undefined ? o.atr : !!preset.atr;
+    const s = prepForIndex(spec, atrOn);
+    const sRaw = prepForIndex(spec, false);
+    if (preset.type === 'point') {
+      const a = interpAt(s.x, s.y, preset.a), b = interpAt(s.x, s.y, preset.b);
+      return { value: b ? a / b : NaN, num: a, den: b, atr: atrOn, unit: preset.unit };
+    }
+    const nLo = Math.min(...preset.num), nHi = Math.max(...preset.num);
+    const dLo = Math.min(...preset.den), dHi = Math.max(...preset.den);
+    const num = bandArea(s.x, s.y, nLo, nHi, preset.numBase[0], preset.numBase[1]);
+    const den = bandArea(s.x, s.y, dLo, dHi, preset.denBase[0], preset.denBase[1]);
+    const numR = bandArea(sRaw.x, sRaw.y, nLo, nHi, preset.numBase[0], preset.numBase[1]);
+    const denR = bandArea(sRaw.x, sRaw.y, dLo, dHi, preset.denBase[0], preset.denBase[1]);
+    return {
+      value: den ? num / den : NaN, valueRaw: denR ? numR / denR : NaN,
+      num, den, numRaw: numR, denRaw: denR, atr: atrOn, unit: preset.unit,
+      numZero: !(num > 0), denWeak: !(Math.abs(den) > 1e-9)
+    };
+  }
+
+  /* --------------------------------------------------------- identification */
+  function bestPeakInRange(x, y, lo, hi) {
+    let bi = -1, bv = -Infinity;
+    for (let i = 0; i < x.length; i++) {
+      if (x[i] < lo || x[i] > hi) continue;
+      if (y[i] > bv) { bv = y[i]; bi = i; }
+    }
+    if (bi < 0) return null;
+    // 국소 최대 여부 확인(양옆보다 높거나 같음)
+    const isMax = (bi === 0 || y[bi] >= y[bi - 1]) && (bi === y.length - 1 || y[bi] >= y[bi + 1]);
+    return { x: x[bi], y: y[bi], isMax, idx: bi };
+  }
+
+  function scoreMaterials(spec, peaks, bandsLib) {
+    const mats = bandsLib.materials.filter((m) => !['무기충전제', '첨가제', '열화'].includes(m.cls) && m.markers.length);
+    const ymin = Math.min(...spec.y), ymax = Math.max(...spec.y);
+    const span = (ymax - ymin) || 1;
+    // 검출 피크를 기준으로 마커 매칭(전역 ymin 비교는 기울기·페데스탈에 오염됨)
+    const cand = (peaks && peaks.length ? peaks : findPeaks(spec.x, spec.y, { minProm: 0.008, minSep: 4 }))
+      .filter((p) => p.prom / span >= 0.008);
+    const major = (peaks && peaks.length ? peaks.slice() : cand.slice())
+      .sort((a, b) => b.prom - a.prom).slice(0, 12);
+    const out = [];
+    for (const m of mats) {
+      let got = 0, tot = 0, distSum = 0, distN = 0;
+      const detail = [];
+      for (const mk of m.markers) {
+        const [lo, hi] = mk.r;
+        const hits = cand.filter((p) => p.x >= lo - 4 && p.x <= hi + 4);
+        const best = hits.sort((a, b) => b.prom - a.prom)[0];
+        const found = !!best;
+        if (found) {
+          const px = best.x;
+          const d = px < lo ? lo - px : (px > hi ? px - hi : Math.abs(px - (lo + hi) / 2));
+          distSum += d; distN++;
+        }
+        detail.push({ r: mk.r, t: mk.t, w: mk.w, found, x: best ? best.x : null, prom: best ? best.prom : 0 });
+        tot += mk.w;
+        if (found) got += mk.w;
+      }
+      const scoreBand = tot ? got / tot : 0;
+      // 설명률: 스펙트럼 주요 피크 중 후보 밴드로 설명되는 비율(특이성 확보)
+      let explained = 0;
+      for (const pk of major) {
+        if (m.markers.some((mk) => pk.x >= mk.r[0] - 6 && pk.x <= mk.r[1] + 6)) explained++;
+      }
+      const explain = major.length ? explained / major.length : 0;
+      const score = 0.65 * scoreBand + 0.35 * explain;
+      out.push({ id: m.id, ko: m.ko, en: m.en, cls: m.cls, score, scoreBand, explain, got, tot,
+        meanDist: distN ? distSum / distN : 99, detail, note: m.note });
+    }
+    out.sort((a, b) => b.score - a.score || a.meanDist - b.meanDist);
+    return out;
+  }
+
+  function assignBand(wn, tol) {
+    const t = tol === undefined ? 6 : tol;
+    const hits = [];
+    for (const m of window.FTIR_BANDS.materials) {
+      for (const mk of m.markers) {
+        const [lo, hi] = mk.r;
+        if (wn >= lo - t && wn <= hi + t) {
+          const d = wn < lo ? lo - wn : (wn > hi ? wn - hi : 0);
+          hits.push({ id: m.id, ko: m.ko, cls: m.cls, label: mk.t, w: mk.w, dist: d });
+        }
+      }
+    }
+    hits.sort((a, b) => b.w - a.w || a.dist - b.dist);
+    return hits.slice(0, 3);
+  }
+
+  /* ------------------------------------------------------------ library */
+  const LIB_KEY = 'ftir.library.v1';
+  function loadLibrary() {
+    try {
+      const s = localStorage.getItem(LIB_KEY);
+      return s ? JSON.parse(s) : [];
+    } catch (e) { return []; }
+  }
+  function saveLibrary(lib) {
+    try { localStorage.setItem(LIB_KEY, JSON.stringify(lib)); return true; }
+    catch (e) { return false; }
+  }
+
+  function resample(x, y, step, lo, hi) {
+    const g = [];
+    for (let v = hi; v >= lo; v -= step) g.push(v);
+    return { x: g, y: g.map((v) => interpAt(x, y, v)) };
+  }
+
+  function pearson(a, b) {
+    const n = Math.min(a.length, b.length);
+    let ma = 0, mb = 0;
+    for (let i = 0; i < n; i++) { ma += a[i]; mb += b[i]; }
+    ma /= n; mb /= n;
+    let sa = 0, sb = 0, sab = 0;
+    for (let i = 0; i < n; i++) {
+      const da = a[i] - ma, db = b[i] - mb;
+      sa += da * da; sb += db * db; sab += da * db;
+    }
+    return sab / (Math.sqrt(sa * sb) || 1);
+  }
+
+  /* 라이브러리 대조: 원 스펙트럼 상관 + 1차 미분 상관 */
+  function compareToRef(spec, ref) {
+    const A = resample(spec.x, spec.y, 4, 400, 4000);
+    const B = resample(ref.x, ref.y, 4, 400, 4000);
+    const r = pearson(A.y, B.y);
+    const dA = [], dB = [];
+    for (let i = 1; i < A.y.length; i++) { dA.push(A.y[i] - A.y[i - 1]); dB.push(B.y[i] - B.y[i - 1]); }
+    const r2 = pearson(dA, dB);
+    return { r, r2, score: Math.round(1000 * (r * 0.6 + r2 * 0.4)) };
+  }
+
+  window.FTIRC = {
+    interpAt, areaTrap, bandArea, sgSmooth, sgCoeffs, polyFit, polyVal, rubberband,
+    parseText, spectrumFromParsed, applyPipeline, atrCorrect,
+    findPeaks, calcIndex, scoreMaterials, assignBand, bestPeakInRange,
+    loadLibrary, saveLibrary, compareToRef, resample, pearson, median
+  };
+})();
+
+</script>
+<script>
+/* ==== app-plot.js ==== */
+/* =========================================================================
+ * app-plot.js — 캔버스 스펙트럼 렌더러 (의존성 없음)
+ * 스택/오버레이, 개별 선 스타일, 피크 라벨, 편집 가능한 범례, 고DPI 내보내기
+ * ========================================================================= */
+(function () {
+  'use strict';
+  const FONT = '"Malgun Gothic","Segoe UI",system-ui,sans-serif';
+
+  function niceStep(span, target) {
+    const raw = span / Math.max(1, target);
+    const p = Math.pow(10, Math.floor(Math.log10(raw)));
+    const c = raw / p;
+    const m = c <= 1 ? 1 : c <= 2 ? 2 : c <= 2.5 ? 2.5 : c <= 5 ? 5 : 10;
+    return m * p;
+  }
+
+  function dashArr(d) {
+    if (d === 'dash') return [7, 5];
+    if (d === 'dot') return [2, 4];
+    if (d === 'dashdot') return [9, 4, 2, 4];
+    return [];
+  }
+
+  function scaleFor(canvas, scale) {
+    const dpr = (window.devicePixelRatio || 1) * (scale || 1);
+    return dpr;
+  }
+
+  function render(canvas, state, opts) {
+    const o = opts || {};
+    const scale = o.scale || 1;
+    const cssW = o.width || canvas.clientWidth || canvas.width;
+    const cssH = o.height || canvas.clientHeight || canvas.height;
+    const dpr = (window.devicePixelRatio || 1) * scale;
+
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    if (o.width) canvas.style.width = cssW + 'px';
+    if (o.height) canvas.style.height = cssH + 'px';
+
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+
+    const theme = state.theme || {};
+    const bg = theme.bg || '#0f1319';
+    const fg = theme.fg || '#c9d3e0';
+    const gridC = theme.grid || 'rgba(140,160,190,0.14)';
+    const axisC = theme.axis || '#8fa1b8';
+
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, cssW, cssH);
+
+    const vis = state.traces.filter((t) => t.visible && t.p && t.p.y.length);
+    if (!vis.length) {
+      ctx.fillStyle = '#5b6b80';
+      ctx.font = `14px ${FONT}`;
+      ctx.textAlign = 'center';
+      ctx.fillText('스펙트럼이 없습니다 — 파일을 끌어다 놓거나 “데모 데이터”를 누르세요', cssW / 2, cssH / 2);
+      return { geom: null, legendRects: [] };
+    }
+
+    const fs = state.view.fontSize || 13;
+    const fsBig = state.view.legendScale || 1;
+
+    // ---- 범례 폭 측정(바깥 배치 시 오른쪽 여백 확보)
+    const legendOn = state.view.legendOn !== false;
+    let legendBoxW = 0;
+    if (legendOn) {
+      ctx.font = `${Math.round(fs * fsBig)}px ${FONT}`;
+      let wmax = 0;
+      for (const t of state.traces.filter((z) => z.visible)) {
+        wmax = Math.max(wmax, ctx.measureText((t.legend || t.name)).width);
+      }
+      legendBoxW = Math.min(Math.max(200, cssW * 0.33), Math.max(300, Math.ceil(wmax) + 54));
+    }
+    const outside = legendOn && state.view.legendPos === 'out';
+    const m = { l: 70, r: outside ? legendBoxW + 22 : 26, t: 22, b: 46 };
+
+    // ---- 스택 오프셋 계산
+    const stacked = !!state.view.stacked;
+    const normH = !!state.view.normHeight;
+    const gap = state.view.gap;
+    const xLo = Math.min(state.view.lo, state.view.hi);
+    const xHi = Math.max(state.view.lo, state.view.hi);
+
+    // 표시 구간 안의 y 범위 — 구간 밖에 포화 피크(예: 9700 cm⁻¹ A=6)가 있어도
+    // 보이는 부분이 납작해지지 않도록 정규화 기준을 '보이는 범위'로 한정한다.
+    const viewRange = new Map();
+    const rangeInView = (t) => {
+      if (viewRange.has(t.id)) return viewRange.get(t.id);
+      let mn = Infinity, mx = -Infinity;
+      const xs = t.p.x, ys = t.p.y;
+      for (let i = 0; i < xs.length; i++) {
+        if (xs[i] < xLo || xs[i] > xHi) continue;
+        if (ys[i] < mn) mn = ys[i];
+        if (ys[i] > mx) mx = ys[i];
+      }
+      if (!isFinite(mn)) { mn = Math.min.apply(null, ys); mx = Math.max.apply(null, ys); }
+      const r = { mn: mn, mx: mx };
+      viewRange.set(t.id, r);
+      return r;
+    };
+
+    let yLo, yHi;
+    const order = vis.slice();               // traces[0] 이 아래
+    if (stacked) {
+      const n = order.length;
+      if (normH) { yLo = -0.05; yHi = (n - 1) * (1 + gap) + 1.0 + 0.32; }
+      else {
+        const gmin = Math.min.apply(null, vis.map((t) => rangeInView(t).mn));
+        const gmax = Math.max.apply(null, vis.map((t) => rangeInView(t).mx));
+        const span = (gmax - gmin) || 1;
+        yLo = gmin - span * 0.03;
+        yHi = gmax + span * (gap * (n - 1) + 0.05);
+      }
+    } else {
+      const gmin = Math.min.apply(null, vis.map((t) => rangeInView(t).mn));
+      const gmax = Math.max.apply(null, vis.map((t) => rangeInView(t).mx));
+      const pad = (gmax - gmin) * 0.06 || 0.05;
+      yLo = gmin - pad; yHi = gmax + pad;
+    }
+
+    const rev = state.view.rev !== false;
+    const pw = cssW - m.l - m.r, ph = cssH - m.t - m.b;
+
+    const X = (v) => {
+      const t = (v - xLo) / ((xHi - xLo) || 1);
+      return m.l + (rev ? (1 - t) : t) * pw;
+    };
+    const Y = (v) => m.t + ph * (1 - (v - yLo) / ((yHi - yLo) || 1));
+
+    const geom = { X, Y, m, cssW, cssH, pw, ph, xLo, xHi, yLo, yHi, stacked, order };
+    canvas._geom = geom;
+
+    // ---- 배경 격자
+    const xTicks = [];
+    {
+      const step = niceStep(xHi - xLo, Math.max(4, Math.round(pw / 90)));
+      const start = Math.ceil(xLo / step) * step;
+      for (let v = start; v <= xHi + 1e-6; v += step) xTicks.push(v);
+    }
+    const yTicks = [];
+    if (!stacked || !normH) {
+      const step = niceStep(yHi - yLo, Math.max(3, Math.round(ph / 70)));
+      const start = Math.ceil(yLo / step) * step;
+      for (let v = start; v <= yHi + 1e-6; v += step) yTicks.push(v);
+    }
+
+    if (state.view.grid !== false) {
+      ctx.strokeStyle = gridC; ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (const v of xTicks) { const px = Math.round(X(v)) + .5; ctx.moveTo(px, m.t); ctx.lineTo(px, m.t + ph); }
+      for (const v of yTicks) { const py = Math.round(Y(v)) + .5; ctx.moveTo(m.l, py); ctx.lineTo(m.l + pw, py); }
+      ctx.stroke();
+    }
+
+    // ---- 축
+    ctx.strokeStyle = axisC; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(m.l, m.t); ctx.lineTo(m.l, m.t + ph); ctx.lineTo(m.l + pw, m.t + ph);
+    ctx.stroke();
+
+    ctx.fillStyle = fg;
+    ctx.font = `${fs}px ${FONT}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (const v of xTicks) {
+      const px = X(v);
+      ctx.fillText(String(Math.abs(v) >= 1000 ? v : v), px, m.t + ph + 8);
+      ctx.strokeStyle = axisC; ctx.beginPath();
+      ctx.moveTo(px, m.t + ph); ctx.lineTo(px, m.t + ph + 5); ctx.stroke();
+    }
+    if (yTicks.length) {
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      for (const v of yTicks) {
+        const py = Y(v);
+        ctx.fillText(v.toFixed(Math.abs(v) < 1 ? 3 : 2), m.l - 8, py);
+        ctx.strokeStyle = axisC; ctx.beginPath();
+        ctx.moveTo(m.l - 5, py); ctx.lineTo(m.l, py); ctx.stroke();
+      }
+    }
+
+    // ---- 축 라벨
+    ctx.fillStyle = fg;
+    ctx.font = `${Math.round(fs * 1.05)}px ${FONT}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText('Wavenumber (cm⁻¹)', m.l + pw / 2, cssH - 6);
+    if (!stacked || !normH) {
+      ctx.save();
+      ctx.translate(14, m.t + ph / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillText(state.view.yLabel || 'Absorbance (a.u.)', 0, 0);
+      ctx.restore();
+    }
+
+    // ---- 스펙트럼
+    const nTraces = order.length;
+    const offsets = new Map();
+    order.forEach((t, i) => {
+      let off = 0, k = 1;
+      if (stacked) {
+        const vr = rangeInView(t);
+        if (normH) {
+          k = 1 / ((vr.mx - vr.mn) || 1);
+          off = i * (1 + gap) - vr.mn * k;
+        } else {
+          const gmin = Math.min.apply(null, vis.map((x) => rangeInView(x).mn));
+          const span = (Math.max.apply(null, vis.map((x) => rangeInView(x).mx)) - gmin) || 1;
+          off = i * gap * span;
+        }
+      }
+      offsets.set(t.id, { k, off });
+    });
+
+    // ---- 플롯 영역 클립(스펙트럼이 축 밖으로 삐져나가지 않게)
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(m.l, m.t, pw, ph);
+    ctx.clip();
+
+    // 선택 표시(배경 밴드)
+    order.forEach((t, i) => {
+      if (!stacked || !normH) return;
+      if (state.selectedId === t.id) {
+        ctx.fillStyle = 'rgba(90,150,255,0.07)';
+        ctx.fillRect(m.l, Y(i * (1 + gap) + 1.02), pw, Math.max(2, Y(i * (1 + gap)) - Y(i * (1 + gap) + 1.02)));
+      }
+    });
+
+    // 차이 스펙트럼 채움(양: 적색, 음: 청색)
+    for (const t of order) {
+      if (!t.fillDiff) continue;
+      const { k, off } = offsets.get(t.id);
+      const pz = Y(off);
+      ctx.save();
+      for (let i = 1; i < t.p.x.length; i++) {
+        const ya = t.p.y[i - 1], yb = t.p.y[i];
+        if (ya === 0 && yb === 0) continue;
+        const px0 = X(t.p.x[i - 1]), px1 = X(t.p.x[i]);
+        if (Math.abs(px1 - px0) < 0.05) continue;
+        ctx.fillStyle = ((ya + yb) / 2 >= 0) ? 'rgba(255,90,90,0.22)' : 'rgba(80,150,255,0.22)';
+        ctx.beginPath();
+        ctx.moveTo(px0, Y(ya * k + off));
+        ctx.lineTo(px1, Y(yb * k + off));
+        ctx.lineTo(px1, pz); ctx.lineTo(px0, pz);
+        ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // 선
+    for (const t of order) {
+      const { k, off } = offsets.get(t.id);
+      ctx.save();
+      ctx.beginPath();
+      ctx.lineWidth = t.width || 1.6;
+      ctx.strokeStyle = t.color;
+      ctx.setLineDash(dashArr(t.dash));
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      const alpha = t.alpha === undefined ? 1 : t.alpha;
+      ctx.globalAlpha = alpha;
+      let started = false;
+      for (let i = 0; i < t.p.x.length; i++) {
+        const px = X(t.p.x[i]);
+        const py = Y(t.p.y[i] * k + off);
+        if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ---- 피크 마커/라벨
+    const unitPx = ph / ((yHi - yLo) || 1);
+    const gapPx = (stacked && normH) ? gap * unitPx : 0;
+    const maxLevels = (stacked && normH) ? (gapPx > 30 ? 2 : gapPx > 12 ? 1 : 0) : 2;
+    const levelStep = Math.min(26, Math.max(10, gapPx * 0.72));
+    if (state.view.peaksOn !== false) {
+      for (const t of order) {
+        if (!t.peaks || !t.peaks.length) continue;
+        const { k, off } = offsets.get(t.id);
+        const drawLabels = state.view.labelsOn !== false && maxLevels > 0;
+        const maxLab = t.maxLabels || 40;
+        const _vr = rangeInView(t);
+        const spanV = (_vr.mx - _vr.mn) || 1;
+        const labThr = (state.view.labelMinProm === undefined ? 0.03 : state.view.labelMinProm) * spanV;
+        const levels = [[], []];
+        let placed = 0;
+        const sorted = t.peaks.slice().sort((a, b) => b.prom - a.prom);
+        for (const pk of sorted) {
+          const px = X(pk.x);
+          const py = Y(pk.y * k + off);
+          ctx.save();
+          ctx.strokeStyle = t.color; ctx.fillStyle = t.color;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(px, py - 2); ctx.lineTo(px - 3, py - 8); ctx.lineTo(px + 3, py - 8); ctx.closePath();
+          ctx.fill();
+          if (drawLabels && placed < maxLab && pk.prom >= labThr) {
+            let lv = -1;
+            for (let L = 0; L < maxLevels; L++) {
+              if (!levels[L].some((v) => Math.abs(v - px) < 11)) { lv = L; break; }
+            }
+            if (lv >= 0) {
+              levels[lv].push(px);
+              const label = pk.label || pk.x.toFixed(0);
+              ctx.save();
+              ctx.translate(px - 3, py - 10 - lv * levelStep);
+              ctx.rotate(-Math.PI / 2);
+              ctx.font = `${Math.max(8, Math.round(fs * 0.68))}px ${FONT}`;
+              ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+              ctx.globalAlpha = 0.95;
+              ctx.fillText(label, 0, 0);
+              ctx.restore();
+              placed++;
+            }
+          }
+          ctx.restore();
+        }
+      }
+    }
+
+    ctx.restore();   // 클립 해제
+
+    // ---- 스택 모드에서 트레이스 이름 라벨(각 밴드 상단 왼쪽)
+    if (stacked && normH) {
+      ctx.font = `${Math.round(fs * 0.85)}px ${FONT}`;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      order.forEach((t, i) => {
+        let y = Y(i * (1 + gap) + 1.0) - 1;
+        if (y - fs * 0.9 < m.t + 1) y = m.t + 1 + fs * 0.9;   // 최상단 밴드는 축 안쪽으로
+        const nm = t.legend || t.name;
+        const txt = nm.length > 16 ? nm.slice(0, 15) + '…' : nm;
+        const tw = ctx.measureText(txt).width;
+        ctx.fillStyle = 'rgba(15,19,25,0.78)';
+        ctx.fillRect(m.l + 2, y - fs * 0.92, tw + 6, fs * 0.92);
+        ctx.fillStyle = t.color;
+        ctx.fillText(txt, m.l + 5, y);
+      });
+    }
+
+    // ---- 호버 크로스헤어
+    if (state.hover && state.hover.px !== null && state.hover.px !== undefined) {
+      const px = state.hover.px;
+      if (px > m.l && px < m.l + pw) {
+        ctx.strokeStyle = 'rgba(160,190,230,0.45)';
+        ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(px, m.t); ctx.lineTo(px, m.t + ph); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    // ---- 범례
+    const legendRects = [];
+    if (legendOn) {
+      ctx.font = `${Math.round(fs * fsBig)}px ${FONT}`;
+      const lineH = Math.round(fs * fsBig * 1.55);
+      const pad = 10;
+      const boxW = outside ? Math.min(legendBoxW, cssW - m.l - m.r + 8) : Math.min(pw - 20, legendBoxW);
+      let boxH = order.length * lineH + pad * 2;
+      const maxH = outside ? ph : ph - 20;
+      let lh = lineH;
+      if (boxH > maxH) { lh = Math.max(11, Math.floor((maxH - pad * 2) / order.length)); boxH = order.length * lh + pad * 2; }
+      const pos = state.view.legendPos || 'out';
+      let bx, by;
+      if (outside) { bx = m.l + pw + 10; by = m.t; }
+      else {
+        bx = pos === 'tl' ? m.l + 10 : (pos === 'bl' ? m.l + 10 : m.l + pw - boxW - 10);
+        by = (pos === 'bl' || pos === 'br') ? m.t + ph - boxH - 10 : m.t + 10;
+      }
+      ctx.save();
+      ctx.fillStyle = outside ? 'rgba(12,18,26,0.0)' : 'rgba(12,18,26,0.72)';
+      ctx.strokeStyle = 'rgba(140,170,210,0.25)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const r = 6;
+      ctx.moveTo(bx + r, by);
+      ctx.arcTo(bx + boxW, by, bx + boxW, by + boxH, r);
+      ctx.arcTo(bx + boxW, by + boxH, bx, by + boxH, r);
+      ctx.arcTo(bx, by + boxH, bx, by, r);
+      ctx.arcTo(bx, by, bx + boxW, by, r);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.font = `${Math.round(fs * fsBig)}px ${FONT}`;
+      order.forEach((t, i) => {
+        const cy = by + pad + i * lh + lh / 2;
+        ctx.strokeStyle = t.color; ctx.lineWidth = Math.max(2, t.width || 1.6);
+        ctx.setLineDash(dashArr(t.dash));
+        ctx.beginPath(); ctx.moveTo(bx + 10, cy); ctx.lineTo(bx + 38, cy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = t.color;
+        let nm = t.legend || t.name;
+        const avail = boxW - 48;
+        if (ctx.measureText(nm).width > avail) {
+          while (nm.length > 2 && ctx.measureText(nm + '…').width > avail) nm = nm.slice(0, -1);
+          nm += '…';
+        }
+        ctx.fillText(nm, bx + 44, cy);
+        legendRects.push({ id: t.id, x: bx, y: by + pad + i * lh, w: boxW, h: lh });
+      });
+      ctx.restore();
+    }
+
+    return { geom, legendRects };
+  }
+
+  /* PNG 내보내기 (2배 고해상도) */
+  function toPNG(canvas, state, opts) {
+    const o = opts || {};
+    const scale = o.scale || 2;
+    const off = document.createElement('canvas');
+    const w = canvas.clientWidth || canvas.width;
+    const h = canvas.clientHeight || canvas.height;
+    render(off, state, { scale, width: w, height: h });
+    return off.toDataURL(o.transparent ? 'image/png' : 'image/png');
+  }
+
+  window.FTIRPlot = { render, toPNG, dashArr, niceStep };
+})();
+
+</script>
+<script>
+/* ==== demo.js ==== */
+/* =========================================================================
+ * demo.js — 데모용 **합성** 스펙트럼 (실측 데이터 아님)
+ * 밴드 위치는 lib-bands.js의 문헌 대표값을 사용하고, 강도·폭은 시연용 임의값.
+ * ========================================================================= */
+(function () {
+  'use strict';
+
+  function rng(seed) {
+    let s = seed >>> 0;
+    return function () {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  }
+
+  const G = (x, c, w, a) => a * Math.exp(-0.5 * Math.pow((x - c) / w, 2));
+
+  function build(peaks, opt) {
+    const o = Object.assign({ seed: 1, noise: 0.0022, lo: 400, hi: 4000, step: 2, base: 0.03, slope: 0.02 }, opt || {});
+    const r = rng(o.seed);
+    const x = [], y = [];
+    for (let v = o.lo; v <= o.hi; v += o.step) {
+      let yy = o.base + o.slope * ((v - o.lo) / (o.hi - o.lo));
+      for (const [c, w, a] of peaks) yy += G(v, c, w, a);
+      yy += (r() - 0.5) * o.noise;
+      x.push(v); y.push(Math.max(0.0005, yy));
+    }
+    return { x, y };
+  }
+
+  const PA6 = [
+    [3300, 45, 0.60], [3060, 35, 0.08], [2930, 20, 0.34], [2860, 15, 0.20],
+    [1640, 14, 1.05], [1540, 12, 0.78], [1463, 13, 0.32], [1415, 13, 0.24],
+    [1370, 12, 0.22], [1265, 15, 0.46], [1200, 11, 0.34], [1120, 13, 0.16],
+    [1020, 10, 0.10], [930, 13, 0.24], [690, 13, 0.32], [580, 12, 0.12]
+  ];
+  const PA66 = [
+    [3300, 44, 0.58], [2930, 20, 0.30], [2860, 15, 0.17],
+    [1640, 15, 1.00], [1540, 13, 0.86], [1463, 12, 0.36], [1410, 13, 0.26],
+    [1370, 12, 0.19], [1270, 15, 0.42], [1200, 11, 0.32], [1130, 12, 0.14],
+    [935, 13, 0.21], [690, 13, 0.30]
+  ];
+  const PPS = [
+    [1573, 12, 0.72], [1470, 10, 0.46], [1388, 11, 0.52], [1090, 16, 0.52],
+    [1015, 11, 0.36], [823, 9, 0.92], [745, 8, 0.22], [610, 10, 0.10]
+  ];
+  const PBT = [
+    [1712, 17, 0.92], [1470, 11, 0.42], [1418, 11, 0.36], [1385, 10, 0.30],
+    [1288, 13, 0.36], [1250, 11, 0.42], [1098, 13, 0.56], [1018, 10, 0.26],
+    [918, 10, 0.32], [810, 10, 0.30], [730, 10, 0.22]
+  ];
+  const EPOXY = [
+    [3420, 190, 0.38], [3050, 22, 0.18], [2925, 24, 0.26], [2870, 18, 0.14],
+    [1610, 10, 0.50], [1510, 10, 0.88], [1455, 11, 0.30], [1382, 10, 0.26],
+    [1295, 12, 0.30], [1245, 15, 0.62], [1184, 12, 0.46], [1037, 13, 0.56],
+    [915, 10, 0.00], [830, 10, 0.52], [560, 14, 0.10]
+  ];
+  const NR = [
+    [3030, 14, 0.12], [2925, 24, 0.92], [2855, 19, 0.58], [2720, 18, 0.10],
+    [1663, 13, 0.42], [1450, 14, 0.52], [1375, 12, 0.36], [1300, 11, 0.14],
+    [1128, 11, 0.12], [1030, 10, 0.10], [840, 10, 0.36]
+  ];
+  const NBR = [
+    [2925, 24, 0.82], [2855, 18, 0.46], [2237, 10, 0.36], [1450, 13, 0.40],
+    [1435, 11, 0.28], [970, 10, 0.20], [910, 10, 0.10]
+  ];
+
+  const clone = (arr) => arr.map((p) => p.slice());
+  function with_(base, extra, opt) {
+    const p = clone(base).concat(extra);
+    return build(p, opt);
+  }
+
+  window.FTIR_DEMO = function () {
+    const out = [];
+    const push = (name, spec, note) => out.push({ name, x: spec.x, y: spec.y, note });
+
+    // PA6: 초기 / 열노화 (카르보닐 + OH 증가)
+    push('PA6 초기', build(PA6, { seed: 11 }), '합성');
+    const aged = clone(PA6).concat([
+      [1718, 26, 0.16], [1745, 14, 0.05], [3400, 120, 0.10], [1180, 30, 0.05]
+    ]);
+    push('PA6 열노화 168h', build(aged, { seed: 12 }), '합성');
+
+    // PA6 + GF30 (Si–O 광범위 흡수, 수지 밴드 감쇠)
+    const gf = clone(PA6).map((p) => [p[0], p[1], p[2] * 0.62]).concat([
+      [1055, 70, 0.42], [800, 22, 0.14], [468, 26, 0.18]
+    ]);
+    push('PA6-GF30 정상품', build(gf, { seed: 13 }), '합성');
+
+    // 사출 문제품: 수지 열화 + 이형제/스테아레이트 과다 가정
+    const bad = clone(PA6).map((p) => [p[0], p[1], p[2] * 0.78]).concat([
+      [1718, 24, 0.10], [1580, 12, 0.10], [1542, 11, 0.09], [1055, 70, 0.30], [800, 22, 0.10]
+    ]);
+    push('PA6-GF30 문제품', build(bad, { seed: 14 }), '합성');
+
+    push('PA66', build(PA66, { seed: 21 }), '합성');
+    push('PPS-GF40', with_(PPS, [[1100, 55, 0.30], [800, 20, 0.10]], { seed: 31 }), '합성');
+    push('PBT', build(PBT, { seed: 41 }), '합성');
+
+    // 에폭시: 미경화(915 존재) / 경화
+    const uncured = clone(EPOXY).map((p) => (p[0] > 900 && p[0] < 930 ? [915, 10, 0.42] : p));
+    push('에폭시 미경화', build(uncured, { seed: 51 }), '합성');
+    push('에폭시 경화', build(EPOXY, { seed: 52 }), '합성');
+
+    push('NR 초기', build(NR, { seed: 61 }), '합성');
+    const nrAged = clone(NR).concat([[1715, 22, 0.22], [1180, 28, 0.08]]);
+    push('NR 열노화', build(nrAged, { seed: 62 }), '합성');
+    push('NBR', build(NBR, { seed: 71 }), '합성');
+
+    return out;
+  };
+})();
+
+</script>
+<script>
+/* ==== app.js ==== */
+/* =========================================================================
+ * app.js — UI 결선 (시료 · 표시 · 전처리 · 피크 · 정성 · 지수 · 라이브러리)
+ * ========================================================================= */
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const C = window.FTIRC;
+  const P = window.FTIRPlot;
+  const BANDS = window.FTIR_BANDS;
+
+  const PALETTE = ['#4f9dff', '#ff7a59', '#3ddc97', '#c792ea', '#ffd166',
+    '#67e8f9', '#f472b6', '#a3e635', '#fb923c', '#94a3b8', '#e879f9', '#34d399'];
+
+  let uid = 0;
+  const state = {
+    traces: [],
+    view: {
+      stacked: true, normHeight: true, gap: 0.35, rev: true, grid: true,
+      peaksOn: true, labelsOn: true, lo: 400, hi: 4000, fontSize: 13,
+      legendOn: true, legendPos: 'out', legendScale: 1
+    },
+    pre: {
+      smooth: { on: false, win: 9, order: 2 },
+      baseline: { mode: 'none', deg: 3, p1: 4000, p2: 400 },
+      atr: { on: false, n1: 2.40, n2: 1.52 },
+      norm: 'none', normBand: [1440, 1480]
+    },
+    selectedId: null,
+    peakOpts: { minProm: 0.015, minSep: 8 },
+    legendRects: [],
+    sel: null,
+    lib: []
+  };
+
+  /* ------------------------------------------------------------- helpers */
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmt = (v, d) => (v === null || v === undefined || !isFinite(v)) ? '—' : Number(v).toFixed(d === undefined ? 3 : d);
+  const now = () => new Date().toLocaleTimeString('ko-KR', { hour12: false });
+
+  function log(msg, cls) {
+    const el = $('log');
+    const line = document.createElement('div');
+    if (cls) line.className = cls;
+    line.innerHTML = `<span class="t">${now()}</span>  ${esc(msg)}`;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function getTrace(id) { return state.traces.find((t) => t.id === id) || null; }
+  function sel() { return getTrace(state.selectedId); }
+
+  function download(filename, content, type) {
+    const blob = content instanceof Blob ? content : new Blob([content], { type: type || 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
+  }
+
+  /* -------------------------------------------------------- trace 관리 */
+  function newTrace(name, x, y, extra) {
+    const t = Object.assign({
+      id: 't' + (++uid), name: name, legend: '', color: PALETTE[state.traces.length % PALETTE.length],
+      width: 1.6, dash: 'solid', alpha: 1, visible: true,
+      x: x, y: y, peaks: [], frozen: false, fillDiff: false
+    }, extra || {});
+    t.p = t.frozen ? { x: t.x, y: t.y } : C.applyPipeline({ x: t.x, y: t.y }, state.pre);
+    state.traces.push(t);
+    return t;
+  }
+
+  function reprocess() {
+    for (const t of state.traces) {
+      if (t.frozen) { t.p = { x: t.x, y: t.y }; continue; }
+      t.p = C.applyPipeline({ x: t.x, y: t.y }, state.pre);
+    }
+    for (const t of state.traces) {
+      if (!t.frozen && t.peaks.length) {
+        const pk = C.findPeaks(t.p.x, t.p.y, { minProm: state.peakOpts.minProm, minSep: state.peakOpts.minSep, maxPeaks: 120 });
+        pk.forEach((p) => { p.label = p.x.toFixed(0); });
+        t.peaks = pk;
+      }
+    }
+    updatePreBadge();
+    renderAll();
+  }
+
+  function updatePreBadge() {
+    const bits = [];
+    if (state.pre.smooth.on) bits.push('SG');
+    if (state.pre.baseline.mode !== 'none') bits.push({ linear: '선형BL', poly: '다항BL', rubber: '러버BL' }[state.pre.baseline.mode]);
+    if (state.pre.atr.on) bits.push('ATR');
+    if (state.pre.norm !== 'none') bits.push('정규화');
+    $('preBadge').textContent = bits.length ? bits.join('·') : '기본';
+  }
+
+  /* ------------------------------------------------------------ 렌더링 */
+  function renderAll() {
+    renderTraceList();
+    syncSelectors();
+    renderPlot();
+    renderPeakTable();
+    renderIdxTable();
+    renderLibTable(state._libMatch);
+    updateTabInfo();
+  }
+
+  function renderTraceList() {
+    const ul = $('traceList');
+    ul.innerHTML = '';
+    $('traceCount').textContent = state.traces.length;
+    state.traces.forEach((t, i) => {
+      const li = document.createElement('li');
+      li.className = (t.id === state.selectedId ? 'sel' : '') + (t.visible ? '' : ' hidden-trace');
+      li.onclick = () => { state.selectedId = t.id; renderAll(); };
+
+      const sw = document.createElement('span');
+      sw.className = 'sw'; sw.style.background = t.color;
+
+      const nm = document.createElement('span');
+      nm.className = 'nm';
+      nm.textContent = t.legend || t.name;
+      const small = document.createElement('small');
+      small.textContent = (t.p ? t.p.x.length : 0) + ' pt' + (t.peaks.length ? ' · 피크 ' + t.peaks.length : '');
+      nm.appendChild(small);
+
+      const mk = (txt, title, fn) => {
+        const b = document.createElement('button');
+        b.className = 'ico'; b.textContent = txt; b.title = title;
+        b.onclick = (e) => { e.stopPropagation(); fn(); };
+        return b;
+      };
+      const eye = mk(t.visible ? '◉' : '○', '표시 전환', () => { t.visible = !t.visible; renderAll(); });
+      const up = mk('↑', '위로', () => moveTrace(t, -1));
+      const dn = mk('↓', '아래로', () => moveTrace(t, 1));
+      const del = mk('✕', '삭제', () => { state.traces = state.traces.filter((z) => z !== t); if (state.selectedId === t.id) state.selectedId = state.traces.length ? state.traces[state.traces.length - 1].id : null; renderAll(); log(`시료 삭제: ${t.name}`); });
+
+      li.append(sw, nm, eye, up, dn, del);
+      ul.appendChild(li);
+    });
+    if (state.selectedId) syncStyleEditor();
+  }
+
+  function moveTrace(t, dir) {
+    const i = state.traces.indexOf(t), j = i + dir;
+    if (j < 0 || j >= state.traces.length) return;
+    state.traces.splice(j, 0, state.traces.splice(i, 1)[0]);
+    renderAll();
+  }
+
+  function syncStyleEditor() {
+    const t = sel(); if (!t) return;
+    $('styName').value = t.name;
+    $('styLegend').value = t.legend || '';
+    $('styColor').value = t.color;
+    $('styWidth').value = t.width;
+    $('styDash').value = t.dash;
+    $('styAlpha').value = t.alpha;
+  }
+
+  function renderPlot() {
+    const canvas = $('plot');
+    const res = P.render(canvas, state);
+    state.legendRects = res.legendRects || [];
+    state.geom = canvas._geom;
+  }
+
+  function syncSelectors() {
+    const opts = state.traces.map((t) => `<option value="${t.id}">${esc(t.legend || t.name)}</option>`).join('');
+    for (const id of ['cmpA', 'cmpB', 'idTrace', 'idxTrace', 'libTrace']) {
+      const el = $(id);
+      const prev = el.value;
+      el.innerHTML = opts;
+      if (state.traces.some((t) => t.id === prev)) el.value = prev;
+      else if (state.selectedId) el.value = state.selectedId;
+    }
+    const visible = state.traces.filter((t) => t.visible);
+    if ($('cmpA').options.length && $('cmpA').selectedIndex < 0 && visible.length) $('cmpA').selectedIndex = visible.length - 1;
+    if ($('cmpB').options.length && $('cmpB').selectedIndex < 0) $('cmpB').selectedIndex = 0;
+  }
+
+  function updateTabInfo() {
+    const active = document.querySelector('.tab.active').dataset.tab;
+    let txt = '';
+    if (active === 'peaks') {
+      const t = sel();
+      txt = t ? `${t.legend || t.name} · 피크 ${t.peaks.length}개` : '시료를 선택하세요';
+    } else if (active === 'index') {
+      txt = 'CI는 밴드 적분비 — ATR 보정 유무를 반드시 함께 보고하세요';
+    } else if (active === 'ident') {
+      txt = '점수는 정답이 아니라 후보 순위입니다';
+    }
+    $('tabInfo').textContent = txt;
+  }
+
+  /* --------------------------------------------------------- 데이터 추가 */
+  function addParsed(parsed, quiet) {
+    if (parsed.error) { log(`[읽기 실패] ${parsed.name}: ${parsed.error}`, 'err'); return null; }
+    const sp = C.spectrumFromParsed(parsed);
+    const t = newTrace(parsed.name, sp.x, sp.y, { unit: parsed.unit });
+    state.selectedId = t.id;
+    log(`불러옴: ${parsed.name} (${sp.x.length} pt, ${sp.x[0].toFixed(0)}–${sp.x[sp.x.length - 1].toFixed(0)} cm⁻¹, ${parsed.unit === 'trans' ? '%T→A 변환' : '흡광도'})`, 'ok');
+    parsed.warnings.forEach((w) => log('  · ' + w, 'warn'));
+    return t;
+  }
+
+  function logOpusInfo(p) {
+    const i = p.info || {};
+    log(`OPUS 바이너리: 블록 ${i.blocks}개 → '${i.spectrum}' 선택 · 내부 무결성 ${i.verify === 'ok' ? 'OK' : i.verify}`,
+      i.verify === 'ok' ? 'ok' : 'warn');
+    const meta = [
+      i.instrument && `${i.instrument}${i.serial ? ' (#' + i.serial + ')' : ''}`,
+      i.resolution && `${i.resolution} cm⁻¹`, i.scans && `${i.scans} scan`,
+      i.accessory && String(i.accessory).split(' ')[0], i.detector
+    ].filter(Boolean).join(' · ');
+    if (meta) log('  · ' + meta);
+    if (i.others && i.others.length) log('  · 함께 들어있던 블록: ' + i.others.join(', '));
+  }
+
+  function handleFiles(files) {
+    const list = Array.from(files);
+    if (!list.length) return;
+    let pending = list.length;
+    const done = () => { if (--pending === 0) { renderAll(); log(`${list.length}개 파일 처리 완료`, 'ok'); } };
+    for (const f of list) {
+      const rd = new FileReader();
+      rd.onload = () => {
+        try {
+          const buf = rd.result;
+          const u8 = new Uint8Array(buf);
+          const parsed = (window.FTIROpus && FTIROpus.isOpus(u8))
+            ? FTIROpus.parse(buf, { name: f.name })
+            : C.parseText(new TextDecoder('utf-8').decode(u8), f.name.replace(/\.[^.]+$/, ''));
+          if (parsed.source === 'opus' && !parsed.error) logOpusInfo(parsed);
+          addParsed(parsed);
+        } catch (e) {
+          log(`[예외] ${f.name}: ${e.message}`, 'err');
+        }
+        done();
+      };
+      rd.onerror = () => { log(`[읽기 오류] ${f.name}`, 'err'); done(); };
+      rd.readAsArrayBuffer(f);
+    }
+  }
+
+  /* ------------------------------------------------------------- 피크 */
+  function detectPeaks(t, quiet) {
+    const pk = C.findPeaks(t.p.x, t.p.y, { minProm: state.peakOpts.minProm, minSep: state.peakOpts.minSep, maxPeaks: 150 });
+    pk.forEach((p) => { p.label = p.x.toFixed(0); });
+    t.peaks = pk;
+    if (!quiet) log(`${t.legend || t.name}: 피크 ${pk.length}개 검출 (minProm ${state.peakOpts.minProm}, 간격 ${state.peakOpts.minSep} cm⁻¹)`);
+    return pk;
+  }
+
+  function renderPeakTable() {
+    const body = $('peakTable').querySelector('tbody');
+    body.innerHTML = '';
+    const targets = state.traces.filter((t) => t.peaks && t.peaks.length);
+    if (!targets.length) {
+      body.innerHTML = '<tr><td colspan="6" style="color:#6b7f96">피크를 검출하면 여기에 표시됩니다.</td></tr>';
+      return;
+    }
+    for (const t of targets) {
+      const sorted = t.peaks.slice().sort((a, b) => b.x - a.x);
+      sorted.forEach((pk) => {
+        const idx = t.peaks.indexOf(pk);
+        const hits = C.assignBand(pk.x);
+        const tr = document.createElement('tr');
+        if (t.id === state.selectedId) tr.className = 'sel';
+        const assign = hits.length
+          ? hits.map((h) => `${esc(h.label)} <span class="badge">${esc(h.ko.split(' ')[0])}</span>`).join('<br>')
+          : '<span style="color:#5d6f85">—</span>';
+        tr.innerHTML = `<td>${esc(t.legend || t.name)}</td>
+          <td class="num">${pk.x.toFixed(1)}</td>
+          <td class="num">${fmt(pk.y, 3)}</td>
+          <td class="num">${fmt(pk.prom, 3)}</td>
+          <td>${assign}</td>
+          <td><input class="lbl" data-tid="${t.id}" data-idx="${idx}" value="${esc(pk.label || '')}"></td>`;
+        body.appendChild(tr);
+      });
+    }
+    body.querySelectorAll('input.lbl').forEach((inp) => {
+      inp.oninput = () => {
+        const t = getTrace(inp.dataset.tid);
+        const pk = t && t.peaks[+inp.dataset.idx];
+        if (pk) { pk.label = inp.value; renderPlot(); }
+      };
+    });
+  }
+
+  /* --------------------------------------------------------- 정성 판정 */
+  function runIdentify(t) {
+    if (!t) { log('정성 판정: 시료를 선택하세요', 'warn'); return; }
+    for (const tr of state.traces) if (!tr.peaks.length) detectPeaks(tr, true);
+    const res = C.scoreMaterials(t.p, t.peaks, BANDS);
+    const body = $('idTable').querySelector('tbody');
+    body.innerHTML = '';
+    res.slice(0, 8).forEach((r) => {
+      const miss = r.detail.filter((d) => !d.found && d.w >= 2).map((d) => d.t).slice(0, 4);
+      const lvl = r.score >= 0.85 ? 'hi' : r.score >= 0.6 ? 'mid' : 'lo';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><b>${esc(r.ko)}</b><br><span style="color:#6d8299;font-size:11px">${esc(r.cls)}</span></td>
+        <td class="num"><span class="badge ${lvl}">${(r.score * 100).toFixed(0)}%</span>
+          <div style="font-size:10px;color:#6d8299">설명 ${(r.explain * 100).toFixed(0)}%</div></td>
+        <td class="num">${r.got}/${r.tot}</td>
+        <td>${miss.length ? esc(miss.join(', ')) : '<span style="color:#5d6f85">—</span>'}</td>
+        <td style="max-width:320px; white-space:normal; font-size:11px; color:#8ea3ba">${esc(r.note || '')}</td>`;
+      tr.onclick = () => showIdDetail(r);
+      body.appendChild(tr);
+    });
+    showIdDetail(res[0]);
+    log(`정성 판정(${t.legend || t.name}): 1위 ${res[0].ko} ${(res[0].score * 100).toFixed(0)}%, 2위 ${res[1].ko} ${(res[1].score * 100).toFixed(0)}%`);
+    state._idRes = { trace: t, res };
+    switchTab('ident');
+  }
+
+  function showIdDetail(r) {
+    if (!r) return;
+    const got = r.detail.filter((d) => d.found && d.w >= 2).map((d) => `${d.t}`);
+    const miss = r.detail.filter((d) => !d.found && d.w >= 2).map((d) => `${d.t}`);
+    $('idDetail').innerHTML = `<b>${esc(r.ko)}</b> · 점수 ${(r.score * 100).toFixed(0)}% (마커 충족 ${(r.scoreBand * 100).toFixed(0)}% · 스펙트럼 설명률 ${(r.explain * 100).toFixed(0)}%)<br>
+      검출: ${esc(got.join(' · ') || '—')}<br>
+      미검출: ${esc(miss.join(' · ') || '—')}
+      ${r.meanDist < 90 ? `<br><span style="color:#7f93a9">평균 밴드 위치 편차 ${r.meanDist.toFixed(1)} cm⁻¹</span>` : ''}
+      ${r.note ? `<br><span style="color:#7f93a9">${esc(r.note)}</span>` : ''}`;
+  }
+
+  /* --------------------------------------------------------- 열화 지수 */
+  function fillIndexPresets() {
+    $('idxPreset').innerHTML = BANDS.indices.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+    $('idxNote').textContent = BANDS.indices[0].note;
+    $('idxAtr').checked = !!BANDS.indices[0].atr;
+  }
+  function currentPreset() { return BANDS.indices.find((p) => p.id === $('idxPreset').value) || BANDS.indices[0]; }
+
+  function calcRow(t, preset, atr, out) {
+    const r = C.calcIndex({ x: t.x, y: t.y }, preset, { atr });
+    out.push({ name: t.legend || t.name, preset: preset.name, ...r });
+    return r;
+  }
+
+  function renderIdxTable() {
+    const body = $('idxTable').querySelector('tbody');
+    if (!state._idx || !state._idx.length) {
+      body.innerHTML = '<tr><td colspan="7" style="color:#6b7f96">지수를 계산하면 여기에 표시됩니다.</td></tr>';
+      return;
+    }
+    body.innerHTML = '';
+    for (const row of state._idx) {
+      const tr = document.createElement('tr');
+      const delta = (row.valueRaw !== undefined && isFinite(row.valueRaw) && row.valueRaw)
+        ? ((row.value / row.valueRaw - 1) * 100) : null;
+      const flag = row.numZero ? ' <span class="badge lo">n.d.</span>' : '';
+      tr.innerHTML = `<td>${esc(row.name)}</td>
+        <td>${esc(row.preset)}</td>
+        <td class="num"><b>${fmt(row.value, 4)}</b>${flag}</td>
+        <td class="num">${fmt(row.valueRaw, 4)}${delta !== null ? ` <span style="color:#7f93a9">(${delta > 0 ? '+' : ''}${delta.toFixed(1)}%)</span>` : ''}</td>
+        <td class="num">${fmt(row.num, 4)}</td>
+        <td class="num">${fmt(row.den, 4)}</td>
+        <td style="color:#8ea3ba; font-size:11px">${row.atr ? 'ATR 보정' : '미보정'}${row.numZero ? ' · 분자 면적 ≤ 0 (해당 밴드 미검출)' : ''}</td>`;
+      body.appendChild(tr);
+    }
+  }
+
+  /* ---------------------------------------------------------- 라이브러리 */
+  function renderLibTable(match) {
+    const body = $('libTable').querySelector('tbody');
+    body.innerHTML = '';
+    if (!state.lib.length) {
+      body.innerHTML = '<tr><td colspan="6" style="color:#6b7f96">등록된 표준시료가 없습니다. 시료를 불러온 뒤 “선택 시료를 표준으로 등록”을 누르세요.</td></tr>';
+    } else {
+      const scores = new Map();
+      if (match) match.results.forEach((r) => scores.set(r.id, r));
+      for (const ref of state.lib) {
+        const m = scores.get(ref.id);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${esc(ref.name)}</td>
+          <td>${esc(ref.created || '')}</td>
+          <td class="num">${m ? `<b>${m.score}</b>` : '—'}</td>
+          <td class="num">${m ? m.r.toFixed(3) : '—'}</td>
+          <td class="num">${m ? m.r2.toFixed(3) : '—'}</td>
+          <td><button class="ico" data-del="${ref.id}" title="삭제">✕</button></td>`;
+        body.appendChild(tr);
+      }
+      body.querySelectorAll('button[data-del]').forEach((b) => {
+        b.onclick = () => {
+          state.lib = state.lib.filter((r) => r.id !== b.dataset.del);
+          C.saveLibrary(state.lib);
+          state._libMatch = null;
+          renderLibTable(null);
+          log('라이브러리 항목 삭제');
+        };
+      });
+    }
+    if (match) {
+      const top = match.results.slice().sort((a, b) => b.score - a.score)[0];
+      $('libInfo').innerHTML = top
+        ? `<b>가장 유사:</b> ${esc(top.name)} · 점수 ${top.score}/1000 · R=${top.r.toFixed(3)} · R'=${top.r2.toFixed(3)}<br>
+           <span style="color:#7f93a9">점수 = 1000×(0.6·R + 0.4·R′) 자체 정의. 1000에 가까울수록 형태 일치. 첨가제·충전제가 다르면 크게 떨어집니다.</span>`
+        : '';
+    }
+  }
+
+  /* ---------------------------------------------------------- 차이 스펙트럼 */
+  function makeDiff() {
+    const A = getTrace($('cmpA').value), B = getTrace($('cmpB').value);
+    if (!A || !B || A === B) { log('차이 스펙트럼: 서로 다른 두 시료를 선택하세요', 'warn'); return; }
+    const lo = Math.max(Math.min(...A.p.x), Math.min(...B.p.x), 400);
+    const hi = Math.min(Math.max(...A.p.x), Math.max(...B.p.x), 4000);
+    const grid = [];
+    for (let v = lo; v <= hi; v += 2) grid.push(v);
+    const ra = C.resample(A.p.x, A.p.y, 2, lo, hi);
+    const rb = C.resample(B.p.x, B.p.y, 2, lo, hi);
+    const ya = ra.y.slice(), yb = rb.y.slice();
+    const mode = $('cmpNorm').value;
+    const b1 = +$('cmpB1').value, b2 = +$('cmpB2').value;
+    const normTo = (x, y) => {
+      if (mode === 'none') return 1;
+      if (mode === 'max') return Math.max(...y.map(Math.abs)) || 1;
+      const a = C.bandArea(x, y, Math.min(b1, b2), Math.max(b1, b2), Math.min(b1, b2), Math.max(b1, b2));
+      return Math.abs(a) || 1;
+    };
+    const ka = normTo(ra.x, ya), kb = normTo(rb.x, yb);
+    const diff = ya.map((v, i) => v / ka - yb[i] / kb);
+    const amax = Math.max(...diff.map(Math.abs));
+    const name = `차이 ${A.legend || A.name} − ${B.legend || B.name} (Δmax ${amax.toFixed(3)})`;
+    const t = newTrace(name, ra.x, diff, { frozen: true, fillDiff: true, color: '#ff7a59', width: 1.4 });
+    t.peaks = C.findPeaks(t.p.x, t.p.y, { minProm: 0.05, minSep: 10, maxPeaks: 60 }).map((p) => ({ ...p, label: p.x.toFixed(0) }));
+    state.selectedId = t.id;
+    renderAll();
+    log(`차이 스펙트럼 생성: ${name} (정규화=${mode})`, 'ok');
+    switchTab('peaks');
+  }
+
+  /* ------------------------------------------------------------- 프로젝트 */
+  function saveProject() {
+    const data = {
+      app: 'ftir-studio', version: 1, saved: new Date().toISOString(),
+      view: state.view, pre: state.pre, peakOpts: state.peakOpts,
+      traces: state.traces.map((t) => ({
+        name: t.name, legend: t.legend, color: t.color, width: t.width, dash: t.dash,
+        alpha: t.alpha, visible: t.visible, frozen: !!t.frozen, fillDiff: !!t.fillDiff,
+        x: t.x.map((v) => +v.toFixed(2)), y: t.y.map((v) => +v.toFixed(6)),
+        peaks: t.peaks.map((p) => ({ x: p.x, y: p.y, prom: p.prom, label: p.label }))
+      }))
+    };
+    download('ftir-project-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(data), 'application/json');
+    log(`프로젝트 저장 (${data.traces.length}개 시료)`, 'ok');
+  }
+
+  function loadProject(file) {
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const d = JSON.parse(String(rd.result));
+        if (!d.traces) throw new Error('traces 없음');
+        state.traces = [];
+        Object.assign(state.view, d.view || {});
+        Object.assign(state.pre, d.pre || {});
+        if (d.peakOpts) Object.assign(state.peakOpts, d.peakOpts);
+        for (const tr of d.traces) {
+          const t = newTrace(tr.name, tr.x, tr.y, {
+            legend: tr.legend, color: tr.color, width: tr.width, dash: tr.dash,
+            alpha: tr.alpha, visible: tr.visible, frozen: tr.frozen, fillDiff: tr.fillDiff
+          });
+          t.peaks = (tr.peaks || []).map((p) => ({ ...p }));
+        }
+        state.selectedId = state.traces.length ? state.traces[0].id : null;
+        syncControlsFromState();
+        reprocess();
+        log(`프로젝트 열기: ${state.traces.length}개 시료`, 'ok');
+      } catch (e) {
+        log('프로젝트 열기 실패: ' + e.message, 'err');
+      }
+    };
+    rd.readAsText(file);
+  }
+
+  function syncControlsFromState() {
+    $('viewMode').value = state.view.stacked ? 'stacked' : 'overlay';
+    $('viewGap').value = state.view.gap;
+    $('viewNormHeight').checked = state.view.normHeight;
+    $('viewRev').checked = state.view.rev;
+    $('viewGrid').checked = state.view.grid;
+    $('viewPeaks').checked = state.view.peaksOn;
+    $('viewLabels').checked = state.view.labelsOn;
+    $('viewLo').value = state.view.lo;
+    $('viewHi').value = state.view.hi;
+    $('viewFont').value = state.view.fontSize;
+    $('viewLegendOn').checked = state.view.legendOn;
+    $('viewLegendPos').value = state.view.legendPos;
+    $('viewLegendScale').value = state.view.legendScale;
+    $('viewLabelMin').value = state.view.labelMinProm === undefined ? 0.03 : state.view.labelMinProm;
+    $('smoothOn').checked = state.pre.smooth.on;
+    $('smoothWin').value = state.pre.smooth.win;
+    $('smoothOrder').value = state.pre.smooth.order;
+    $('baseMode').value = state.pre.baseline.mode;
+    $('baseDeg').value = state.pre.baseline.deg;
+    $('baseP1').value = state.pre.baseline.p1;
+    $('baseP2').value = state.pre.baseline.p2;
+    $('atrOn').checked = state.pre.atr.on;
+    $('atrN1').value = state.pre.atr.n1;
+    $('atrN2').value = state.pre.atr.n2;
+    $('normMode').value = state.pre.norm;
+    $('normB1').value = state.pre.normBand[0];
+    $('normB2').value = state.pre.normBand[1];
+    $('peakMinProm').value = state.peakOpts.minProm;
+    $('peakMinSep').value = state.peakOpts.minSep;
+  }
+
+  /* --------------------------------------------------------------- 탭 */
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
+    document.querySelectorAll('.panel').forEach((p) => p.classList.toggle('active', p.id === 'panel-' + name));
+    updateTabInfo();
+  }
+
+  /* -------------------------------------------------------------- 이벤트 */
+  function bind() {
+    document.querySelectorAll('.tab').forEach((b) => { b.onclick = () => switchTab(b.dataset.tab); });
+
+    $('btnOpen').onclick = () => $('fileInput').click();
+    $('fileInput').onchange = (e) => { handleFiles(e.target.files); e.target.value = ''; };
+
+    // 드래그&드롭 — 창 전체
+    let dragDepth = 0;
+    const dz = $('dropzone');
+    dz.onclick = () => $('fileInput').click();
+    window.addEventListener('dragenter', (e) => { e.preventDefault(); dragDepth++; dz.classList.add('over'); });
+    window.addEventListener('dragover', (e) => { e.preventDefault(); });
+    window.addEventListener('dragleave', (e) => { e.preventDefault(); if (--dragDepth <= 0) dz.classList.remove('over'); });
+    window.addEventListener('drop', (e) => {
+      e.preventDefault(); dragDepth = 0; dz.classList.remove('over');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    $('btnDemo').onclick = () => {
+      const d = window.FTIR_DEMO();
+      state.traces = [];
+      d.forEach((s) => newTrace(s.name, s.x, s.y));
+      state.selectedId = state.traces.length ? state.traces[0].id : null;
+      log(`데모 데이터 로드: ${d.length}개 (합성 스펙트럼 — 실측값 아님)`, 'warn');
+      renderAll();
+    };
+
+    $('btnSave').onclick = saveProject;
+    $('btnLoad').onclick = () => {
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = '.json';
+      inp.onchange = () => inp.files[0] && loadProject(inp.files[0]);
+      inp.click();
+    };
+    $('btnPNG').onclick = () => {
+      if (!state.traces.length) { log('내보낼 스펙트럼이 없습니다', 'warn'); return; }
+      const url = P.toPNG($('plot'), state, { scale: 2 });
+      download('ftir-plot-' + Date.now() + '.png', url.split(',')[1] ? dataURLtoBlob(url) : url, 'image/png');
+      log('PNG 내보내기 (2배 해상도)', 'ok');
+    };
+    $('btnHelp').onclick = () => { const d = $('helpDlg'); d.showModal(); d.scrollTop = 0; };
+    $('btnHelpClose').onclick = () => $('helpDlg').close();
+
+    $('btnShowAll').onclick = () => { state.traces.forEach((t) => t.visible = true); renderAll(); };
+    $('btnHideAll').onclick = () => { state.traces.forEach((t) => t.visible = false); renderAll(); };
+    $('btnClear').onclick = () => {
+      if (!state.traces.length) return;
+      state.traces = []; state.selectedId = null; state._idx = null; state._libMatch = null;
+      renderAll(); log('모든 시료 삭제');
+    };
+
+    // 스타일 편집
+    const onStyle = () => {
+      const t = sel(); if (!t) return;
+      t.name = $('styName').value || t.name;
+      t.legend = $('styLegend').value;
+      t.color = $('styColor').value;
+      t.width = Math.max(0.5, +$('styWidth').value || 1.6);
+      t.dash = $('styDash').value;
+      t.alpha = Math.min(1, Math.max(0.1, +$('styAlpha').value || 1));
+      renderTraceList(); syncSelectors(); renderPlot();
+    };
+    ['styName', 'styLegend', 'styColor', 'styWidth', 'styDash', 'styAlpha'].forEach((id) => {
+      $(id).oninput = onStyle; $(id).onchange = onStyle;
+    });
+
+    // 표시 설정
+    const onView = () => {
+      state.view.stacked = $('viewMode').value === 'stacked';
+      state.view.normHeight = $('viewNormHeight').checked;
+      state.view.gap = Math.max(0, +$('viewGap').value || 0);
+      state.view.rev = $('viewRev').checked;
+      state.view.grid = $('viewGrid').checked;
+      state.view.peaksOn = $('viewPeaks').checked;
+      state.view.labelsOn = $('viewLabels').checked;
+      state.view.fontSize = Math.max(8, +$('viewFont').value || 13);
+      state.view.legendOn = $('viewLegendOn').checked;
+      state.view.legendPos = $('viewLegendPos').value;
+      state.view.legendScale = Math.max(0.6, +$('viewLegendScale').value || 1);
+      state.view.labelMinProm = Math.max(0, +$('viewLabelMin').value || 0);
+      let lo = +$('viewLo').value, hi = +$('viewHi').value;
+      if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 20) { state.view.lo = lo; state.view.hi = hi; }
+      renderPlot();
+    };
+    ['viewMode', 'viewGap', 'viewNormHeight', 'viewRev', 'viewGrid', 'viewPeaks', 'viewLabels',
+      'viewFont', 'viewLegendPos', 'viewLegendOn', 'viewLegendScale', 'viewLo', 'viewHi', 'viewLabelMin'].forEach((id) => {
+      $(id).onchange = onView; $(id).oninput = onView;
+    });
+    const setRange = (lo, hi) => {
+      state.view.lo = lo; state.view.hi = hi;
+      $('viewLo').value = lo; $('viewHi').value = hi;
+      renderPlot();
+    };
+    $('btnRangeFull').onclick = () => setRange(400, 4000);
+    $('btnRangeFingerprint').onclick = () => setRange(700, 1800);
+    $('btnRangeCH').onclick = () => setRange(2700, 3100);
+    $('btnResetView').onclick = () => {
+      state.view.lo = 400; state.view.hi = 4000;
+      $('viewLo').value = 400; $('viewHi').value = 4000;
+      renderPlot();
+    };
+
+    // 전처리
+    const onPre = () => {
+      state.pre.smooth.on = $('smoothOn').checked;
+      state.pre.smooth.win = Math.max(3, +$('smoothWin').value || 9);
+      state.pre.smooth.order = Math.min(5, Math.max(1, +$('smoothOrder').value || 2));
+      state.pre.baseline.mode = $('baseMode').value;
+      state.pre.baseline.deg = Math.max(1, +$('baseDeg').value || 3);
+      state.pre.baseline.p1 = +$('baseP1').value || 4000;
+      state.pre.baseline.p2 = +$('baseP2').value || 400;
+      state.pre.atr.on = $('atrOn').checked;
+      state.pre.atr.n1 = +$('atrN1').value || 2.40;
+      state.pre.atr.n2 = +$('atrN2').value || 1.52;
+      state.pre.norm = $('normMode').value;
+      state.pre.normBand = [+$('normB1').value || 1440, +$('normB2').value || 1480];
+      reprocess();
+    };
+    ['smoothOn', 'smoothWin', 'smoothOrder', 'baseMode', 'baseDeg', 'baseP1', 'baseP2',
+      'atrOn', 'atrN1', 'atrN2', 'normMode', 'normB1', 'normB2'].forEach((id) => {
+      $(id).onchange = onPre; $(id).oninput = onPre;
+    });
+
+    // 비교
+    $('btnDiff').onclick = makeDiff;
+    $('btnDiffClear').onclick = () => {
+      const diffs = state.traces.filter((t) => t.frozen && t.fillDiff);
+      if (!diffs.length) { log('제거할 차이 스펙트럼이 없습니다', 'warn'); return; }
+      state.traces = state.traces.filter((t) => !diffs.includes(t));
+      if (!state.traces.some((t) => t.id === state.selectedId)) state.selectedId = state.traces.length ? state.traces[0].id : null;
+      renderAll(); log('차이 스펙트럼 제거');
+    };
+
+    // 피크
+    $('peakMinProm').oninput = () => { state.peakOpts.minProm = Math.max(0.001, +$('peakMinProm').value || 0.015); };
+    $('peakMinSep').oninput = () => { state.peakOpts.minSep = Math.max(1, +$('peakMinSep').value || 8); };
+    $('btnPick').onclick = () => {
+      const scope = $('peakScope').value;
+      const targets = scope === 'all' ? state.traces : [sel()].filter(Boolean);
+      if (!targets.length) { log('피크 검출: 시료를 선택하세요', 'warn'); return; }
+      targets.forEach((t) => detectPeaks(t, true));
+      renderAll();
+      log(`피크 검출 완료 (${targets.length}개 시료, minProm ${state.peakOpts.minProm})`, 'ok');
+    };
+    $('btnPeakCSV').onclick = () => {
+      const rows = [['시료', 'wavenumber_cm-1', 'intensity', 'prominence', 'assignment', 'label']];
+      for (const t of state.traces) {
+        for (const pk of t.peaks.slice().sort((a, b) => b.x - a.x)) {
+          const hits = C.assignBand(pk.x);
+          rows.push([t.legend || t.name, pk.x.toFixed(1), pk.y.toFixed(5), pk.prom.toFixed(5),
+            hits.map((h) => h.label + '(' + h.ko + ')').join(' / '), pk.label || '']);
+        }
+      }
+      download('ftir-peaks.csv', '\ufeff' + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n'), 'text/csv;charset=utf-8');
+      log('피크 표 CSV 저장', 'ok');
+    };
+
+    // 정성
+    $('btnId').onclick = () => runIdentify(getTrace($('idTrace').value));
+    $('btnIdCSV').onclick = () => {
+      if (!state._idRes) { log('먼저 정성 판정을 실행하세요', 'warn'); return; }
+      const rows = [['rank', 'candidate', 'class', 'score_pct', 'got', 'total', 'missing_w>=2', 'note']];
+      state._idRes.res.map((r, i) => rows.push([i + 1, r.ko, r.cls, (r.score * 100).toFixed(0), r.got, r.tot,
+        r.detail.filter((d) => !d.found && d.w >= 2).map((d) => d.t).join(' / '), r.note || '']));
+      download('ftir-identification.csv', '\ufeff' + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n'), 'text/csv;charset=utf-8');
+      log('정성 판정 CSV 저장', 'ok');
+    };
+
+    // 지수
+    $('idxPreset').onchange = () => {
+      const p = currentPreset();
+      $('idxAtr').checked = !!p.atr;
+      $('idxNote').textContent = p.note || '';
+    };
+    $('btnIndex').onclick = () => {
+      const t = getTrace($('idxTrace').value);
+      if (!t) { log('지수 계산: 시료를 선택하세요', 'warn'); return; }
+      const p = currentPreset();
+      const out = [];
+      calcRow(t, p, $('idxAtr').checked, out);
+      state._idx = out;
+      renderIdxTable();
+      log(`${p.name} = ${fmt(out[0].value, 4)} (${t.legend || t.name}, ATR ${$('idxAtr').checked ? 'on' : 'off'})`, 'ok');
+      switchTab('index');
+    };
+    $('btnIndexAll').onclick = () => {
+      const p = currentPreset();
+      const atr = $('idxAtr').checked;
+      const out = [];
+      for (const t of state.traces) if (!t.frozen) calcRow(t, p, atr, out);
+      state._idx = out;
+      renderIdxTable();
+      log(`전체 시료 ${p.name} 계산 (${out.length}개)`, 'ok');
+      switchTab('index');
+    };
+    $('btnIndexCSV').onclick = () => {
+      if (!state._idx || !state._idx.length) { log('먼저 지수를 계산하세요', 'warn'); return; }
+      const rows = [['sample', 'preset', 'value', 'value_no_atr', 'numerator_area', 'denominator_area', 'atr']];
+      state._idx.forEach((r) => rows.push([r.name, r.preset, r.value, r.valueRaw, r.num, r.den, r.atr ? 'on' : 'off']));
+      download('ftir-index.csv', '\ufeff' + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n'), 'text/csv;charset=utf-8');
+      log('지수 CSV 저장', 'ok');
+    };
+
+    // 라이브러리
+    $('btnAddRef').onclick = () => {
+      const t = sel();
+      if (!t) { log('표준 등록: 시료를 선택하세요', 'warn'); return; }
+      const nm = prompt('표준시료 이름 (예: PA6-GF30 기준품)', t.legend || t.name);
+      if (!nm) return;
+      if (!state.lib) state.lib = [];
+      state.lib.push({
+        id: 'lib' + Date.now(), name: nm, created: new Date().toISOString().slice(0, 10),
+        x: t.x.map((v) => +v.toFixed(2)), y: t.y.map((v) => +v.toFixed(6))
+      });
+      const ok = C.saveLibrary(state.lib);
+      renderLibTable(state._libMatch);
+      log(`표준 등록: ${nm}${ok ? '' : ' (저장 실패 — JSON 내보내기로 보관하세요)'}`, ok ? 'ok' : 'warn');
+    };
+    $('btnLibMatch').onclick = () => {
+      const t = getTrace($('libTrace').value);
+      if (!t) { log('라이브러리 대조: 시료를 선택하세요', 'warn'); return; }
+      if (!state.lib.length) { log('등록된 표준시료가 없습니다', 'warn'); return; }
+      const results = state.lib.map((ref) => {
+        const rp = C.applyPipeline({ x: ref.x, y: ref.y }, state.pre);
+        const m = C.compareToRef(t.p, rp);
+        return { id: ref.id, name: ref.name, ...m };
+      }).sort((a, b) => b.score - a.score);
+      state._libMatch = { results };
+      renderLibTable(state._libMatch);
+      log(`라이브러리 대조 완료: 최고 ${results[0].name} (${results[0].score}/1000)`, 'ok');
+      switchTab('lib');
+    };
+    $('btnLibExport').onclick = () => {
+      download('ftir-library.json', JSON.stringify(state.lib), 'application/json');
+      log(`라이브러리 JSON 내보내기 (${state.lib.length}개)`, 'ok');
+    };
+    $('btnLibImport').onclick = () => $('libFile').click();
+    $('libFile').onchange = (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        try {
+          const arr = JSON.parse(String(rd.result));
+          if (!Array.isArray(arr)) throw new Error('배열이 아님');
+          state.lib = state.lib.concat(arr.filter((r) => r && r.x && r.y));
+          C.saveLibrary(state.lib);
+          renderLibTable(state._libMatch);
+          log(`라이브러리 가져오기: 총 ${state.lib.length}개`, 'ok');
+        } catch (err) { log('라이브러리 가져오기 실패: ' + err.message, 'err'); }
+      };
+      rd.readAsText(f);
+      e.target.value = '';
+    };
+
+    $('btnClearLog').onclick = () => { $('log').innerHTML = ''; };
+
+    // ---- 캔버스 상호작용
+    bindCanvas();
+
+    // ---- 아래 패널 높이 조절
+    (function () {
+      const main = document.querySelector('main');
+      const rz = $('vresizer'), bottom = $('bottom');
+      let drag = null, raf = null;
+      const paint = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = null; renderPlot(); }); };
+      rz.addEventListener('mousedown', (e) => {
+        drag = { y: e.clientY, h: bottom.getBoundingClientRect().height };
+        document.body.style.cursor = 'row-resize';
+        e.preventDefault();
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!drag) return;
+        const nh = Math.max(34, Math.min(window.innerHeight - 240, drag.h - (e.clientY - drag.y)));
+        main.style.setProperty('--bottomH', nh + 'px');
+        paint();
+      });
+      window.addEventListener('mouseup', () => {
+        if (!drag) return;
+        drag = null; document.body.style.cursor = '';
+        paint();
+      });
+      rz.addEventListener('dblclick', () => {
+        const cur = bottom.getBoundingClientRect().height;
+        main.style.setProperty('--bottomH', (cur > 80 ? 36 : 300) + 'px');
+        paint();
+      });
+    })();
+
+    window.addEventListener('resize', debounce(() => renderPlot(), 120));
+  }
+
+  function dataURLtoBlob(url) {
+    const [head, b64] = url.split(',');
+    const mime = /:(.*?);/.exec(head)[1];
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+
+  function debounce(fn, ms) {
+    let t = null;
+    return function () { clearTimeout(t); t = setTimeout(fn, ms); };
+  }
+
+  function bindCanvas() {
+    const canvas = $('plot');
+    const tip = $('tooltip');
+    let drag = null;
+
+    const selBox = document.createElement('div');
+    selBox.style.cssText = 'position:absolute;border:1px solid #4f9dff;background:rgba(79,157,255,.13);display:none;pointer-events:none;z-index:10';
+    $('plotWrap').appendChild(selBox);
+
+    const px2wn = (px) => {
+      const g = state.geom; if (!g) return null;
+      const t = (px - g.m.l) / g.pw;
+      const frac = state.view.rev !== false ? (1 - t) : t;
+      return g.xLo + frac * (g.xHi - g.xLo);
+    };
+
+    canvas.addEventListener('mousedown', (e) => {
+      const r = canvas.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      // 범례 클릭?
+      for (const lr of state.legendRects) {
+        if (x >= lr.x && x <= lr.x + lr.w && y >= lr.y && y <= lr.y + lr.h) {
+          state.selectedId = lr.id; renderAll(); return;
+        }
+      }
+      drag = { x0: x, y0: y, moved: false };
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      const r = canvas.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      if (drag) {
+        if (Math.abs(x - drag.x0) > 4) drag.moved = true;
+        if (drag.moved) {
+          const l = Math.min(drag.x0, x), w = Math.abs(x - drag.x0);
+          selBox.style.display = 'block';
+          selBox.style.left = l + 'px'; selBox.style.top = Math.max(0, Math.min(drag.y0, y)) + 'px';
+          selBox.style.width = w + 'px'; selBox.style.height = Math.abs(y - drag.y0) + 'px';
+          return;
+        }
+      }
+      updateTooltip(x, y);
+    });
+
+    canvas.addEventListener('mouseup', (e) => {
+      const r = canvas.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      if (drag && drag.moved) {
+        const a = px2wn(drag.x0), b = px2wn(x);
+        if (a !== null && b !== null) {
+          state.view.lo = Math.round(Math.min(a, b));
+          state.view.hi = Math.round(Math.max(a, b));
+          if (state.view.hi - state.view.lo < 20) { state.view.lo = 400; state.view.hi = 4000; }
+          $('viewLo').value = state.view.lo; $('viewHi').value = state.view.hi;
+          renderPlot();
+        }
+      }
+      drag = null; selBox.style.display = 'none';
+    });
+
+    canvas.addEventListener('mouseleave', () => { tip.classList.add('hidden'); drag = null; selBox.style.display = 'none'; });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const r = canvas.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      const wn = px2wn(x); if (wn === null) return;
+      const f = e.deltaY > 0 ? 1.18 : 1 / 1.18;
+      let lo = wn + (state.view.lo - wn) * f;
+      let hi = wn + (state.view.hi - wn) * f;
+      lo = Math.max(300, lo); hi = Math.min(4100, hi);
+      if (hi - lo < 15) return;
+      state.view.lo = lo; state.view.hi = hi;
+      $('viewLo').value = Math.round(lo); $('viewHi').value = Math.round(hi);
+      renderPlot();
+    }, { passive: false });
+
+    canvas.addEventListener('dblclick', () => {
+      state.view.lo = 400; state.view.hi = 4000;
+      $('viewLo').value = 400; $('viewHi').value = 4000;
+      renderPlot();
+    });
+
+    function updateTooltip(x, y) {
+      const wn = px2wn(x);
+      if (wn === null || !state.traces.length) { tip.classList.add('hidden'); return; }
+      const vis = state.traces.filter((t) => t.visible && t.p);
+      let html = `<div><b>${wn.toFixed(1)} cm⁻¹</b></div>`;
+      for (const t of vis.slice(0, 8)) {
+        const v = C.interpAt(t.p.x, t.p.y, wn);
+        html += `<div class="trow"><span class="d" style="background:${t.color}"></span>
+          <span>${esc((t.legend || t.name).slice(0, 22))}</span>
+          <span style="margin-left:auto;color:#9fb3c9">${isFinite(v) ? v.toFixed(3) : '—'}</span></div>`;
+      }
+      const hits = C.assignBand(wn);
+      if (hits.length) {
+        html += `<div style="margin-top:4px;color:#8fb0d0;font-size:10.5px">${hits.slice(0, 2).map((h) => `${esc(h.label)} <span style="color:#6d8299">(${esc(h.ko.split(' ')[0])})</span>`).join('<br>')}</div>`;
+      }
+      tip.innerHTML = html;
+      tip.classList.remove('hidden');
+      const wrapW = $('plotWrap').clientWidth;
+      const left = Math.min(wrapW - 220, Math.max(6, x + 16));
+      tip.style.left = left + 'px';
+      tip.style.top = Math.max(6, y - 10) + 'px';
+    }
+  }
+
+  /* ---------------------------------------------------------------- 초기화 */
+  function init() {
+    fillIndexPresets();
+    syncControlsFromState();
+    state.lib = C.loadLibrary();
+    bind();
+    renderAll();
+    log('FT-IR Studio v1.1 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요.');
+    log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
+  }
+
+  // 테스트/자동화용 훅
+  window.FTIR = {
+    state, renderAll, addParsed, handleFiles, detectPeaks, runIdentify, makeDiff,
+    switchTab, reprocess, log, C, P, BANDS, saveProject, loadProject
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
+</body>
+</html>

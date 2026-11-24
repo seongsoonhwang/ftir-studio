@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>FT-IR Studio — 열가소성·고무·열경화성 스펙트럼 분석</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <span class="logo">∿</span>
+      <span class="title">FT-IR Studio</span>
+      <span class="ver">v1.1</span>
+      <span class="sub">Bruker OPUS 바이너리·ASCII · 스택 비교 · 정성/열화 판정</span>
+    </div>
+    <div class="tools">
+      <button id="btnOpen" class="primary">파일 열기</button>
+      <button id="btnDemo">데모 데이터</button>
+      <span class="sep"></span>
+      <button id="btnSave">프로젝트 저장</button>
+      <button id="btnLoad">프로젝트 열기</button>
+      <span class="sep"></span>
+      <button id="btnPNG">PNG 내보내기</button>
+      <button id="btnHelp">도움말</button>
+    </div>
+  </header>
+
+  <aside id="side">
+    <details open>
+      <summary>시료 <span class="cnt" id="traceCount">0</span></summary>
+      <div class="body">
+        <div id="dropzone" class="drop">
+          <strong>파일을 여기로 끌어다 놓기</strong>
+          <span>OPUS 원시 파일(<b>.0 .1 .2</b>) · ASCII(.dpt/.txt/.csv)</span>
+        </div>
+        <ul id="traceList" class="tracelist"></ul>
+        <div class="row btns">
+          <button id="btnShowAll" class="mini">전체 표시</button>
+          <button id="btnHideAll" class="mini">전체 숨김</button>
+          <button id="btnClear" class="mini danger">모두 삭제</button>
+        </div>
+        <div class="divider"></div>
+        <div class="subhead">선택한 시료 스타일</div>
+        <label class="fld"><span>이름(범례)</span><input id="styName" type="text" placeholder="시료 선택"></label>
+        <label class="fld"><span>범례 문구</span><input id="styLegend" type="text" placeholder="비우면 이름 사용"></label>
+        <div class="row2">
+          <label class="fld"><span>색</span><input id="styColor" type="color" value="#4f9dff"></label>
+          <label class="fld"><span>굵기</span><input id="styWidth" type="number" min="0.5" max="8" step="0.1" value="1.6"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>선 형태</span>
+            <select id="styDash">
+              <option value="solid">실선</option>
+              <option value="dash">파선</option>
+              <option value="dot">점선</option>
+              <option value="dashdot">일점쇄선</option>
+            </select>
+          </label>
+          <label class="fld"><span>투명도</span><input id="styAlpha" type="number" min="0.1" max="1" step="0.05" value="1"></label>
+        </div>
+        <p class="hint">그래프의 범례를 클릭해도 해당 시료가 선택됩니다.</p>
+      </div>
+    </details>
+
+    <details open>
+      <summary>표시 설정</summary>
+      <div class="body">
+        <div class="row2">
+          <label class="fld"><span>배치</span>
+            <select id="viewMode">
+              <option value="stacked">스택(한 화면)</option>
+              <option value="overlay">겹쳐보기</option>
+            </select>
+          </label>
+          <label class="fld"><span>간격</span><input id="viewGap" type="number" min="0" max="1" step="0.05" value="0.35"></label>
+        </div>
+        <label class="chk"><input id="viewNormHeight" type="checkbox" checked> 시료별 높이 정규화</label>
+        <label class="chk"><input id="viewRev" type="checkbox" checked> X축 역순 (4000 → 400)</label>
+        <label class="chk"><input id="viewGrid" type="checkbox" checked> 격자</label>
+        <label class="chk"><input id="viewPeaks" type="checkbox" checked> 피크 마커</label>
+        <label class="chk"><input id="viewLabels" type="checkbox" checked> 피크 라벨</label>
+        <div class="row2">
+          <label class="fld"><span>X 최소</span><input id="viewLo" type="number" step="10" value="400"></label>
+          <label class="fld"><span>X 최대</span><input id="viewHi" type="number" step="10" value="4000"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>글꼴 크기</span><input id="viewFont" type="number" min="8" max="24" step="1" value="13"></label>
+          <label class="fld"><span>범례 위치</span>
+            <select id="viewLegendPos">
+              <option value="out">바깥 오른쪽</option>
+              <option value="tr">오른쪽 위</option>
+              <option value="tl">왼쪽 위</option>
+              <option value="br">오른쪽 아래</option>
+              <option value="bl">왼쪽 아래</option>
+            </select>
+          </label>
+        </div>
+        <label class="chk"><input id="viewLegendOn" type="checkbox" checked> 범례 표시</label>
+        <label class="fld"><span>피크 라벨 기준 (prominence/전체높이)</span><input id="viewLabelMin" type="number" min="0" max="0.5" step="0.005" value="0.03"></label>
+        <div class="row2">
+          <label class="fld"><span>범례 크기</span><input id="viewLegendScale" type="number" min="0.6" max="2" step="0.1" value="1"></label>
+          <button id="btnResetView" class="mini" style="align-self:end">X축 초기화</button>
+        </div>
+        <div class="row btns">
+          <button id="btnRangeFull" class="mini">전체 4000–400</button>
+          <button id="btnRangeFingerprint" class="mini">지문 1800–700</button>
+          <button id="btnRangeCH" class="mini">C–H 3100–2700</button>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>전처리 <span class="cnt" id="preBadge">기본</span></summary>
+      <div class="body">
+        <label class="chk"><input id="smoothOn" type="checkbox"> Savitzky–Golay 스무딩</label>
+        <div class="row2">
+          <label class="fld"><span>창 길이</span><input id="smoothWin" type="number" min="3" max="101" step="2" value="9"></label>
+          <label class="fld"><span>차수</span><input id="smoothOrder" type="number" min="1" max="5" step="1" value="2"></label>
+        </div>
+        <div class="divider"></div>
+        <label class="fld"><span>베이스라인</span>
+          <select id="baseMode">
+            <option value="none">없음</option>
+            <option value="linear">선형 (두 점)</option>
+            <option value="poly">다항식</option>
+            <option value="rubber">러버밴드</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>점1 (cm⁻¹)</span><input id="baseP1" type="number" value="4000"></label>
+          <label class="fld"><span>점2 (cm⁻¹)</span><input id="baseP2" type="number" value="400"></label>
+        </div>
+        <label class="fld"><span>다항식 차수</span><input id="baseDeg" type="number" min="1" max="8" step="1" value="3"></label>
+        <div class="divider"></div>
+        <label class="chk"><input id="atrOn" type="checkbox"> ATR 보정 (A · ν/1000)</label>
+        <div class="row2">
+          <label class="fld"><span>결정 n₁</span><input id="atrN1" type="number" step="0.01" value="2.40"></label>
+          <label class="fld"><span>시료 n₂</span><input id="atrN2" type="number" step="0.01" value="1.52"></label>
+        </div>
+        <p class="hint">diamond/n=2.40, ZnSe/n=2.40, Ge/n=4.0. 보정 시 vs 미보정 CI 차이를 지수 탭에서 함께 표시합니다.</p>
+        <div class="divider"></div>
+        <label class="fld"><span>정규화</span>
+          <select id="normMode">
+            <option value="none">없음</option>
+            <option value="max">최대값</option>
+            <option value="minmax">0–1</option>
+            <option value="vector">벡터(norm)</option>
+            <option value="band">특정 밴드 면적</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>밴드1</span><input id="normB1" type="number" value="1440"></label>
+          <label class="fld"><span>밴드2</span><input id="normB2" type="number" value="1480"></label>
+        </div>
+        <p class="hint">전처리는 <b>모든 시료에 동일 적용</b>됩니다. 시료별 개별 처리가 필요하면 시료를 따로 불러 전처리를 바꿔 다시 저장하세요.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>비교 (차이 스펙트럼)</summary>
+      <div class="body">
+        <label class="fld"><span>A (예: 노화 후)</span><select id="cmpA"></select></label>
+        <label class="fld"><span>B (예: 초기)</span><select id="cmpB"></select></label>
+        <label class="fld"><span>정규화 기준</span>
+          <select id="cmpNorm">
+            <option value="band">기준 밴드 면적</option>
+            <option value="max">최대 흡광도</option>
+            <option value="none">없음</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>기준밴드1</span><input id="cmpB1" type="number" value="1440"></label>
+          <label class="fld"><span>기준밴드2</span><input id="cmpB2" type="number" value="1480"></label>
+        </div>
+        <div class="row btns">
+          <button id="btnDiff" class="mini primary">A − B 계산</button>
+          <button id="btnDiffClear" class="mini">차이 제거</button>
+        </div>
+      </div>
+    </details>
+  </aside>
+
+  <main>
+    <div id="plotWrap">
+      <canvas id="plot"></canvas>
+      <div id="tooltip" class="tooltip hidden"></div>
+      <div id="plotHint" class="plot-hint">드래그 확대 · 휠 줌 · 더블클릭 초기화</div>
+    </div>
+
+    <div id="vresizer" title="드래그: 아래 패널 높이 · 더블클릭: 접기"></div>
+
+    <div id="bottom">
+      <nav class="tabs">
+        <button class="tab active" data-tab="peaks">피크 표</button>
+        <button class="tab" data-tab="ident">정성 판정</button>
+        <button class="tab" data-tab="index">열화 지수</button>
+        <button class="tab" data-tab="lib">라이브러리</button>
+        <button class="tab" data-tab="log">로그</button>
+        <span class="grow"></span>
+        <span class="tabinfo" id="tabInfo"></span>
+      </nav>
+
+      <section class="panel active" id="panel-peaks">
+        <div class="toolbar">
+          <button id="btnPick" class="mini primary">피크 검출</button>
+          <label class="inl">최소 prominence <input id="peakMinProm" type="number" min="0.001" max="0.3" step="0.002" value="0.015"></label>
+          <label class="inl">최소 간격(cm⁻¹) <input id="peakMinSep" type="number" min="1" max="60" step="1" value="8"></label>
+          <label class="inl">대상 <select id="peakScope"><option value="sel">선택 시료</option><option value="all">전체 시료</option></select></label>
+          <span class="grow"></span>
+          <button id="btnPeakCSV" class="mini">CSV 저장</button>
+        </div>
+        <div class="tablewrap"><table id="peakTable"><thead><tr>
+          <th>시료</th><th>cm⁻¹</th><th>강도</th><th>prominence</th><th>귀속 후보</th><th>라벨</th>
+        </tr></thead><tbody></tbody></table></div>
+      </section>
+
+      <section class="panel" id="panel-ident">
+        <div class="toolbar">
+          <label class="inl">대상 <select id="idTrace"></select></label>
+          <button id="btnId" class="mini primary">마커 밴드 점수 계산</button>
+          <button id="btnIdCSV" class="mini">결과 CSV</button>
+          <span class="grow"></span>
+          <span class="tabinfo">점수 = 마커 밴드 가중치 충족률 (3=필수, 2=강, 1=보조)</span>
+        </div>
+        <div class="idwrap">
+          <div class="tablewrap"><table id="idTable"><thead><tr>
+            <th>후보</th><th>점수</th><th>충족</th><th>미검출 마커</th><th>비고</th>
+          </tr></thead><tbody></tbody></table></div>
+          <div id="idDetail" class="detail"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-index">
+        <div class="toolbar">
+          <label class="inl">지수 <select id="idxPreset"></select></label>
+          <label class="inl"><input id="idxAtr" type="checkbox"> ATR 보정 적용</label>
+          <label class="inl">대상 <select id="idxTrace"></select></label>
+          <button id="btnIndex" class="mini primary">계산</button>
+          <button id="btnIndexAll" class="mini">전체 시료 계산</button>
+          <span class="grow"></span>
+          <button id="btnIndexCSV" class="mini">CSV 저장</button>
+        </div>
+        <div class="tablewrap"><table id="idxTable"><thead><tr>
+          <th>시료</th><th>지수</th><th>값</th><th>ATR 미보정</th><th>분자(면적)</th><th>분모(면적)</th><th>비고</th>
+        </tr></thead><tbody></tbody></table></div>
+        <p class="hint" id="idxNote"></p>
+      </section>
+
+      <section class="panel" id="panel-lib">
+        <div class="toolbar">
+          <button id="btnAddRef" class="mini primary">선택 시료를 표준으로 등록</button>
+          <label class="inl">대상 <select id="libTrace"></select></label>
+          <button id="btnLibMatch" class="mini">라이브러리 대조</button>
+          <span class="grow"></span>
+          <button id="btnLibExport" class="mini">JSON 내보내기</button>
+          <button id="btnLibImport" class="mini">JSON 가져오기</button>
+          <input type="file" id="libFile" accept=".json" hidden>
+        </div>
+        <div class="idwrap">
+          <div class="tablewrap"><table id="libTable"><thead><tr>
+            <th>표준 시료</th><th>등록일</th><th>점수(0–1000)</th><th>R(원)</th><th>R(1차미분)</th><th></th>
+          </tr></thead><tbody></tbody></table></div>
+          <div id="libInfo" class="detail"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-log">
+        <div class="toolbar">
+          <button id="btnClearLog" class="mini">로그 지우기</button>
+          <span class="grow"></span>
+          <span class="tabinfo">수행한 처리·경고 기록</span>
+        </div>
+        <div id="log" class="log"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="fileInput" multiple accept=".0,.1,.2,.3,.4,.5,.6,.7,.8,.9,.10,.11,.12,.13,.14,.15,.16,.17,.18,.19,.20,.dpt,.txt,.csv,.tsv,.asc,.dat" hidden>
+
+<dialog id="helpDlg">
+  <h2>FT-IR Studio — 사용 안내</h2>
+  <h3>1. 데이터 불러오기</h3>
+  <ol>
+    <li><b>OPUS 원시 바이너리(<code>.0</code>, <code>.1</code> …)를 그대로 끌어다 놓으면 됩니다.</b> 별도 변환 없이 읽습니다.</li>
+    <li>파일 안에 인터페로그램·단일채널·흡광도가 함께 들어 있으면 <b>흡광도(결과 스펙트럼)</b>를 자동 선택합니다. 무엇을 선택했는지 로그에 표시됩니다.</li>
+    <li>읽은 뒤 <b>파일 내부의 MNY/MXY(저장된 최소·최대값)와 실제 계산값을 대조</b>합니다. 불일치하면 값을 신뢰할 수 없으므로 불러오지 않고 로그에 실패로 남깁니다.</li>
+    <li>ASCII(<code>.dpt .txt .csv</code>, 2열) 파일도 그대로 지원합니다 — 둘 중 편한 쪽을 쓰세요.</li>
+    <li>지원하지 않는 것: 3D 시계열(series) 블록, 라이브러리 검색·정량 리포트 블록, OPUS가 아닌 다른 제조사 포맷.</li>
+  </ol>
+  <h3>2. 화면 조작</h3>
+  <ul>
+    <li>드래그: X 구간 확대 · 휠: 확대/축소 · 더블클릭: 초기화</li>
+    <li>범례 클릭 → 해당 시료 선택 (왼쪽에서 색·굵기·선형태·범례 문구 수정)</li>
+    <li>스택 모드에서 시료 순서는 왼쪽 목록의 ↑↓로 바꿉니다.</li>
+  </ul>
+  <h3>3. 분석 흐름 권장</h3>
+  <ol>
+    <li><b>전처리</b>: 스무딩 → 베이스라인(러버밴드 권장) → (ATR이면) ATR 보정 → 정규화</li>
+    <li><b>피크 표</b>: 검출 후 귀속 후보 확인, 필요 없으면 라벨 편집</li>
+    <li><b>정성 판정</b>: 마커 밴드 점수로 후보 순위 → 상위 후보를 <b>라이브러리</b> 상관으로 재확인</li>
+    <li><b>열화 지수</b>: CI(Dong 2010) 등 프리셋으로 정량 비교, ATR 보정 유무 값 병기</li>
+    <li><b>비교</b>: A−B 차이 스펙트럼으로 노화/공정 문제 밴드 특정</li>
+  </ol>
+  <h3>4. 한계</h3>
+  <ul>
+    <li>마커 점수는 <b>규칙 기반</b>입니다. 실제 배합 grade 판정에는 표준시료 라이브러리가 필요합니다.</li>
+    <li>충전제(GF·탈크·CaCO₃·카본블랙)는 수지 밴드를 가립니다. 1000–1100 cm⁻¹ 광범위 흡수는 GF 가능성을 먼저 의심하세요.</li>
+    <li>ATR 보정은 단순형(A·ν/1000)입니다. 정밀 정량에는 파수 의존 n 분산을 반영한 상용 보정과 차이가 있을 수 있습니다.</li>
+    <li>OPUS 바이너리 리더는 공개 포맷 문서와 오픈소스 구현(brukeropus·openreadout)을 근거로 작성했습니다. 사내 OPUS 버전·3D 파일처럼 검증하지 못한 변형이 있으면 로그에 실패로 표시됩니다.</li>
+  </ul>
+  <div class="dlgfoot"><button id="btnHelpClose" class="primary">닫기</button></div>
+</dialog>
+
+<script src="lib-bands.js"></script>
+<script src="app-opus.js"></script>
+<script src="app-core.js"></script>
+<script src="app-plot.js"></script>
+<script src="demo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
