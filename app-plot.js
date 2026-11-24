@@ -627,16 +627,18 @@
      라틴 기본 서체 목록 뒤에 사내 서체를 붙이면, 글자별 폴백으로
      라틴은 기본 서체, 한글만 사내 서체가 된다(저널 도판에 유용). */
   const KO_PREFIX = '#ko:';
-  const LATIN_SERIF = '"Times New Roman",Times,"Liberation Serif",Georgia,serif';
-  const LATIN_SANS = '"Segoe UI",system-ui,sans-serif';
+  /* 한글만 모드 스택 — 라틴은 포맷 기본 서체, 한글은 사내 서체.
+     사내 서체를 제네릭 계열(sans-serif/serif) *앞*에 둬야 한글이 사내 서체로 간다.
+     (제네릭이 먼저면 OS 기본 한글 서체가 잡혀 버린다) */
+  const koStack = (name, serif) => serif
+    ? '"Times New Roman",Times,"Liberation Serif","' + name + '",Georgia,serif'
+    : '"Segoe UI","' + name + '",system-ui,sans-serif';
   const fontOverride = (o, base) => {
     const fam = o && o.fontFamily;
     if (!fam) return base;
     if (fam.indexOf(KO_PREFIX) === 0) {
-      const name = fam.slice(KO_PREFIX.length);
       // 'sans-serif' 가 'Serif' 로 오인되지 않도록 구체적 패밀리 이름으로 판정
-      const latin = /Times New Roman|Liberation Serif|Georgia/.test(base) ? LATIN_SERIF : LATIN_SANS;
-      return latin + ',"' + name + '"';
+      return koStack(fam.slice(KO_PREFIX.length), /Times New Roman|Liberation Serif|Georgia/.test(base));
     }
     return '"' + fam + '",' + base;
   };

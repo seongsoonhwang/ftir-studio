@@ -317,7 +317,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <div class="brand">
       <span class="logo">∿</span>
       <span class="title">FT-IR Studio</span>
-      <span class="ver">v1.4</span>
+      <span class="ver">v1.5</span>
       <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 | DSC: ΔH·Tg·결정화도 | TGA: T5%·Td·잔량</span>
     </div>
     <nav class="ttabs">
@@ -430,12 +430,12 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
           <label class="fld"><span>내보내기 서체</span>
             <select id="viewExportFont">
               <option value="">포맷 기본 (PPT: 맑은 고딕 / 학술지: Times)</option>
-              <option value="HDharmony L">현대하모니 L — 전체 적용</option>
-              <option value="HDharmony M">현대하모니 M — 전체 적용</option>
-              <option value="HDharmony B">현대하모니 B — 전체 적용</option>
-              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (라틴·숫자는 기본)</option>
-              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (라틴·숫자는 기본)</option>
-              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (권장: 축 제목·숫자는 기본 서체)</option>
+              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (권장)</option>
+              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (권장)</option>
+              <option value="HDharmony L">현대하모니 L — 전체 (기호 °·µ·⁻¹ 가 전각으로 벌어짐)</option>
+              <option value="HDharmony M">현대하모니 M — 전체 (기호 전각 주의)</option>
+              <option value="HDharmony B">현대하모니 B — 전체 (기호 전각 주의)</option>
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
@@ -641,7 +641,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
       <div class="body">
         <div id="dDrop" class="drop">
           <strong>파일을 여기로 끌어다 놓기</strong>
-          <span>DSC ASCII(.txt/.csv/.tsv) · 온도·열유량 2~5열</span>
+          <span>DSC ASCII(.txt/.csv/.tsv) · Netzsch .ngb-sdf · 온도·열유량 2~5열</span>
         </div>
         <ul id="dList" class="tracelist"></ul>
         <div class="row btns">
@@ -728,12 +728,12 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
           <label class="fld"><span>내보내기 서체</span>
             <select id="dExportFont">
               <option value="">포맷 기본 (PPT: 맑은 고딕 / 학술지: Times)</option>
-              <option value="HDharmony L">현대하모니 L — 전체 적용</option>
-              <option value="HDharmony M">현대하모니 M — 전체 적용</option>
-              <option value="HDharmony B">현대하모니 B — 전체 적용</option>
-              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (라틴·숫자는 기본)</option>
-              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (라틴·숫자는 기본)</option>
-              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (권장: 축 제목·숫자는 기본 서체)</option>
+              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (권장)</option>
+              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (권장)</option>
+              <option value="HDharmony L">현대하모니 L — 전체 (기호 °·µ·⁻¹ 가 전각으로 벌어짐)</option>
+              <option value="HDharmony M">현대하모니 M — 전체 (기호 전각 주의)</option>
+              <option value="HDharmony B">현대하모니 B — 전체 (기호 전각 주의)</option>
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
@@ -848,7 +848,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
       <div class="body">
         <div id="tDrop" class="drop">
           <strong>파일을 여기로 끌어다 놓기</strong>
-          <span>TGA ASCII(.txt/.csv/.tsv) · 온도·중량 2~5열</span>
+          <span>TGA ASCII(.txt/.csv/.tsv) · Netzsch .ngb-sdf · 온도·중량 2~5열</span>
         </div>
         <ul id="tList" class="tracelist"></ul>
         <div class="row btns">
@@ -934,12 +934,12 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
           <label class="fld"><span>내보내기 서체</span>
             <select id="tExportFont">
               <option value="">포맷 기본 (PPT: 맑은 고딕 / 학술지: Times)</option>
-              <option value="HDharmony L">현대하모니 L — 전체 적용</option>
-              <option value="HDharmony M">현대하모니 M — 전체 적용</option>
-              <option value="HDharmony B">현대하모니 B — 전체 적용</option>
-              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (라틴·숫자는 기본)</option>
-              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (라틴·숫자는 기본)</option>
-              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (라틴·숫자는 기본)</option>
+              <option value="#ko:HDharmony L">현대하모니 L — 한글만 (권장: 축 제목·숫자는 기본 서체)</option>
+              <option value="#ko:HDharmony M">현대하모니 M — 한글만 (권장)</option>
+              <option value="#ko:HDharmony B">현대하모니 B — 한글만 (권장)</option>
+              <option value="HDharmony L">현대하모니 L — 전체 (기호 °·µ·⁻¹ 가 전각으로 벌어짐)</option>
+              <option value="HDharmony M">현대하모니 M — 전체 (기호 전각 주의)</option>
+              <option value="HDharmony B">현대하모니 B — 전체 (기호 전각 주의)</option>
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
@@ -1049,7 +1049,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · 옅은 격자 · 이름표+범례 · 피크 라벨 8개까지.</li>
     <li><b>화면 그대로</b>: 보이는 그대로 2배 해상도. 배경은 투명/흰색/앱 테마 중 선택.</li>
     <li>내보내기에는 화면 전용 요소(선택 음영·크로스헤어)가 빠지고, 피크를 아직 검출하지 않은 시료도 자동으로 검출해 라벨을 붙입니다.</li>
-    <li><b>내보내기 서체</b>: 포맷과 별개로 글꼴만 바꿉니다. <b>현대하모니 L·M·B</b>는 <b>전체 적용</b>(라틴·숫자·한글 모두)과 <b>한글만</b>(라틴·숫자는 포맷 기본) 중에서 고릅니다 — PPT는 전체 적용, 학술지에서 한글 시료명만 맞출 때는 한글만을 쓰십시오. 사내 서체는 <code>fonts/</code> 폴더의 TTF를 직접 읽으므로 설치가 필요 없고, 폴더가 없으면 조용히 대체 서체로 저장되며 로그에 경고가 남습니다. 공개 웹 버전에는 서체 파일이 없어 대체 서체로 나옵니다(PNG는 글자가 픽셀로 굳으므로 받는 사람 PC에 서체가 없어도 동일).</li>
+    <li><b>내보내기 서체</b>: 포맷과 별개로 글꼴만 바꿉니다. <b>현대하모니 L·M·B</b>는 <b>한글만(권장)</b>과 <b>전체</b> 중에서 고릅니다. <b>한글만</b>은 라틴·숫자·기호를 포맷 기본 서체(Segoe UI / Times)로 두고 한글만 사내 서체로 씁니다. <b>전체</b>로 두면 축 제목의 <code>°</code>·<code>¹</code> 이 전각으로, <code>µ</code>·<code>⁻</code>·<code>≈</code> 은 사내 서체에 없어 폴백되므로 <code>Temperature (°C)</code> 가 <code>(° C)</code> 처럼 벌어져 보입니다 — 축 제목 가독성이 중요하면 한글만을 쓰십시오. 사내 서체는 <code>fonts/</code> 폴더의 TTF를 직접 읽으므로 설치가 필요 없고, 폴더가 없으면 조용히 대체 서체로 저장되며 로그에 경고가 남습니다. 공개 웹 버전에는 서체 파일이 없어 대체 서체로 나옵니다(PNG는 글자가 픽셀로 굳으므로 받는 사람 PC에 서체가 없어도 동일).</li>
   </ul>
   <h3>4. 분석 흐름 권장</h3>
   <ol>
@@ -1069,6 +1069,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
   </ul>
   <h3>6. DSC 탭 (v1.3 추가)</h3>
   <ol>
+    <li>계측기 원본 텍스트 export 도 그대로 됩니다 — <b>Netzsch Proteus <code>.ngb-sdf</code></b>(헤더 <code>#…</code> + <code>Temp./°C;Time/min;DSC/(mW/mg);…</code> 5열) 형식을 확인했습니다. 이때 <code>#SAMPLE MASS /mg</code>(질량) · <code>#SEG.</code>·<code>#RANGE</code>(승온속도) · <code>#EXO</code>(발열 방향) 를 자동 적용하고 로그에 표시합니다. 파일 선택 창은 확장자를 제한하지 않습니다.</li>
     <li>상단 <b>DSC</b> 탭으로 전환 → 왼쪽에 DSC 파일을 끌어다 놓습니다. <b>온도 / 열유량 2~5열 ASCII</b>(.txt .csv .tsv)를 읽습니다 — 탭·쉼표·세미콜론·공백 구분, 소수점 쉼표 형식도 자동 인식합니다.</li>
     <li><b>분석 설정</b>에서 시료 질량(mg)·가열속도(°C/min)·열유량 단위를 확인합니다. 단위가 mW/mg·W/g면 ΔH가 바로 나오고, mW(절대값)면 질량으로 나눠 환산합니다.</li>
     <li><b>피크 구간</b>(예: PA6 융해 180–250 °C)을 지정하면 그 구간 양끝을 잇는 직선 베이스라인으로 <b>ΔH(J/g)</b>, peak, 외삽 onset/endset을 계산합니다.</li>
@@ -2957,16 +2958,18 @@ window.FTIR_BANDS = {
      라틴 기본 서체 목록 뒤에 사내 서체를 붙이면, 글자별 폴백으로
      라틴은 기본 서체, 한글만 사내 서체가 된다(저널 도판에 유용). */
   const KO_PREFIX = '#ko:';
-  const LATIN_SERIF = '"Times New Roman",Times,"Liberation Serif",Georgia,serif';
-  const LATIN_SANS = '"Segoe UI",system-ui,sans-serif';
+  /* 한글만 모드 스택 — 라틴은 포맷 기본 서체, 한글은 사내 서체.
+     사내 서체를 제네릭 계열(sans-serif/serif) *앞*에 둬야 한글이 사내 서체로 간다.
+     (제네릭이 먼저면 OS 기본 한글 서체가 잡혀 버린다) */
+  const koStack = (name, serif) => serif
+    ? '"Times New Roman",Times,"Liberation Serif","' + name + '",Georgia,serif'
+    : '"Segoe UI","' + name + '",system-ui,sans-serif';
   const fontOverride = (o, base) => {
     const fam = o && o.fontFamily;
     if (!fam) return base;
     if (fam.indexOf(KO_PREFIX) === 0) {
-      const name = fam.slice(KO_PREFIX.length);
       // 'sans-serif' 가 'Serif' 로 오인되지 않도록 구체적 패밀리 이름으로 판정
-      const latin = /Times New Roman|Liberation Serif|Georgia/.test(base) ? LATIN_SERIF : LATIN_SANS;
-      return latin + ',"' + name + '"';
+      return koStack(fam.slice(KO_PREFIX.length), /Times New Roman|Liberation Serif|Georgia/.test(base));
     }
     return '"' + fam + '",' + base;
   };
@@ -4212,7 +4215,7 @@ window.FTIR_BANDS = {
     bind();
     renderAll();
     window.APP_TAB = 'ftir';
-    log('FT-IR Studio v1.4 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
+    log('FT-IR Studio v1.5 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 
@@ -4353,9 +4356,26 @@ window.FTIR_BANDS = {
 
     if (dir === 'cool') warnings.push('온도가 내림차순인 파일입니다(냉각 곡선 가능) — 내부에서 오름차순으로 정렬해 계산했습니다');
 
+    /* --- 계측기 헤더 메타 (Netzsch Proteus .ngb-sdf, TA 등) ---
+       #SAMPLE MASS /mg:6.66  #EXO:-1  #SEG. 2:50°C/20.0(K/min)/350°C  #RANGE:50°C...350°C/-20.0...20.0K/min */
+    const mtext = headerLines.join('\n');
+    const pick = (re) => { const m = mtext.match(re); return m ? parseFloat(String(m[1]).replace(',', '.')) : null; };
+    const mass = pick(/#\s*SAMPLE\s*MASS\s*\/\s*mg\s*:\s*([-\d.,]+)/i);
+    const exoRaw = mtext.match(/#\s*EXO\s*:\s*(-?1)/i);
+    const betaSeg = pick(/#\s*SEG\.?\s*\d+\s*:[^\n]*?([-\d.,]+)\s*\(\s*K\s*\/\s*min\s*\)/i)
+                  || pick(/#\s*RANGE\s*:[^\n]*?([-\d.,]+)\s*\(?\s*K\s*\/\s*min/i);
+    const inst = (mtext.match(/#\s*INSTRUMENT\s*:\s*([^\n]*)/i) || [])[1] || '';
+    const sampleId = (mtext.match(/#\s*SAMPLE\s*:\s*([^\n]*)/i) || [])[1] || '';
+    const meta2 = { mass: mass, exo: exoRaw ? parseInt(exoRaw[1], 10) : null, beta: betaSeg,
+                    instrument: inst.trim(), sampleId: sampleId.trim() };
+    if (mass) warnings.push('헤더의 시료 질량 ' + mass + ' mg 을 분석 설정에 적용했습니다');
+
     return {
       ok: true, x: x, y: y, unit: unit, dir: dir, warnings: warnings,
-      meta: { rows: x.length, cols: width, tempCol: tempCol, hfCol: hfCol, delim: delim || '공백', decComma: decComma }
+      meta: { rows: x.length, cols: width, tempCol: tempCol, hfCol: hfCol,
+              delim: delim || '공백', decComma: decComma,
+              mass: meta2.mass, exo: meta2.exo, beta: meta2.beta,
+              instrument: meta2.instrument, sampleId: meta2.sampleId }
     };
   }
 
@@ -5051,6 +5071,16 @@ window.FTIR_BANDS = {
           const r = D.parseText(rd.result, f.name, { tempCol: st.cfg.tempCol, hfCol: st.cfg.hfCol });
           if (!r.ok) { log(`${f.name}: 읽기 실패 — ${r.reason}`, 'err'); return; }
           const name = f.name.replace(/\.[^.]+$/, '');
+          // 계측기 헤더 메타 자동 적용 (Netzsch .ngb-sdf: #SAMPLE MASS /mg, #SEG 20.0(K/min))
+          const mm = r.meta || {};
+          if (mm.mass > 0) { st.cfg.mass = mm.mass; if ($('dMass')) $('dMass').value = mm.mass; }
+          if (mm.beta > 0) { st.cfg.beta = mm.beta; if ($('dBeta')) $('dBeta').value = mm.beta; }
+          if (mm.instrument || mm.sampleId || mm.exo !== null) {
+            log('  · 헤더: ' + [mm.instrument, mm.sampleId && ('시료 ' + mm.sampleId),
+              mm.mass && ('질량 ' + mm.mass + ' mg'), mm.beta && ('승온 ' + mm.beta + ' K/min'),
+              mm.exo !== null && ('EXO ' + mm.exo + (mm.exo === -1 ? ' (발열 아래)' : ' (발열 위)'))]
+              .filter(Boolean).join(' · '), 'info');
+          }
           const t = newTrace(name, r.x, r.y, { unit: r.unit, dir: r.dir, meta: r.meta, raw: String(rd.result), file: f.name });
           st.selectedId = t.id;
           st.cfg.unit = r.unit;
@@ -5070,7 +5100,8 @@ window.FTIR_BANDS = {
   function openFiles() {
     const inp = document.createElement('input');
     inp.type = 'file'; inp.multiple = true;
-    inp.accept = '.txt,.csv,.tsv,.dpt,.asc,.dat';
+    // Netzsch Proteus(.ngb-sdf), TA, Mettler 등 확장자가 제각각이라 제한하지 않는다
+    inp.accept = '';
     inp.onchange = () => loadFiles(inp.files);
     inp.click();
   }
@@ -6082,7 +6113,7 @@ window.FTIR_BANDS = {
 
   function openFiles() {
     const inp = document.createElement('input');
-    inp.type = 'file'; inp.accept = '.txt,.csv,.tsv,.asc,.dat';
+    inp.type = 'file'; inp.accept = '';   // Netzsch .ngb-sdf 등 확장자 제한 없음
     inp.multiple = true;
     inp.onchange = () => loadFiles(inp.files);
     inp.click();

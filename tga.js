@@ -259,7 +259,7 @@
 
   function openFiles() {
     const inp = document.createElement('input');
-    inp.type = 'file'; inp.accept = '.txt,.csv,.tsv,.asc,.dat';
+    inp.type = 'file'; inp.accept = '';   // Netzsch .ngb-sdf 등 확장자 제한 없음
     inp.multiple = true;
     inp.onchange = () => loadFiles(inp.files);
     inp.click();

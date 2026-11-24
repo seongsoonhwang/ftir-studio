@@ -1032,7 +1032,7 @@
     bind();
     renderAll();
     window.APP_TAB = 'ftir';
-    log('FT-IR Studio v1.4 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
+    log('FT-IR Studio v1.5 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 

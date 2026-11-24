@@ -358,6 +358,16 @@
           const r = D.parseText(rd.result, f.name, { tempCol: st.cfg.tempCol, hfCol: st.cfg.hfCol });
           if (!r.ok) { log(`${f.name}: 읽기 실패 — ${r.reason}`, 'err'); return; }
           const name = f.name.replace(/\.[^.]+$/, '');
+          // 계측기 헤더 메타 자동 적용 (Netzsch .ngb-sdf: #SAMPLE MASS /mg, #SEG 20.0(K/min))
+          const mm = r.meta || {};
+          if (mm.mass > 0) { st.cfg.mass = mm.mass; if ($('dMass')) $('dMass').value = mm.mass; }
+          if (mm.beta > 0) { st.cfg.beta = mm.beta; if ($('dBeta')) $('dBeta').value = mm.beta; }
+          if (mm.instrument || mm.sampleId || mm.exo !== null) {
+            log('  · 헤더: ' + [mm.instrument, mm.sampleId && ('시료 ' + mm.sampleId),
+              mm.mass && ('질량 ' + mm.mass + ' mg'), mm.beta && ('승온 ' + mm.beta + ' K/min'),
+              mm.exo !== null && ('EXO ' + mm.exo + (mm.exo === -1 ? ' (발열 아래)' : ' (발열 위)'))]
+              .filter(Boolean).join(' · '), 'info');
+          }
           const t = newTrace(name, r.x, r.y, { unit: r.unit, dir: r.dir, meta: r.meta, raw: String(rd.result), file: f.name });
           st.selectedId = t.id;
           st.cfg.unit = r.unit;
@@ -377,7 +387,8 @@
   function openFiles() {
     const inp = document.createElement('input');
     inp.type = 'file'; inp.multiple = true;
-    inp.accept = '.txt,.csv,.tsv,.dpt,.asc,.dat';
+    // Netzsch Proteus(.ngb-sdf), TA, Mettler 등 확장자가 제각각이라 제한하지 않는다
+    inp.accept = '';
     inp.onchange = () => loadFiles(inp.files);
     inp.click();
   }

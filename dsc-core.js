@@ -122,9 +122,26 @@
 
     if (dir === 'cool') warnings.push('온도가 내림차순인 파일입니다(냉각 곡선 가능) — 내부에서 오름차순으로 정렬해 계산했습니다');
 
+    /* --- 계측기 헤더 메타 (Netzsch Proteus .ngb-sdf, TA 등) ---
+       #SAMPLE MASS /mg:6.66  #EXO:-1  #SEG. 2:50°C/20.0(K/min)/350°C  #RANGE:50°C...350°C/-20.0...20.0K/min */
+    const mtext = headerLines.join('\n');
+    const pick = (re) => { const m = mtext.match(re); return m ? parseFloat(String(m[1]).replace(',', '.')) : null; };
+    const mass = pick(/#\s*SAMPLE\s*MASS\s*\/\s*mg\s*:\s*([-\d.,]+)/i);
+    const exoRaw = mtext.match(/#\s*EXO\s*:\s*(-?1)/i);
+    const betaSeg = pick(/#\s*SEG\.?\s*\d+\s*:[^\n]*?([-\d.,]+)\s*\(\s*K\s*\/\s*min\s*\)/i)
+                  || pick(/#\s*RANGE\s*:[^\n]*?([-\d.,]+)\s*\(?\s*K\s*\/\s*min/i);
+    const inst = (mtext.match(/#\s*INSTRUMENT\s*:\s*([^\n]*)/i) || [])[1] || '';
+    const sampleId = (mtext.match(/#\s*SAMPLE\s*:\s*([^\n]*)/i) || [])[1] || '';
+    const meta2 = { mass: mass, exo: exoRaw ? parseInt(exoRaw[1], 10) : null, beta: betaSeg,
+                    instrument: inst.trim(), sampleId: sampleId.trim() };
+    if (mass) warnings.push('헤더의 시료 질량 ' + mass + ' mg 을 분석 설정에 적용했습니다');
+
     return {
       ok: true, x: x, y: y, unit: unit, dir: dir, warnings: warnings,
-      meta: { rows: x.length, cols: width, tempCol: tempCol, hfCol: hfCol, delim: delim || '공백', decComma: decComma }
+      meta: { rows: x.length, cols: width, tempCol: tempCol, hfCol: hfCol,
+              delim: delim || '공백', decComma: decComma,
+              mass: meta2.mass, exo: meta2.exo, beta: meta2.beta,
+              instrument: meta2.instrument, sampleId: meta2.sampleId }
     };
   }
 
