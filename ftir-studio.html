@@ -101,7 +101,28 @@
             </select>
           </label>
         </div>
-        <label class="fld"><span>PNG 배경</span>
+        <label class="fld"><span>PNG 포맷</span>
+          <select id="viewExportFmt">
+            <option value="journal">학술지 (인쇄용)</option>
+            <option value="ppt">PPT (16:9, 투명)</option>
+            <option value="screen">화면 그대로</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>저널 폭</span>
+            <select id="viewExportWidth">
+              <option value="180">double 180 mm</option>
+              <option value="88">single 88 mm</option>
+            </select>
+          </label>
+          <label class="fld"><span>해상도</span>
+            <select id="viewExportDpi">
+              <option value="300">300 dpi</option>
+              <option value="600">600 dpi</option>
+            </select>
+          </label>
+        </div>
+        <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="viewExportBg">
             <option value="transparent">투명 (기본)</option>
             <option value="white">흰색</option>
@@ -365,7 +386,28 @@
             </select>
           </label>
         </div>
-        <label class="fld"><span>PNG 배경</span>
+        <label class="fld"><span>PNG 포맷</span>
+          <select id="dExportFmt">
+            <option value="journal">학술지 (인쇄용)</option>
+            <option value="ppt">PPT (16:9, 투명)</option>
+            <option value="screen">화면 그대로</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>저널 폭</span>
+            <select id="dExportWidth">
+              <option value="180">double 180 mm</option>
+              <option value="88">single 88 mm</option>
+            </select>
+          </label>
+          <label class="fld"><span>해상도</span>
+            <select id="dExportDpi">
+              <option value="300">300 dpi</option>
+              <option value="600">600 dpi</option>
+            </select>
+          </label>
+        </div>
+        <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="dExportBg">
             <option value="transparent">투명 (기본)</option>
             <option value="white">흰색</option>
@@ -487,7 +529,15 @@
     <li>범례 클릭 → 해당 시료 선택 (왼쪽에서 색·굵기·선형태·범례 문구 수정)</li>
     <li>스택 모드에서 시료 순서는 왼쪽 목록의 ↑↓로 바꿉니다.</li>
   </ul>
-  <h3>3. 분석 흐름 권장</h3>
+  <h3>3. 그림 내보내기 — 학술지용 / PPT용</h3>
+  <ul>
+    <li>표시 설정 → <b>PNG 포맷</b>에서 고릅니다. 기본값은 <b>학술지 (double 180 mm, 300 dpi)</b>입니다.</li>
+    <li><b>학술지</b>: 흰 배경 · Times 계열 · 격자 없음 · 범례 대신 스펙트럼 위 이름 · 피크 라벨은 시료당 5개 · 최소 선굵기 0.53 pt. 폭(single 88 mm / double 180 mm)과 해상도(300/600 dpi)를 지정하며, 글자는 항상 7 pt로 계산되므로 인쇄했을 때 눈금이 7 pt로 나옵니다.</li>
+    <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · 옅은 격자 · 이름표+범례 · 피크 라벨 8개까지.</li>
+    <li><b>화면 그대로</b>: 보이는 그대로 2배 해상도. 배경은 투명/흰색/앱 테마 중 선택.</li>
+    <li>내보내기에는 화면 전용 요소(선택 음영·크로스헤어)가 빠지고, 피크를 아직 검출하지 않은 시료도 자동으로 검출해 라벨을 붙입니다.</li>
+  </ul>
+  <h3>4. 분석 흐름 권장</h3>
   <ol>
     <li><b>전처리</b>: 스무딩 → 베이스라인(러버밴드 권장) → (ATR이면) ATR 보정 → 정규화</li>
     <li><b>내부 표준 정규화</b>: 정규화에서 “특정 밴드 피크 높이”를 고르고 기준 밴드(예: PA6 1440–1480)를 지정하면 그 피크가 1.0이 됩니다. 시편 두께·접촉 압력이 달라도 상대 강도를 비교할 수 있습니다.</li>
@@ -496,21 +546,21 @@
     <li><b>열화 지수</b>: CI(Dong 2010) 등 프리셋으로 정량 비교, ATR 보정 유무 값 병기</li>
     <li><b>비교</b>: A−B 차이 스펙트럼으로 노화/공정 문제 밴드 특정</li>
   </ol>
-  <h3>4. 한계</h3>
+  <h3>5. 한계</h3>
   <ul>
     <li>마커 점수는 <b>규칙 기반</b>입니다. 실제 배합 grade 판정에는 표준시료 라이브러리가 필요합니다.</li>
     <li>충전제(GF·탈크·CaCO₃·카본블랙)는 수지 밴드를 가립니다. 1000–1100 cm⁻¹ 광범위 흡수는 GF 가능성을 먼저 의심하세요.</li>
     <li>ATR 보정은 단순형(A·ν/1000)입니다. 정밀 정량에는 파수 의존 n 분산을 반영한 상용 보정과 차이가 있을 수 있습니다.</li>
     <li>OPUS 바이너리 리더는 공개 포맷 문서와 오픈소스 구현(brukeropus·openreadout)을 근거로 작성했습니다. 사내 OPUS 버전·3D 파일처럼 검증하지 못한 변형이 있으면 로그에 실패로 표시됩니다.</li>
   </ul>
-  <h3>5. DSC 탭 (v1.3 추가)</h3>
+  <h3>6. DSC 탭 (v1.3 추가)</h3>
   <ol>
     <li>상단 <b>DSC</b> 탭으로 전환 → 왼쪽에 DSC 파일을 끌어다 놓습니다. <b>온도 / 열유량 2~5열 ASCII</b>(.txt .csv .tsv)를 읽습니다 — 탭·쉼표·세미콜론·공백 구분, 소수점 쉼표 형식도 자동 인식합니다.</li>
     <li><b>분석 설정</b>에서 시료 질량(mg)·가열속도(°C/min)·열유량 단위를 확인합니다. 단위가 mW/mg·W/g면 ΔH가 바로 나오고, mW(절대값)면 질량으로 나눠 환산합니다.</li>
     <li><b>피크 구간</b>(예: PA6 융해 180–250 °C)을 지정하면 그 구간 양끝을 잇는 직선 베이스라인으로 <b>ΔH(J/g)</b>, peak, 외삽 onset/endset을 계산합니다.</li>
     <li><b>Tg 구간</b>을 지정하면 스텝의 onset / 중간(반높이) / end 와 ΔCp를 계산합니다(ISO 11357-2 방식의 외삽 접선).</li>
     <li><b>결정화도</b>는 ΔHm ÷ ΔHm° × 100 입니다. ΔHm°는 재료를 고르면 관용값이 채워지지만 <b>문헌·grade별로 10 % 이상 차이가 나므로 반드시 확인 후 수정</b>하십시오.</li>
-    <li>PNG 내보내기는 FT-IR 탭과 같이 배경을 <b>투명 / 흰색 / 앱 테마</b>에서 고를 수 있습니다(기본 투명, 어두운 글자라 흰 문서에 붙여도 보입니다).</li>
+    <li>PNG 내보내기는 FT-IR 탭과 같이 <b>포맷(학술지 / PPT / 화면 그대로)</b>을 고를 수 있습니다. 저널 포맷은 DSC 세로 비율에 맞춰 높이를 따로 계산하고, <b>Tg·on/end 보조 라벨은 빼고 피크 온도만</b> 남깁니다(지면에서 글자가 겹치기 때문).</li>
     <li>한계: 기준선이 곡선인 경우(열량 보정 전, Cp 변화가 큰 시료) 결과가 달라질 수 있습니다. 필요하면 OPUS/계측기 소프트웨어에서 베이스라인을 만든 뒤 다시 내보내세요.</li>
   </ol>
 

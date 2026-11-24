@@ -4,7 +4,8 @@
  * ========================================================================= */
 (function () {
   'use strict';
-  const FONT = '"Malgun Gothic","Segoe UI",system-ui,sans-serif';
+  const FONT_DEFAULT = '"Malgun Gothic","Segoe UI",system-ui,sans-serif';
+  let FONT = FONT_DEFAULT;   // 장비 포맷(저널: serif)에서 o.font 로 교체
 
   function niceStep(span, target) {
     const raw = span / Math.max(1, target);
@@ -28,6 +29,7 @@
 
   function render(canvas, state, opts) {
     const o = opts || {};
+    FONT = o.font || FONT_DEFAULT;
     const scale = o.scale || 1;
     const cssW = o.width || canvas.clientWidth || canvas.width;
     const cssH = o.height || canvas.clientHeight || canvas.height;
@@ -83,7 +85,9 @@
       legendBoxW = Math.min(Math.max(200, cssW * 0.33), Math.max(300, Math.ceil(wmax) + 54));
     }
     const outside = legendOn && state.view.legendPos === 'out';
-    const m = { l: 70, r: outside ? legendBoxW + 22 : 26, t: 22, b: 46 };
+    // 여백: 포맷(저널 300 dpi 등)에서는 글자 크기에 맞춰 o.margin 으로 덮어쓴다
+    const m = Object.assign(
+      { l: 70, r: outside ? legendBoxW + 22 : 26, t: 22, b: 46 }, o.margin || {});
 
     // ---- 스택 오프셋 계산
     const stacked = !!state.view.stacked;
@@ -337,7 +341,9 @@
         let y = Y(i * (1 + gap) + 1.0) - 1;
         if (y - fs * 0.9 < m.t + 1) y = m.t + 1 + fs * 0.9;   // 최상단 밴드는 축 안쪽으로
         const nm = t.legend || t.name;
-        const txt = nm.length > 16 ? nm.slice(0, 15) + '…' : nm;
+        const maxCh = o.nameMax || 16;
+        let txt = nm.length > maxCh ? nm.slice(0, maxCh - 1) + '…' : nm;
+        while (txt.length > 3 && ctx.measureText(txt).width > pw * 0.55) txt = txt.slice(0, -2) + '…';
         const tw = ctx.measureText(txt).width;
         ctx.fillStyle = nameBgC;
         ctx.fillRect(m.l + 2, y - fs * 0.92, tw + 6, fs * 0.92);
@@ -428,18 +434,105 @@
     return Object.assign({ bg: null }, INK_DARK);   // 기본: 투명
   }
 
-  /* PNG 내보내기 (2배 고해상도) */
+  /* PNG 내보내기
+   *  o.scale   : 배율(기본 2 = 화면의 2배 해상도)
+   *  o.width/h : 출력 픽셀 크기(포맷 프리셋에서 지정). 없으면 화면 크기
+   *  o.theme   : 배경/잉크 오버라이드(exportTheme 결과)
+   *  o.font / o.margin : 포맷별 서체·여백
+   */
   function toPNG(canvas, state, opts) {
     const o = opts || {};
     const scale = o.scale || 2;
     const off = document.createElement('canvas');
-    const w = canvas.clientWidth || canvas.width;
-    const h = canvas.clientHeight || canvas.height;
+    const w = o.width || canvas.clientWidth || canvas.width;
+    const h = o.height || canvas.clientHeight || canvas.height;
     const mode = o.bg || 'transparent';
-    const th = exportTheme(mode);
-    render(off, state, { scale, width: w, height: h, theme: th, transparent: mode === 'transparent' });
+    const th = Object.assign({}, exportTheme(mode), o.theme || {});
+    // 화면 전용 요소(선택 밴드 음영·크로스헤어)는 내보내지 않는다
+    state = Object.assign({}, state, { selectedId: null, hover: null });
+    render(off, state, {
+      scale, width: w, height: h, theme: th, font: o.font, margin: o.margin,
+      nameMax: o.nameMax, transparent: mode === 'transparent'
+    });
     return off.toDataURL('image/png');
   }
 
-  window.FTIRPlot = { render, toPNG, exportTheme, dashArr, niceStep };
+  /* =========================================================================
+   * 내보내기 포맷 프리셋 — 학술지용 / PPT용 / 화면 그대로
+   *  · 물리 크기와 글자 크기를 같이 맞춘다: 저널은 mm·dpi 로 픽셀을 계산하고
+   *    글자는 7 pt(= dpi 기준 픽셀)로 고정 → 인쇄했을 때 축 눈금이 7 pt 로 나온다.
+   *  · journal : 흰 배경·serif·격자 없음·범례 대신 스펙트럼 위 이름·피크 라벨은 큰 것만
+   *  · ppt     : 투명 배경·산세리프·굵은 글씨·격자·이름표+범례·피크 라벨
+   * ========================================================================= */
+  const JOURNAL_FONT = '"Times New Roman",Times,"Liberation Serif",Georgia,serif';
+  const PPT_FONT = '"Segoe UI","Malgun Gothic",system-ui,sans-serif';
+
+  function formatPreset(fmt, opts) {
+    const o = opts || {};
+    const dpi = o.dpi || 300;
+    if (fmt === 'journal') {
+      const wmm = o.wmm || 180;                       // 180 mm = double column, 88 mm = single
+      const width = Math.round((wmm / 25.4) * dpi);
+      const height = Math.round(width * (wmm > 120 ? 0.52 : 0.66));
+      const fs = Math.round((7 * dpi) / 72);          // 7 pt
+      const k = fs / 27;
+      return {
+        width, height, scale: 1, bg: 'white', font: JOURNAL_FONT, nameMax: 26,
+        margin: {
+          l: Math.round(46 * k), t: Math.round(16 * k),
+          b: Math.round(fs * 2.1 + 18 * k), r: Math.round(26 * k)
+        },
+        view: {
+          grid: false, legendOn: false, fontSize: fs,
+          peaksOn: true, labelsOn: true,
+          labelMinProm: o.labelMinProm || 0.03
+        },
+        // 2.2 px @300 dpi ≈ 0.53 pt(인쇄 최소선) · 피크 라벨은 시료당 5개까지만
+        trace: { minW: 2.2, alpha: 1, maxLabels: 5, nameMax: 26 },
+        label: '학술지 ' + (wmm > 120 ? 'double' : 'single') + ' ' + wmm + ' mm · ' + dpi + ' dpi'
+      };
+    }
+    if (fmt === 'ppt') {
+      return {
+        width: o.width || 1600, height: o.height || 900, scale: 1, bg: 'transparent', font: PPT_FONT,
+        margin: { l: 56, t: 18, b: Math.round(26 * 2.1 + 18) }, nameMax: 26,
+        view: {
+          grid: true, legendOn: true, fontSize: 26,
+          peaksOn: true, labelsOn: true,
+          labelMinProm: o.labelMinProm || 0.03
+        },
+        trace: { minW: 3.6, alpha: 1, maxLabels: 8 },
+        label: 'PPT 16:9 ' + (o.width || 1600) + '×' + (o.height || 900) + ' px · 투명 배경'
+      };
+    }
+    return null;
+  }
+
+  // 포맷에 맞춰 view 를 덮어쓴 state 사본
+  function stateForFormat(state, fmt, opts) {
+    const o = Object.assign({ labelMinProm: state && state.view ? state.view.labelMinProm : 0.03 }, opts || {});
+    const p = formatPreset(fmt, o);
+    if (!p) return state;
+    const s = Object.assign({}, state);
+    s.view = Object.assign({}, state.view, p.view);
+    if (p.trace) {
+      const C = window.FTIRC;
+      s.traces = state.traces.map((t) => {
+        if (!t.visible) return t;
+        const c = Object.assign({}, t, {
+          lineW: Math.max(t.lineW || t.width || 1.6, p.trace.minW),
+          alpha: p.trace.alpha === undefined ? t.alpha : p.trace.alpha,
+          maxLabels: p.trace.maxLabels || t.maxLabels
+        });
+        // 아직 피크를 검출하지 않은 시료도 도판에서는 라벨이 보이도록 여기서 검출
+        if ((!c.peaks || !c.peaks.length) && C && C.findPeaks && c.p && c.p.x) {
+          c.peaks = C.findPeaks(c.p.x, c.p.y, { minProm: 0.015, minSep: 8, maxPeaks: 200 });
+        }
+        return c;
+      });
+    }
+    return s;
+  }
+
+  window.FTIRPlot = { render, toPNG, exportTheme, formatPreset, stateForFormat, JOURNAL_FONT, PPT_FONT, dashArr, niceStep };
 })();

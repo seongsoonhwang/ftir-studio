@@ -18,7 +18,10 @@
       stacked: true, normHeight: true, gap: 0.35, rev: true, grid: true,
       peaksOn: true, labelsOn: true, lo: 400, hi: 4000, fontSize: 13,
       legendOn: true, legendPos: 'out', legendScale: 1,
-      exportBg: 'transparent'
+      exportBg: 'transparent',
+      exportFmt: 'journal',        // journal | ppt | screen
+      exportWidth: '180',          // 저널 폭(mm): 180=double, 88=single
+      exportDpi: 300
     },
     pre: {
       smooth: { on: false, win: 9, order: 2 },
@@ -524,6 +527,9 @@
     $('viewLegendScale').value = state.view.legendScale;
     $('viewLabelMin').value = state.view.labelMinProm === undefined ? 0.03 : state.view.labelMinProm;
     if ($('viewExportBg')) $('viewExportBg').value = state.view.exportBg || 'transparent';
+    if ($('viewExportFmt')) $('viewExportFmt').value = state.view.exportFmt || 'journal';
+    if ($('viewExportWidth')) $('viewExportWidth').value = String(state.view.exportWidth || '180');
+    if ($('viewExportDpi')) $('viewExportDpi').value = String(state.view.exportDpi || 300);
     $('smoothOn').checked = state.pre.smooth.on;
     $('smoothWin').value = state.pre.smooth.win;
     $('smoothOrder').value = state.pre.smooth.order;
@@ -607,10 +613,26 @@
     $('btnPNG').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.png();
       if (!state.traces.length) { log('내보낼 스펙트럼이 없습니다', 'warn'); return; }
-      const bg = state.view.exportBg || 'transparent';
-      const url = P.toPNG($('plot'), state, { scale: 2, bg: bg });
+      const fmt = state.view.exportFmt || 'journal';
+      const o = {
+        wmm: parseInt(state.view.exportWidth, 10) || 180,
+        dpi: parseInt(state.view.exportDpi, 10) || 300,
+        labelMinProm: state.view.labelMinProm
+      };
+      let opts, st = state, tag;
+      if (fmt === 'screen') {
+        const bg = state.view.exportBg || 'transparent';
+        opts = { scale: 2, bg: bg };
+        tag = '화면 그대로 (2배) · 배경 ' + (bg === 'transparent' ? '투명' : bg === 'white' ? '흰색' : '앱 테마');
+      } else {
+        const pre = P.formatPreset(fmt, o);
+        st = P.stateForFormat(state, fmt, o);
+        opts = { scale: 1, bg: pre.bg, width: pre.width, height: pre.height, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+        tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + pre.height + ' px' : '');
+      }
+      const url = P.toPNG($('plot'), st, opts);
       download('ftir-plot-' + Date.now() + '.png', url.split(',')[1] ? dataURLtoBlob(url) : url, 'image/png');
-      log('PNG 내보내기 (2배 해상도) · 배경 ' + (bg === 'transparent' ? '투명(어두운 글자)' : bg === 'white' ? '흰색' : '앱 테마'), 'ok');
+      log('PNG 내보내기 — ' + tag, 'ok');
     };
     $('btnHelp').onclick = () => { const d = $('helpDlg'); d.showModal(); d.scrollTop = 0; };
     $('btnHelpClose').onclick = () => $('helpDlg').close();
@@ -653,13 +675,16 @@
       state.view.legendScale = Math.max(0.6, +$('viewLegendScale').value || 1);
       state.view.labelMinProm = Math.max(0, +$('viewLabelMin').value || 0);
       if ($('viewExportBg')) state.view.exportBg = $('viewExportBg').value;
+      if ($('viewExportFmt')) state.view.exportFmt = $('viewExportFmt').value;
+      if ($('viewExportWidth')) state.view.exportWidth = parseInt($('viewExportWidth').value, 10) || 180;
+      if ($('viewExportDpi')) state.view.exportDpi = parseInt($('viewExportDpi').value, 10) || 300;
       let lo = +$('viewLo').value, hi = +$('viewHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 20) { state.view.lo = lo; state.view.hi = hi; }
       renderPlot();
     };
     ['viewMode', 'viewGap', 'viewNormHeight', 'viewRev', 'viewGrid', 'viewPeaks', 'viewLabels',
       'viewFont', 'viewLegendPos', 'viewLegendOn', 'viewLegendScale', 'viewLo', 'viewHi', 'viewLabelMin',
-      'viewExportBg'].forEach((id) => {
+      'viewExportBg', 'viewExportFmt', 'viewExportWidth', 'viewExportDpi'].forEach((id) => {
       $(id).onchange = onView; $(id).oninput = onView;
     });
     const setRange = (lo, hi) => {

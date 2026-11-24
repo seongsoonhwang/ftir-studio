@@ -365,7 +365,28 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
             </select>
           </label>
         </div>
-        <label class="fld"><span>PNG 배경</span>
+        <label class="fld"><span>PNG 포맷</span>
+          <select id="viewExportFmt">
+            <option value="journal">학술지 (인쇄용)</option>
+            <option value="ppt">PPT (16:9, 투명)</option>
+            <option value="screen">화면 그대로</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>저널 폭</span>
+            <select id="viewExportWidth">
+              <option value="180">double 180 mm</option>
+              <option value="88">single 88 mm</option>
+            </select>
+          </label>
+          <label class="fld"><span>해상도</span>
+            <select id="viewExportDpi">
+              <option value="300">300 dpi</option>
+              <option value="600">600 dpi</option>
+            </select>
+          </label>
+        </div>
+        <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="viewExportBg">
             <option value="transparent">투명 (기본)</option>
             <option value="white">흰색</option>
@@ -629,7 +650,28 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
             </select>
           </label>
         </div>
-        <label class="fld"><span>PNG 배경</span>
+        <label class="fld"><span>PNG 포맷</span>
+          <select id="dExportFmt">
+            <option value="journal">학술지 (인쇄용)</option>
+            <option value="ppt">PPT (16:9, 투명)</option>
+            <option value="screen">화면 그대로</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label class="fld"><span>저널 폭</span>
+            <select id="dExportWidth">
+              <option value="180">double 180 mm</option>
+              <option value="88">single 88 mm</option>
+            </select>
+          </label>
+          <label class="fld"><span>해상도</span>
+            <select id="dExportDpi">
+              <option value="300">300 dpi</option>
+              <option value="600">600 dpi</option>
+            </select>
+          </label>
+        </div>
+        <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="dExportBg">
             <option value="transparent">투명 (기본)</option>
             <option value="white">흰색</option>
@@ -751,7 +793,15 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <li>범례 클릭 → 해당 시료 선택 (왼쪽에서 색·굵기·선형태·범례 문구 수정)</li>
     <li>스택 모드에서 시료 순서는 왼쪽 목록의 ↑↓로 바꿉니다.</li>
   </ul>
-  <h3>3. 분석 흐름 권장</h3>
+  <h3>3. 그림 내보내기 — 학술지용 / PPT용</h3>
+  <ul>
+    <li>표시 설정 → <b>PNG 포맷</b>에서 고릅니다. 기본값은 <b>학술지 (double 180 mm, 300 dpi)</b>입니다.</li>
+    <li><b>학술지</b>: 흰 배경 · Times 계열 · 격자 없음 · 범례 대신 스펙트럼 위 이름 · 피크 라벨은 시료당 5개 · 최소 선굵기 0.53 pt. 폭(single 88 mm / double 180 mm)과 해상도(300/600 dpi)를 지정하며, 글자는 항상 7 pt로 계산되므로 인쇄했을 때 눈금이 7 pt로 나옵니다.</li>
+    <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · 옅은 격자 · 이름표+범례 · 피크 라벨 8개까지.</li>
+    <li><b>화면 그대로</b>: 보이는 그대로 2배 해상도. 배경은 투명/흰색/앱 테마 중 선택.</li>
+    <li>내보내기에는 화면 전용 요소(선택 음영·크로스헤어)가 빠지고, 피크를 아직 검출하지 않은 시료도 자동으로 검출해 라벨을 붙입니다.</li>
+  </ul>
+  <h3>4. 분석 흐름 권장</h3>
   <ol>
     <li><b>전처리</b>: 스무딩 → 베이스라인(러버밴드 권장) → (ATR이면) ATR 보정 → 정규화</li>
     <li><b>내부 표준 정규화</b>: 정규화에서 “특정 밴드 피크 높이”를 고르고 기준 밴드(예: PA6 1440–1480)를 지정하면 그 피크가 1.0이 됩니다. 시편 두께·접촉 압력이 달라도 상대 강도를 비교할 수 있습니다.</li>
@@ -760,21 +810,21 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <li><b>열화 지수</b>: CI(Dong 2010) 등 프리셋으로 정량 비교, ATR 보정 유무 값 병기</li>
     <li><b>비교</b>: A−B 차이 스펙트럼으로 노화/공정 문제 밴드 특정</li>
   </ol>
-  <h3>4. 한계</h3>
+  <h3>5. 한계</h3>
   <ul>
     <li>마커 점수는 <b>규칙 기반</b>입니다. 실제 배합 grade 판정에는 표준시료 라이브러리가 필요합니다.</li>
     <li>충전제(GF·탈크·CaCO₃·카본블랙)는 수지 밴드를 가립니다. 1000–1100 cm⁻¹ 광범위 흡수는 GF 가능성을 먼저 의심하세요.</li>
     <li>ATR 보정은 단순형(A·ν/1000)입니다. 정밀 정량에는 파수 의존 n 분산을 반영한 상용 보정과 차이가 있을 수 있습니다.</li>
     <li>OPUS 바이너리 리더는 공개 포맷 문서와 오픈소스 구현(brukeropus·openreadout)을 근거로 작성했습니다. 사내 OPUS 버전·3D 파일처럼 검증하지 못한 변형이 있으면 로그에 실패로 표시됩니다.</li>
   </ul>
-  <h3>5. DSC 탭 (v1.3 추가)</h3>
+  <h3>6. DSC 탭 (v1.3 추가)</h3>
   <ol>
     <li>상단 <b>DSC</b> 탭으로 전환 → 왼쪽에 DSC 파일을 끌어다 놓습니다. <b>온도 / 열유량 2~5열 ASCII</b>(.txt .csv .tsv)를 읽습니다 — 탭·쉼표·세미콜론·공백 구분, 소수점 쉼표 형식도 자동 인식합니다.</li>
     <li><b>분석 설정</b>에서 시료 질량(mg)·가열속도(°C/min)·열유량 단위를 확인합니다. 단위가 mW/mg·W/g면 ΔH가 바로 나오고, mW(절대값)면 질량으로 나눠 환산합니다.</li>
     <li><b>피크 구간</b>(예: PA6 융해 180–250 °C)을 지정하면 그 구간 양끝을 잇는 직선 베이스라인으로 <b>ΔH(J/g)</b>, peak, 외삽 onset/endset을 계산합니다.</li>
     <li><b>Tg 구간</b>을 지정하면 스텝의 onset / 중간(반높이) / end 와 ΔCp를 계산합니다(ISO 11357-2 방식의 외삽 접선).</li>
     <li><b>결정화도</b>는 ΔHm ÷ ΔHm° × 100 입니다. ΔHm°는 재료를 고르면 관용값이 채워지지만 <b>문헌·grade별로 10 % 이상 차이가 나므로 반드시 확인 후 수정</b>하십시오.</li>
-    <li>PNG 내보내기는 FT-IR 탭과 같이 배경을 <b>투명 / 흰색 / 앱 테마</b>에서 고를 수 있습니다(기본 투명, 어두운 글자라 흰 문서에 붙여도 보입니다).</li>
+    <li>PNG 내보내기는 FT-IR 탭과 같이 <b>포맷(학술지 / PPT / 화면 그대로)</b>을 고를 수 있습니다. 저널 포맷은 DSC 세로 비율에 맞춰 높이를 따로 계산하고, <b>Tg·on/end 보조 라벨은 빼고 피크 온도만</b> 남깁니다(지면에서 글자가 겹치기 때문).</li>
     <li>한계: 기준선이 곡선인 경우(열량 보정 전, Cp 변화가 큰 시료) 결과가 달라질 수 있습니다. 필요하면 OPUS/계측기 소프트웨어에서 베이스라인을 만든 뒤 다시 내보내세요.</li>
   </ol>
 
@@ -2023,7 +2073,8 @@ window.FTIR_BANDS = {
  * ========================================================================= */
 (function () {
   'use strict';
-  const FONT = '"Malgun Gothic","Segoe UI",system-ui,sans-serif';
+  const FONT_DEFAULT = '"Malgun Gothic","Segoe UI",system-ui,sans-serif';
+  let FONT = FONT_DEFAULT;   // 장비 포맷(저널: serif)에서 o.font 로 교체
 
   function niceStep(span, target) {
     const raw = span / Math.max(1, target);
@@ -2047,6 +2098,7 @@ window.FTIR_BANDS = {
 
   function render(canvas, state, opts) {
     const o = opts || {};
+    FONT = o.font || FONT_DEFAULT;
     const scale = o.scale || 1;
     const cssW = o.width || canvas.clientWidth || canvas.width;
     const cssH = o.height || canvas.clientHeight || canvas.height;
@@ -2102,7 +2154,9 @@ window.FTIR_BANDS = {
       legendBoxW = Math.min(Math.max(200, cssW * 0.33), Math.max(300, Math.ceil(wmax) + 54));
     }
     const outside = legendOn && state.view.legendPos === 'out';
-    const m = { l: 70, r: outside ? legendBoxW + 22 : 26, t: 22, b: 46 };
+    // 여백: 포맷(저널 300 dpi 등)에서는 글자 크기에 맞춰 o.margin 으로 덮어쓴다
+    const m = Object.assign(
+      { l: 70, r: outside ? legendBoxW + 22 : 26, t: 22, b: 46 }, o.margin || {});
 
     // ---- 스택 오프셋 계산
     const stacked = !!state.view.stacked;
@@ -2356,7 +2410,9 @@ window.FTIR_BANDS = {
         let y = Y(i * (1 + gap) + 1.0) - 1;
         if (y - fs * 0.9 < m.t + 1) y = m.t + 1 + fs * 0.9;   // 최상단 밴드는 축 안쪽으로
         const nm = t.legend || t.name;
-        const txt = nm.length > 16 ? nm.slice(0, 15) + '…' : nm;
+        const maxCh = o.nameMax || 16;
+        let txt = nm.length > maxCh ? nm.slice(0, maxCh - 1) + '…' : nm;
+        while (txt.length > 3 && ctx.measureText(txt).width > pw * 0.55) txt = txt.slice(0, -2) + '…';
         const tw = ctx.measureText(txt).width;
         ctx.fillStyle = nameBgC;
         ctx.fillRect(m.l + 2, y - fs * 0.92, tw + 6, fs * 0.92);
@@ -2447,20 +2503,107 @@ window.FTIR_BANDS = {
     return Object.assign({ bg: null }, INK_DARK);   // 기본: 투명
   }
 
-  /* PNG 내보내기 (2배 고해상도) */
+  /* PNG 내보내기
+   *  o.scale   : 배율(기본 2 = 화면의 2배 해상도)
+   *  o.width/h : 출력 픽셀 크기(포맷 프리셋에서 지정). 없으면 화면 크기
+   *  o.theme   : 배경/잉크 오버라이드(exportTheme 결과)
+   *  o.font / o.margin : 포맷별 서체·여백
+   */
   function toPNG(canvas, state, opts) {
     const o = opts || {};
     const scale = o.scale || 2;
     const off = document.createElement('canvas');
-    const w = canvas.clientWidth || canvas.width;
-    const h = canvas.clientHeight || canvas.height;
+    const w = o.width || canvas.clientWidth || canvas.width;
+    const h = o.height || canvas.clientHeight || canvas.height;
     const mode = o.bg || 'transparent';
-    const th = exportTheme(mode);
-    render(off, state, { scale, width: w, height: h, theme: th, transparent: mode === 'transparent' });
+    const th = Object.assign({}, exportTheme(mode), o.theme || {});
+    // 화면 전용 요소(선택 밴드 음영·크로스헤어)는 내보내지 않는다
+    state = Object.assign({}, state, { selectedId: null, hover: null });
+    render(off, state, {
+      scale, width: w, height: h, theme: th, font: o.font, margin: o.margin,
+      nameMax: o.nameMax, transparent: mode === 'transparent'
+    });
     return off.toDataURL('image/png');
   }
 
-  window.FTIRPlot = { render, toPNG, exportTheme, dashArr, niceStep };
+  /* =========================================================================
+   * 내보내기 포맷 프리셋 — 학술지용 / PPT용 / 화면 그대로
+   *  · 물리 크기와 글자 크기를 같이 맞춘다: 저널은 mm·dpi 로 픽셀을 계산하고
+   *    글자는 7 pt(= dpi 기준 픽셀)로 고정 → 인쇄했을 때 축 눈금이 7 pt 로 나온다.
+   *  · journal : 흰 배경·serif·격자 없음·범례 대신 스펙트럼 위 이름·피크 라벨은 큰 것만
+   *  · ppt     : 투명 배경·산세리프·굵은 글씨·격자·이름표+범례·피크 라벨
+   * ========================================================================= */
+  const JOURNAL_FONT = '"Times New Roman",Times,"Liberation Serif",Georgia,serif';
+  const PPT_FONT = '"Segoe UI","Malgun Gothic",system-ui,sans-serif';
+
+  function formatPreset(fmt, opts) {
+    const o = opts || {};
+    const dpi = o.dpi || 300;
+    if (fmt === 'journal') {
+      const wmm = o.wmm || 180;                       // 180 mm = double column, 88 mm = single
+      const width = Math.round((wmm / 25.4) * dpi);
+      const height = Math.round(width * (wmm > 120 ? 0.52 : 0.66));
+      const fs = Math.round((7 * dpi) / 72);          // 7 pt
+      const k = fs / 27;
+      return {
+        width, height, scale: 1, bg: 'white', font: JOURNAL_FONT, nameMax: 26,
+        margin: {
+          l: Math.round(46 * k), t: Math.round(16 * k),
+          b: Math.round(fs * 2.1 + 18 * k), r: Math.round(26 * k)
+        },
+        view: {
+          grid: false, legendOn: false, fontSize: fs,
+          peaksOn: true, labelsOn: true,
+          labelMinProm: o.labelMinProm || 0.03
+        },
+        // 2.2 px @300 dpi ≈ 0.53 pt(인쇄 최소선) · 피크 라벨은 시료당 5개까지만
+        trace: { minW: 2.2, alpha: 1, maxLabels: 5, nameMax: 26 },
+        label: '학술지 ' + (wmm > 120 ? 'double' : 'single') + ' ' + wmm + ' mm · ' + dpi + ' dpi'
+      };
+    }
+    if (fmt === 'ppt') {
+      return {
+        width: o.width || 1600, height: o.height || 900, scale: 1, bg: 'transparent', font: PPT_FONT,
+        margin: { l: 56, t: 18, b: Math.round(26 * 2.1 + 18) }, nameMax: 26,
+        view: {
+          grid: true, legendOn: true, fontSize: 26,
+          peaksOn: true, labelsOn: true,
+          labelMinProm: o.labelMinProm || 0.03
+        },
+        trace: { minW: 3.6, alpha: 1, maxLabels: 8 },
+        label: 'PPT 16:9 ' + (o.width || 1600) + '×' + (o.height || 900) + ' px · 투명 배경'
+      };
+    }
+    return null;
+  }
+
+  // 포맷에 맞춰 view 를 덮어쓴 state 사본
+  function stateForFormat(state, fmt, opts) {
+    const o = Object.assign({ labelMinProm: state && state.view ? state.view.labelMinProm : 0.03 }, opts || {});
+    const p = formatPreset(fmt, o);
+    if (!p) return state;
+    const s = Object.assign({}, state);
+    s.view = Object.assign({}, state.view, p.view);
+    if (p.trace) {
+      const C = window.FTIRC;
+      s.traces = state.traces.map((t) => {
+        if (!t.visible) return t;
+        const c = Object.assign({}, t, {
+          lineW: Math.max(t.lineW || t.width || 1.6, p.trace.minW),
+          alpha: p.trace.alpha === undefined ? t.alpha : p.trace.alpha,
+          maxLabels: p.trace.maxLabels || t.maxLabels
+        });
+        // 아직 피크를 검출하지 않은 시료도 도판에서는 라벨이 보이도록 여기서 검출
+        if ((!c.peaks || !c.peaks.length) && C && C.findPeaks && c.p && c.p.x) {
+          c.peaks = C.findPeaks(c.p.x, c.p.y, { minProm: 0.015, minSep: 8, maxPeaks: 200 });
+        }
+        return c;
+      });
+    }
+    return s;
+  }
+
+  window.FTIRPlot = { render, toPNG, exportTheme, formatPreset, stateForFormat, JOURNAL_FONT, PPT_FONT, dashArr, niceStep };
 })();
 
 </script>
@@ -2603,7 +2746,10 @@ window.FTIR_BANDS = {
       stacked: true, normHeight: true, gap: 0.35, rev: true, grid: true,
       peaksOn: true, labelsOn: true, lo: 400, hi: 4000, fontSize: 13,
       legendOn: true, legendPos: 'out', legendScale: 1,
-      exportBg: 'transparent'
+      exportBg: 'transparent',
+      exportFmt: 'journal',        // journal | ppt | screen
+      exportWidth: '180',          // 저널 폭(mm): 180=double, 88=single
+      exportDpi: 300
     },
     pre: {
       smooth: { on: false, win: 9, order: 2 },
@@ -3109,6 +3255,9 @@ window.FTIR_BANDS = {
     $('viewLegendScale').value = state.view.legendScale;
     $('viewLabelMin').value = state.view.labelMinProm === undefined ? 0.03 : state.view.labelMinProm;
     if ($('viewExportBg')) $('viewExportBg').value = state.view.exportBg || 'transparent';
+    if ($('viewExportFmt')) $('viewExportFmt').value = state.view.exportFmt || 'journal';
+    if ($('viewExportWidth')) $('viewExportWidth').value = String(state.view.exportWidth || '180');
+    if ($('viewExportDpi')) $('viewExportDpi').value = String(state.view.exportDpi || 300);
     $('smoothOn').checked = state.pre.smooth.on;
     $('smoothWin').value = state.pre.smooth.win;
     $('smoothOrder').value = state.pre.smooth.order;
@@ -3192,10 +3341,26 @@ window.FTIR_BANDS = {
     $('btnPNG').onclick = () => {
       if (window.APP_TAB === 'dsc' && window.DSCUI) return window.DSCUI.png();
       if (!state.traces.length) { log('내보낼 스펙트럼이 없습니다', 'warn'); return; }
-      const bg = state.view.exportBg || 'transparent';
-      const url = P.toPNG($('plot'), state, { scale: 2, bg: bg });
+      const fmt = state.view.exportFmt || 'journal';
+      const o = {
+        wmm: parseInt(state.view.exportWidth, 10) || 180,
+        dpi: parseInt(state.view.exportDpi, 10) || 300,
+        labelMinProm: state.view.labelMinProm
+      };
+      let opts, st = state, tag;
+      if (fmt === 'screen') {
+        const bg = state.view.exportBg || 'transparent';
+        opts = { scale: 2, bg: bg };
+        tag = '화면 그대로 (2배) · 배경 ' + (bg === 'transparent' ? '투명' : bg === 'white' ? '흰색' : '앱 테마');
+      } else {
+        const pre = P.formatPreset(fmt, o);
+        st = P.stateForFormat(state, fmt, o);
+        opts = { scale: 1, bg: pre.bg, width: pre.width, height: pre.height, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+        tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + pre.height + ' px' : '');
+      }
+      const url = P.toPNG($('plot'), st, opts);
       download('ftir-plot-' + Date.now() + '.png', url.split(',')[1] ? dataURLtoBlob(url) : url, 'image/png');
-      log('PNG 내보내기 (2배 해상도) · 배경 ' + (bg === 'transparent' ? '투명(어두운 글자)' : bg === 'white' ? '흰색' : '앱 테마'), 'ok');
+      log('PNG 내보내기 — ' + tag, 'ok');
     };
     $('btnHelp').onclick = () => { const d = $('helpDlg'); d.showModal(); d.scrollTop = 0; };
     $('btnHelpClose').onclick = () => $('helpDlg').close();
@@ -3238,13 +3403,16 @@ window.FTIR_BANDS = {
       state.view.legendScale = Math.max(0.6, +$('viewLegendScale').value || 1);
       state.view.labelMinProm = Math.max(0, +$('viewLabelMin').value || 0);
       if ($('viewExportBg')) state.view.exportBg = $('viewExportBg').value;
+      if ($('viewExportFmt')) state.view.exportFmt = $('viewExportFmt').value;
+      if ($('viewExportWidth')) state.view.exportWidth = parseInt($('viewExportWidth').value, 10) || 180;
+      if ($('viewExportDpi')) state.view.exportDpi = parseInt($('viewExportDpi').value, 10) || 300;
       let lo = +$('viewLo').value, hi = +$('viewHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 20) { state.view.lo = lo; state.view.hi = hi; }
       renderPlot();
     };
     ['viewMode', 'viewGap', 'viewNormHeight', 'viewRev', 'viewGrid', 'viewPeaks', 'viewLabels',
       'viewFont', 'viewLegendPos', 'viewLegendOn', 'viewLegendScale', 'viewLo', 'viewHi', 'viewLabelMin',
-      'viewExportBg'].forEach((id) => {
+      'viewExportBg', 'viewExportFmt', 'viewExportWidth', 'viewExportDpi'].forEach((id) => {
       $(id).onchange = onView; $(id).oninput = onView;
     });
     const setRange = (lo, hi) => {
@@ -4082,7 +4250,9 @@ window.FTIR_BANDS = {
       stacked: true, normHeight: true, gap: 0.35, rev: false, grid: true,
       peaksOn: true, labelsOn: true, labelMinProm: 0,
       lo: 20, hi: 320, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
-      exportBg: 'transparent', xLabel: 'Temperature (°C)', yLabel: 'Heat flow (mW/mg)'
+      exportBg: 'transparent',
+      exportFmt: 'journal', exportWidth: '180', exportDpi: 300,
+      xLabel: 'Temperature (°C)', yLabel: 'Heat flow (mW/mg)'
     },
     cfg: {
       mass: 5, beta: 20, unit: 'mW/mg', smooth: 3,
@@ -4436,10 +4606,36 @@ window.FTIR_BANDS = {
 
   function png() {
     if (!st.traces.length) { log('내보낼 DSC 곡선이 없습니다', 'warn'); return; }
-    const bg = st.view.exportBg || 'transparent';
-    const url = P.toPNG($('dPlot'), st, { scale: 2, bg: bg });
+    const fmt = st.view.exportFmt || 'journal';
+    const o = {
+      wmm: parseInt(st.view.exportWidth, 10) || 180,
+      dpi: parseInt(st.view.exportDpi, 10) || 300,
+      labelMinProm: st.view.labelMinProm
+    };
+    let opts, s = st, tag;
+    if (fmt === 'screen') {
+      const bg = st.view.exportBg || 'transparent';
+      opts = { scale: 2, bg: bg };
+      tag = '화면 그대로 (2배) · 배경 ' + (bg === 'transparent' ? '투명' : bg === 'white' ? '흰색' : '앱 테마');
+    } else {
+      const pre = P.formatPreset(fmt, o);
+      s = P.stateForFormat(st, fmt, o);
+      // DSC 는 세로가 긴 곡선이라 저널 높이를 조금 더 준다
+      const h = fmt === 'journal' ? Math.round(pre.width * (o.wmm > 120 ? 0.42 : 0.52)) : pre.height;
+      // 저널 도판에서는 on/end 보조 라벨을 빼고 피크·Tg 만 남긴다(지면에서 글자가 겹침)
+      if (fmt === 'journal') {
+        s = Object.assign({}, s, {
+          traces: s.traces.map((t) => Object.assign({}, t, {
+            peaks: (t.peaks || []).filter((pk) => !/^(on|end|tg)/i.test((pk.label || '').trim()))
+          }))
+        });
+      }
+      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+      tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + h + ' px' : '');
+    }
+    const url = P.toPNG($('dPlot'), s, opts);
     download('dsc-plot-' + Date.now() + '.png', dataURLtoBlob(url), 'image/png');
-    log('PNG 내보내기 (2배 해상도) · 배경 ' + (bg === 'transparent' ? '투명(어두운 글자)' : bg === 'white' ? '흰색' : '앱 테마'), 'ok');
+    log('PNG 내보내기 — ' + tag, 'ok');
   }
 
   function download(name, content, type) {
@@ -4509,6 +4705,9 @@ window.FTIR_BANDS = {
     $('dFont').value = st.view.fontSize;
     $('dLegendPos').value = st.view.legendPos;
     $('dExportBg').value = st.view.exportBg;
+    if ($('dExportFmt')) $('dExportFmt').value = st.view.exportFmt || 'journal';
+    if ($('dExportWidth')) $('dExportWidth').value = String(st.view.exportWidth || '180');
+    if ($('dExportDpi')) $('dExportDpi').value = String(st.view.exportDpi || 300);
     $('dMass').value = st.cfg.mass;
     $('dBeta').value = st.cfg.beta;
     $('dUnit').value = st.cfg.unit;
@@ -4584,12 +4783,15 @@ window.FTIR_BANDS = {
       st.view.fontSize = Math.max(8, +$('dFont').value || 13);
       st.view.legendPos = $('dLegendPos').value;
       st.view.exportBg = $('dExportBg').value;
+      if ($('dExportFmt')) st.view.exportFmt = $('dExportFmt').value;
+      if ($('dExportWidth')) st.view.exportWidth = parseInt($('dExportWidth').value, 10) || 180;
+      if ($('dExportDpi')) st.view.exportDpi = parseInt($('dExportDpi').value, 10) || 300;
       const lo = +$('dLo').value, hi = +$('dHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 1) { st.view.lo = lo; st.view.hi = hi; }
       renderPlot();
     };
     ['dViewMode', 'dGap', 'dNormH', 'dRev', 'dGrid', 'dPeaks', 'dLabels', 'dFont', 'dLegendPos',
-      'dExportBg', 'dLo', 'dHi'].forEach((id) => { $(id).onchange = onView; $(id).oninput = onView; });
+      'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dLo', 'dHi'].forEach((id) => { $(id).onchange = onView; $(id).oninput = onView; });
 
     // 분석 설정
     const onCfg = () => {

@@ -19,7 +19,9 @@
       stacked: true, normHeight: true, gap: 0.35, rev: false, grid: true,
       peaksOn: true, labelsOn: true, labelMinProm: 0,
       lo: 20, hi: 320, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
-      exportBg: 'transparent', xLabel: 'Temperature (°C)', yLabel: 'Heat flow (mW/mg)'
+      exportBg: 'transparent',
+      exportFmt: 'journal', exportWidth: '180', exportDpi: 300,
+      xLabel: 'Temperature (°C)', yLabel: 'Heat flow (mW/mg)'
     },
     cfg: {
       mass: 5, beta: 20, unit: 'mW/mg', smooth: 3,
@@ -373,10 +375,36 @@
 
   function png() {
     if (!st.traces.length) { log('내보낼 DSC 곡선이 없습니다', 'warn'); return; }
-    const bg = st.view.exportBg || 'transparent';
-    const url = P.toPNG($('dPlot'), st, { scale: 2, bg: bg });
+    const fmt = st.view.exportFmt || 'journal';
+    const o = {
+      wmm: parseInt(st.view.exportWidth, 10) || 180,
+      dpi: parseInt(st.view.exportDpi, 10) || 300,
+      labelMinProm: st.view.labelMinProm
+    };
+    let opts, s = st, tag;
+    if (fmt === 'screen') {
+      const bg = st.view.exportBg || 'transparent';
+      opts = { scale: 2, bg: bg };
+      tag = '화면 그대로 (2배) · 배경 ' + (bg === 'transparent' ? '투명' : bg === 'white' ? '흰색' : '앱 테마');
+    } else {
+      const pre = P.formatPreset(fmt, o);
+      s = P.stateForFormat(st, fmt, o);
+      // DSC 는 세로가 긴 곡선이라 저널 높이를 조금 더 준다
+      const h = fmt === 'journal' ? Math.round(pre.width * (o.wmm > 120 ? 0.42 : 0.52)) : pre.height;
+      // 저널 도판에서는 on/end 보조 라벨을 빼고 피크·Tg 만 남긴다(지면에서 글자가 겹침)
+      if (fmt === 'journal') {
+        s = Object.assign({}, s, {
+          traces: s.traces.map((t) => Object.assign({}, t, {
+            peaks: (t.peaks || []).filter((pk) => !/^(on|end|tg)/i.test((pk.label || '').trim()))
+          }))
+        });
+      }
+      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+      tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + h + ' px' : '');
+    }
+    const url = P.toPNG($('dPlot'), s, opts);
     download('dsc-plot-' + Date.now() + '.png', dataURLtoBlob(url), 'image/png');
-    log('PNG 내보내기 (2배 해상도) · 배경 ' + (bg === 'transparent' ? '투명(어두운 글자)' : bg === 'white' ? '흰색' : '앱 테마'), 'ok');
+    log('PNG 내보내기 — ' + tag, 'ok');
   }
 
   function download(name, content, type) {
@@ -446,6 +474,9 @@
     $('dFont').value = st.view.fontSize;
     $('dLegendPos').value = st.view.legendPos;
     $('dExportBg').value = st.view.exportBg;
+    if ($('dExportFmt')) $('dExportFmt').value = st.view.exportFmt || 'journal';
+    if ($('dExportWidth')) $('dExportWidth').value = String(st.view.exportWidth || '180');
+    if ($('dExportDpi')) $('dExportDpi').value = String(st.view.exportDpi || 300);
     $('dMass').value = st.cfg.mass;
     $('dBeta').value = st.cfg.beta;
     $('dUnit').value = st.cfg.unit;
@@ -521,12 +552,15 @@
       st.view.fontSize = Math.max(8, +$('dFont').value || 13);
       st.view.legendPos = $('dLegendPos').value;
       st.view.exportBg = $('dExportBg').value;
+      if ($('dExportFmt')) st.view.exportFmt = $('dExportFmt').value;
+      if ($('dExportWidth')) st.view.exportWidth = parseInt($('dExportWidth').value, 10) || 180;
+      if ($('dExportDpi')) st.view.exportDpi = parseInt($('dExportDpi').value, 10) || 300;
       const lo = +$('dLo').value, hi = +$('dHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 1) { st.view.lo = lo; st.view.hi = hi; }
       renderPlot();
     };
     ['dViewMode', 'dGap', 'dNormH', 'dRev', 'dGrid', 'dPeaks', 'dLabels', 'dFont', 'dLegendPos',
-      'dExportBg', 'dLo', 'dHi'].forEach((id) => { $(id).onchange = onView; $(id).oninput = onView; });
+      'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dLo', 'dHi'].forEach((id) => { $(id).onchange = onView; $(id).oninput = onView; });
 
     // 분석 설정
     const onCfg = () => {
