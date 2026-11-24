@@ -259,22 +259,59 @@
       y = y.map((v, i) => v - base[i]);
     }
     const nm = pre.norm || 'none';
+    let normInfo = null;
     if (nm !== 'none') {
-      let ref = 1;
-      if (nm === 'max') ref = Math.max(...y.map(Math.abs)) || 1;
-      else if (nm === 'minmax') {
+      let scale = 1;
+      const target = (typeof pre.normTarget === 'number' && pre.normTarget > 0) ? pre.normTarget : 1;
+      if (nm === 'max') {
+        let mx = 0;
+        for (let i = 0; i < y.length; i++) mx = Math.max(mx, Math.abs(y[i]));
+        scale = 1 / (mx || 1);
+      } else if (nm === 'minmax') {
         const mn = Math.min(...y), mx = Math.max(...y);
-        ref = (mx - mn) || 1;
-        y = y.map((v) => (v - mn) / ref); ref = 1;
+        y = y.map((v) => (v - mn) / ((mx - mn) || 1));
       } else if (nm === 'vector') {
-        ref = Math.sqrt(y.reduce((s, v) => s + v * v, 0)) || 1;
+        scale = 1 / ((Math.sqrt(y.reduce((s, v) => s + v * v, 0))) || 1);
       } else if (nm === 'band') {
         const b = pre.normBand || [1440, 1480];
-        ref = Math.abs(bandArea(x, y, Math.min(...b), Math.max(...b), Math.min(...b), Math.max(...b))) || 1;
+        scale = 1 / ((Math.abs(bandArea(x, y, Math.min(...b), Math.max(...b), Math.min(...b), Math.max(...b)))) || 1);
+      } else if (nm === 'bandpeak') {
+        // 특정 밴드의 '피크 높이'를 내부 표준으로 정규화 (band-height normalization)
+        const b = pre.normBand || [1440, 1480];
+        const lo = Math.min(b[0], b[1]), hi = Math.max(b[0], b[1]);
+        // 양끝 직선은 '높이를 재는 기준'으로만 쓴다 — 스펙트럼 자체는 건드리지 않는다.
+        // (직선을 전 구간에서 빼면 밴드 밖이 발산해 그림이 망가진다)
+        let base = null;
+        if (pre.normLocalBase) {
+          const y1 = interpAt(x, y, lo), y2 = interpAt(x, y, hi);
+          const sl = (y2 - y1) / ((hi - lo) || 1);
+          base = function (xi) { return y1 + sl * (xi - lo); };
+        }
+        let h = -Infinity, hx = null;
+        for (let i = 0; i < x.length; i++) {
+          if (x[i] < lo || x[i] > hi) continue;
+          const v = base ? y[i] - base(x[i]) : y[i];
+          if (v > h) { h = v; hx = x[i]; }
+        }
+        // 밴드가 비어 있으면(베이스라인 잔물결만 있으면) 정규화 거부 — 스케일이 폭주한다
+        let spanAll = 0;
+        {
+          let mn = Infinity, mx = -Infinity;
+          for (let i = 0; i < y.length; i++) { if (y[i] < mn) mn = y[i]; if (y[i] > mx) mx = y[i]; }
+          spanAll = (mx - mn) || 1;
+        }
+        if (!isFinite(h) || h <= 0 || h < spanAll * 0.005) {
+          normInfo = { mode: 'bandpeak', ok: false, band: [lo, hi], localBase: !!pre.normLocalBase,
+                       target: target, peakY: isFinite(h) ? h : null, spanAll: spanAll };
+        } else {
+          scale = target / h;
+          normInfo = { mode: 'bandpeak', ok: true, band: [lo, hi], peakX: hx, peakY: h,
+                       localBase: !!pre.normLocalBase, target: target, scale: scale };
+        }
       }
-      if (nm !== 'minmax') y = y.map((v) => v / ref);
+      if (scale !== 1) y = y.map((v) => v * scale);
     }
-    return { x, y };
+    return { x, y, normInfo };
   }
 
   /* --------------------------------------------------------------- peaks */

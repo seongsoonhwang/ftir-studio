@@ -23,7 +23,7 @@
       smooth: { on: false, win: 9, order: 2 },
       baseline: { mode: 'none', deg: 3, p1: 4000, p2: 400 },
       atr: { on: false, n1: 2.40, n2: 1.52 },
-      norm: 'none', normBand: [1440, 1480]
+      norm: 'none', normBand: [1440, 1480], normTarget: 1, normLocalBase: false
     },
     selectedId: null,
     peakOpts: { minProm: 0.015, minSep: 8 },
@@ -71,9 +71,11 @@
   }
 
   function reprocess() {
+    state._normInfo = null;
     for (const t of state.traces) {
       if (t.frozen) { t.p = { x: t.x, y: t.y }; continue; }
       t.p = C.applyPipeline({ x: t.x, y: t.y }, state.pre);
+      if (!state._normInfo && t.p.normInfo) state._normInfo = t.p.normInfo;
     }
     for (const t of state.traces) {
       if (!t.frozen && t.peaks.length) {
@@ -86,12 +88,34 @@
     renderAll();
   }
 
+  function logNormInfo() {
+    const ni = state._normInfo;
+    const band = ni ? `${ni.band[0].toFixed(0)}–${ni.band[1].toFixed(0)} cm⁻¹` : '';
+    let msg, kind = 'ok';
+    if (!ni || ni.mode !== 'bandpeak') {
+      msg = '정규화: 기준 밴드 정보를 얻지 못했습니다'; kind = 'warn';
+    } else if (!ni.ok) {
+      msg = `정규화 생략: ${band} 안에 유효한 피크가 없습니다 (최대 ${ni.peakY == null ? 'n/a' : ni.peakY.toFixed(4)}, 전체 높이의 0.5 % 미만)`;
+      kind = 'warn';
+    } else {
+      msg = `정규화: ${band} 최대 피크 ${ni.peakX.toFixed(1)} cm⁻¹ · 높이 ${ni.peakY.toFixed(4)} → 기준값 ${ni.target}`
+        + `${ni.localBase ? ' (양끝 직선 기준 높이)' : ''} · 배율 ×${ni.scale.toFixed(2)} (첫 시료 기준, 시료마다 개별 계산)`;
+      if (ni.scale > 100) { msg += ' — 배율이 큽니다. 기준 밴드 선택을 확인하세요'; kind = 'warn'; }
+    }
+    if (state._normLog === msg) return;
+    state._normLog = msg;
+    log(msg, kind);
+  }
+
   function updatePreBadge() {
     const bits = [];
     if (state.pre.smooth.on) bits.push('SG');
     if (state.pre.baseline.mode !== 'none') bits.push({ linear: '선형BL', poly: '다항BL', rubber: '러버BL' }[state.pre.baseline.mode]);
     if (state.pre.atr.on) bits.push('ATR');
-    if (state.pre.norm !== 'none') bits.push('정규화');
+    if (state.pre.norm === 'bandpeak') {
+      const b = state.pre.normBand || [1440, 1480];
+      bits.push(`피크높이 ${Math.min(...b).toFixed(0)}–${Math.max(...b).toFixed(0)}`);
+    } else if (state.pre.norm !== 'none') bits.push('정규화');
     $('preBadge').textContent = bits.length ? bits.join('·') : '기본';
   }
 
@@ -418,7 +442,13 @@
     const normTo = (x, y) => {
       if (mode === 'none') return 1;
       if (mode === 'max') return Math.max(...y.map(Math.abs)) || 1;
-      const a = C.bandArea(x, y, Math.min(b1, b2), Math.max(b1, b2), Math.min(b1, b2), Math.max(b1, b2));
+      const lo2 = Math.min(b1, b2), hi2 = Math.max(b1, b2);
+      if (mode === 'bandpeak') {
+        let h = -Infinity;
+        for (let i = 0; i < x.length; i++) if (x[i] >= lo2 && x[i] <= hi2 && y[i] > h) h = y[i];
+        return (isFinite(h) && h > 1e-9) ? h : 1;
+      }
+      const a = C.bandArea(x, y, lo2, hi2, lo2, hi2);
       return Math.abs(a) || 1;
     };
     const ka = normTo(ra.x, ya), kb = normTo(rb.x, yb);
@@ -505,6 +535,8 @@
     $('normMode').value = state.pre.norm;
     $('normB1').value = state.pre.normBand[0];
     $('normB2').value = state.pre.normBand[1];
+    $('normTarget').value = state.pre.normTarget == null ? 1 : state.pre.normTarget;
+    $('normLocalBase').checked = !!state.pre.normLocalBase;
     $('peakMinProm').value = state.peakOpts.minProm;
     $('peakMinSep').value = state.peakOpts.minSep;
   }
@@ -633,10 +665,13 @@
       state.pre.atr.n2 = +$('atrN2').value || 1.52;
       state.pre.norm = $('normMode').value;
       state.pre.normBand = [+$('normB1').value || 1440, +$('normB2').value || 1480];
+      state.pre.normTarget = Math.max(0.001, +$('normTarget').value || 1);
+      state.pre.normLocalBase = $('normLocalBase').checked;
       reprocess();
+      if (state.pre.norm === 'bandpeak') logNormInfo();
     };
     ['smoothOn', 'smoothWin', 'smoothOrder', 'baseMode', 'baseDeg', 'baseP1', 'baseP2',
-      'atrOn', 'atrN1', 'atrN2', 'normMode', 'normB1', 'normB2'].forEach((id) => {
+      'atrOn', 'atrN1', 'atrN2', 'normMode', 'normB1', 'normB2', 'normTarget', 'normLocalBase'].forEach((id) => {
       $(id).onchange = onPre; $(id).oninput = onPre;
     });
 
@@ -936,7 +971,7 @@
     state.lib = C.loadLibrary();
     bind();
     renderAll();
-    log('FT-IR Studio v1.1 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요.');
+    log('FT-IR Studio v1.2 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 

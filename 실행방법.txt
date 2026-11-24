@@ -1,13 +1,24 @@
-FTIR Studio v1.1 — 웹에서 바로 쓰기
+FTIR Studio v1.2 — 웹에서 바로 쓰기
 ====================================
 
 [가장 빠른 방법]
   https://seongsoonhwang.github.io/ftir-studio/ 를 브라우저로 엽니다.
   → 설치 없이 그대로 실행됩니다. 데이터는 브라우저 안에서만 처리되고 외부로 전송되지 않습니다.
 
+[v1.2에서 추가된 것]
+  · 특정 밴드 피크 높이 정규화(내부 표준)
+    전처리 → 정규화에서 "특정 밴드 피크 높이 (내부 표준)" 선택 → 기준 밴드(예: 1440–1480)와
+    기준값(1.0, 100으로 두면 % 스케일) 입력. 시편 두께·ATR 접촉 압력 차이를 상쇄해
+    열화 전후·정상품/문제품을 상대 비교할 때 씁니다.
+    비율 지수(CI 등)는 정규화와 무관합니다(분자·분모가 같이 스케일되므로).
+  · 기준 밴드가 비어 있으면 정규화를 생략하고 로그에 경고를 남깁니다(배율 폭주 방지).
+  · 표시 구간 기준 y범위 정규화 — 화면 밖 포화 피크 때문에 그래프가 납작해지던 문제 수정.
+
 [내 PC에 파일로 보관하려면]
   1) 위 주소를 연 뒤 Ctrl+S → "웹페이지, 완전히" 로 저장 (ftir-studio-single.html 과 동일)
   2) 또는 저장소에서 ftir-studio-single.html 을 내려받아 더블클릭
+  3) 주소창 없는 앱 창으로 쓰려면 실행.bat 을 ftir-studio.html 과 같은 폴더에 두고 더블클릭
+     (Edge/Chrome --app 모드, 창 크기 1500x950)
 
 [예제 데이터]
   https://seongsoonhwang.github.io/ftir-studio/samples/PA6-GF30_ok.dpt
@@ -20,12 +31,14 @@ FTIR Studio v1.1 — 웹에서 바로 쓰기
   https://seongsoonhwang.github.io/ftir-studio/samples/Epoxy_uncured.dpt
   https://seongsoonhwang.github.io/ftir-studio/samples/PA6_neat.dpt
   https://seongsoonhwang.github.io/ftir-studio/samples/PA6_aged168h.dpt
-  (모두 합성 데모 스펙트럼입니다. 실측 OPUS 원본 파일은 공개 저장소에서 제외했습니다.)
+  (모두 합성 데모 스펙트럼입니다. 실측 OPUS 원본 파일은 공개 저장소에서 제외했습니다.
+   실제 Bruker OPUS .0/.1 파일은 도구 창에 그대로 끌어다 놓으면 됩니다.)
 
 [주소창 없는 앱 창으로 쓰고 싶으면]
   Edge 로 위 주소를 연 뒤 ... → 앱 → "이 사이트를 앱으로 설치"
-  → 바탕화면 아이콘으로 실행 (배포본의 FTIR-Studio 실행.bat 과 동일한 효과)
+  → 바탕화면 아이콘으로 실행 (실행.bat 과 동일한 효과)
 
 [소스]
   같은 폴더의 app*.js, lib-bands.js, demo.js, app.css 가 모듈 버전 소스입니다.
-  tools/bundle.py 로 모듈을 다시 단일 파일로 묶을 수 있습니다.
+  tools/bundle.py 로 모듈을 다시 단일 파일로 묶을 수 있고,
+  tools/gen_samples.js 로 samples/*.dpt 합성 데모를 재생성할 수 있습니다.
