@@ -57,13 +57,30 @@
     const lines = raw.split(/\r?\n/);
     const warnings = [];
 
-    const probe = lines.slice(0, 40);
-    const cnt = (ch) => probe.reduce((a, l) => a + (l.split(ch).length - 1), 0);
-    let delim = null;
-    if (cnt('\t') >= probe.length * 0.5) delim = '\t';
-    else if (cnt(';') >= probe.length * 0.5) delim = ';';
-    else if (cnt(',') >= probe.length * 0.5) delim = ',';
-    else delim = null;
+    // 구분자 추정 — 후보별로 '숫자 2개 이상으로 파싱되는 줄' 수를 세어 가장 많은 것을 고른다.
+    //  Netzsch export 처럼 헤더 35줄 + 데이터 600줄 구조에서, 전체 글자수 비율로 세면
+    //  세미콜론이 헤더에 없어 문턱(줄 수의 50 %)을 못 넘고 공백 구분으로 잘못 떨어진다.
+    const probe = lines.slice(0, 300);
+    const clean = (t) => t.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
+    const isNum = (t, dc) => { const s = clean(t); return !!s && (NUMRE.test(s) || (dc && /^[+-]?\d+,\d+$/.test(s))); };
+    const scoreDelim = (dl) => {
+      let n = 0;
+      const dc = dl !== ',';
+      for (const l of probe) {
+        if (!l.trim()) continue;
+        const toks = dl ? l.split(dl) : l.trim().split(/\s+/);
+        let k = 0;
+        for (const t of toks) if (isNum(t, dc)) k++;
+        if (k >= 2) n++;
+      }
+      return n;
+    };
+    let delim = null, bestDelimScore = 0;
+    for (const cand of ['\t', ';', ',']) {          // 동점이면 탭 → 세미콜론 → 쉼표 순
+      const sc = scoreDelim(cand);
+      if (sc > bestDelimScore) { bestDelimScore = sc; delim = cand; }
+    }
+    if (bestDelimScore === 0) delim = null;          // 공백 구분
 
     let decComma = false;
     if (delim !== ',') {

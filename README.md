@@ -1,4 +1,4 @@
-# FT-IR Studio v1.6
+# FT-IR Studio v1.6b
 
 **FT-IR 탭** — Bruker OPUS 스펙트럼(원시 바이너리 `.0`/`.1` 또는 ASCII `.dpt`)을 **설치 없이** 열어서 스택 비교·정성 판정·열화 지수 계산·차이 스펙트럼까지 처리합니다.
 **DSC 탭 (v1.3 추가)** — DSC ASCII 데이터(`온도 / 열유량`)를 읽어 피크 적분(ΔH)·외삽 onset/endset·Tg·ΔCp·결정화도를 계산합니다.

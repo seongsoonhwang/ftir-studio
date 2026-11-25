@@ -317,7 +317,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <div class="brand">
       <span class="logo">∿</span>
       <span class="title">FT-IR Studio</span>
-      <span class="ver">v1.6</span>
+      <span class="ver">v1.6b</span>
       <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 | DSC: ΔH·Tg·결정화도 | TGA: T5%·Td·잔량</span>
     </div>
     <nav class="ttabs">
@@ -4304,7 +4304,7 @@ window.FTIR_BANDS = {
     bind();
     renderAll();
     window.APP_TAB = 'ftir';
-    log('FT-IR Studio v1.6 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
+    log('FT-IR Studio v1.6b — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 
@@ -4345,14 +4345,30 @@ window.FTIR_BANDS = {
     const lines = raw.split(/\r?\n/);
     const warnings = [];
 
-    // 구분자 추정(앞 40줄 통계)
-    const probe = lines.slice(0, 40);
-    const cnt = (ch) => probe.reduce((a, l) => a + (l.split(ch).length - 1), 0);
-    let delim = null;
-    if (cnt('\t') >= probe.length * 0.5) delim = '\t';
-    else if (cnt(';') >= probe.length * 0.5) delim = ';';     // 세미콜론+소수점쉼표 형식이 흔함
-    else if (cnt(',') >= probe.length * 0.5) delim = ',';
-    else delim = null;                       // 공백 구분
+    // 구분자 추정 — 후보별로 '숫자 2개 이상으로 파싱되는 줄' 수를 세어 가장 많은 것을 고른다.
+    //  Netzsch export 처럼 헤더 35줄 + 데이터 600줄 구조에서, 전체 글자수 비율로 세면
+    //  세미콜론이 헤더에 없어 문턱(줄 수의 50 %)을 못 넘고 공백 구분으로 잘못 떨어진다.
+    const probe = lines.slice(0, 300);
+    const clean = (t) => t.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
+    const isNum = (t, dc) => { const s = clean(t); return !!s && (NUMRE.test(s) || (dc && /^[+-]?\d+,\d+$/.test(s))); };
+    const scoreDelim = (dl) => {
+      let n = 0;
+      const dc = dl !== ',';
+      for (const l of probe) {
+        if (!l.trim()) continue;
+        const toks = dl ? l.split(dl) : l.trim().split(/\s+/);
+        let k = 0;
+        for (const t of toks) if (isNum(t, dc)) k++;
+        if (k >= 2) n++;
+      }
+      return n;
+    };
+    let delim = null, bestDelimScore = 0;
+    for (const cand of ['\t', ';', ',']) {          // 동점이면 탭 → 세미콜론 → 쉼표 순
+      const sc = scoreDelim(cand);
+      if (sc > bestDelimScore) { bestDelimScore = sc; delim = cand; }
+    }
+    if (bestDelimScore === 0) delim = null;          // 공백 구분
 
     // 소수점 쉼표(유럽식) 판정 — 구분자가 쉼표가 아닐 때만
     let decComma = false;
@@ -5647,13 +5663,30 @@ window.FTIR_BANDS = {
     const lines = raw.split(/\r?\n/);
     const warnings = [];
 
-    const probe = lines.slice(0, 40);
-    const cnt = (ch) => probe.reduce((a, l) => a + (l.split(ch).length - 1), 0);
-    let delim = null;
-    if (cnt('\t') >= probe.length * 0.5) delim = '\t';
-    else if (cnt(';') >= probe.length * 0.5) delim = ';';
-    else if (cnt(',') >= probe.length * 0.5) delim = ',';
-    else delim = null;
+    // 구분자 추정 — 후보별로 '숫자 2개 이상으로 파싱되는 줄' 수를 세어 가장 많은 것을 고른다.
+    //  Netzsch export 처럼 헤더 35줄 + 데이터 600줄 구조에서, 전체 글자수 비율로 세면
+    //  세미콜론이 헤더에 없어 문턱(줄 수의 50 %)을 못 넘고 공백 구분으로 잘못 떨어진다.
+    const probe = lines.slice(0, 300);
+    const clean = (t) => t.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
+    const isNum = (t, dc) => { const s = clean(t); return !!s && (NUMRE.test(s) || (dc && /^[+-]?\d+,\d+$/.test(s))); };
+    const scoreDelim = (dl) => {
+      let n = 0;
+      const dc = dl !== ',';
+      for (const l of probe) {
+        if (!l.trim()) continue;
+        const toks = dl ? l.split(dl) : l.trim().split(/\s+/);
+        let k = 0;
+        for (const t of toks) if (isNum(t, dc)) k++;
+        if (k >= 2) n++;
+      }
+      return n;
+    };
+    let delim = null, bestDelimScore = 0;
+    for (const cand of ['\t', ';', ',']) {          // 동점이면 탭 → 세미콜론 → 쉼표 순
+      const sc = scoreDelim(cand);
+      if (sc > bestDelimScore) { bestDelimScore = sc; delim = cand; }
+    }
+    if (bestDelimScore === 0) delim = null;          // 공백 구분
 
     let decComma = false;
     if (delim !== ',') {
