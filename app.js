@@ -22,7 +22,8 @@
       exportFmt: 'journal',        // journal | ppt | screen
       exportWidth: '180',          // 저널 폭(mm): 180=double, 88=single
       exportDpi: 300,
-      exportFont: ''
+      exportFont: '',
+      pptFrame: false
     },
     pre: {
       smooth: { on: false, win: 9, order: 2 },
@@ -532,6 +533,7 @@
     if ($('viewExportWidth')) $('viewExportWidth').value = String(state.view.exportWidth || '180');
     if ($('viewExportDpi')) $('viewExportDpi').value = String(state.view.exportDpi || 300);
     if ($('viewExportFont')) $('viewExportFont').value = state.view.exportFont || '';
+    if ($('viewPptFrame')) $('viewPptFrame').checked = !!state.view.pptFrame;
     $('smoothOn').checked = state.pre.smooth.on;
     $('smoothWin').value = state.pre.smooth.win;
     $('smoothOrder').value = state.pre.smooth.order;
@@ -625,7 +627,9 @@
         wmm: parseInt(state.view.exportWidth, 10) || 180,
         dpi: parseInt(state.view.exportDpi, 10) || 300,
         labelMinProm: state.view.labelMinProm,
-        fontFamily: state.view.exportFont || ''
+        fontFamily: state.view.exportFont || '',
+        frame: !!state.view.pptFrame,
+        legendOn: state.view.legendOn !== false
       };
       if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
       let opts, st = state, tag;
@@ -636,7 +640,7 @@
       } else {
         const pre = P.formatPreset(fmt, o);
         st = P.stateForFormat(state, fmt, o);
-        opts = { scale: 1, bg: pre.bg, width: pre.width, height: pre.height, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+        opts = { scale: 1, bg: pre.bg, width: pre.width, height: pre.height, font: pre.font, margin: pre.margin, nameMax: pre.nameMax, theme: pre.theme };
         tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + pre.height + ' px' : '');
       }
       const url = P.toPNG($('plot'), st, opts);
@@ -688,13 +692,14 @@
       if ($('viewExportWidth')) state.view.exportWidth = parseInt($('viewExportWidth').value, 10) || 180;
       if ($('viewExportDpi')) state.view.exportDpi = parseInt($('viewExportDpi').value, 10) || 300;
       if ($('viewExportFont')) state.view.exportFont = $('viewExportFont').value || '';
+      if ($('viewPptFrame')) state.view.pptFrame = $('viewPptFrame').checked;
       let lo = +$('viewLo').value, hi = +$('viewHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 20) { state.view.lo = lo; state.view.hi = hi; }
       renderPlot();
     };
     ['viewMode', 'viewGap', 'viewNormHeight', 'viewRev', 'viewGrid', 'viewPeaks', 'viewLabels',
       'viewFont', 'viewLegendPos', 'viewLegendOn', 'viewLegendScale', 'viewLo', 'viewHi', 'viewLabelMin',
-      'viewExportBg', 'viewExportFmt', 'viewExportWidth', 'viewExportDpi', 'viewExportFont'].forEach((id) => {
+      'viewExportBg', 'viewExportFmt', 'viewExportWidth', 'viewExportDpi', 'viewExportFont', 'viewPptFrame'].forEach((id) => {
       $(id).onchange = onView; $(id).oninput = onView;
     });
     const setRange = (lo, hi) => {
@@ -1032,7 +1037,7 @@
     bind();
     renderAll();
     window.APP_TAB = 'ftir';
-    log('FT-IR Studio v1.5 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
+    log('FT-IR Studio v1.6 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 

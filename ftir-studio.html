@@ -12,7 +12,7 @@
     <div class="brand">
       <span class="logo">∿</span>
       <span class="title">FT-IR Studio</span>
-      <span class="ver">v1.5</span>
+      <span class="ver">v1.6</span>
       <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 | DSC: ΔH·Tg·결정화도 | TGA: T5%·Td·잔량</span>
     </div>
     <nav class="ttabs">
@@ -95,10 +95,13 @@
           <label class="fld"><span>범례 위치</span>
             <select id="viewLegendPos">
               <option value="out">바깥 오른쪽</option>
-              <option value="tr">오른쪽 위</option>
-              <option value="tl">왼쪽 위</option>
-              <option value="br">오른쪽 아래</option>
-              <option value="bl">왼쪽 아래</option>
+              <option value="top">바깥 위</option>
+              <option value="bottom">바깥 아래</option>
+              <option value="left">바깥 왼쪽</option>
+              <option value="tr">안쪽 오른쪽 위</option>
+              <option value="tl">안쪽 왼쪽 위</option>
+              <option value="br">안쪽 오른쪽 아래</option>
+              <option value="bl">안쪽 왼쪽 아래</option>
             </select>
           </label>
         </div>
@@ -134,6 +137,7 @@
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
+          <label class="chk"><input id="viewPptFrame" type="checkbox"> PPT 테두리 (사방 박스)</label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="viewExportBg">
@@ -393,12 +397,16 @@
           <label class="fld"><span>범례 위치</span>
             <select id="dLegendPos">
               <option value="out">바깥 오른쪽</option>
-              <option value="tr">오른쪽 위</option>
-              <option value="tl">왼쪽 위</option>
-              <option value="br">오른쪽 아래</option>
-              <option value="bl">왼쪽 아래</option>
+              <option value="top">바깥 위</option>
+              <option value="bottom">바깥 아래</option>
+              <option value="left">바깥 왼쪽</option>
+              <option value="tr">안쪽 오른쪽 위</option>
+              <option value="tl">안쪽 왼쪽 위</option>
+              <option value="br">안쪽 오른쪽 아래</option>
+              <option value="bl">안쪽 왼쪽 아래</option>
             </select>
           </label>
+        <label class="chk"><input id="dLegendOn" type="checkbox" checked> 범례 표시</label>
         </div>
         <label class="fld"><span>PNG 포맷</span>
           <select id="dExportFmt">
@@ -432,6 +440,7 @@
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
+          <label class="chk"><input id="dPptFrame" type="checkbox"> PPT 테두리 (사방 박스)</label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="dExportBg">
@@ -598,12 +607,16 @@
           <label class="fld"><span>범례 위치</span>
             <select id="tLegendPos">
               <option value="out">바깥 오른쪽</option>
-              <option value="tr">오른쪽 위</option>
-              <option value="tl">왼쪽 위</option>
-              <option value="br">오른쪽 아래</option>
-              <option value="bl">왼쪽 아래</option>
+              <option value="top">바깥 위</option>
+              <option value="bottom">바깥 아래</option>
+              <option value="left">바깥 왼쪽</option>
+              <option value="tr">안쪽 오른쪽 위</option>
+              <option value="tl">안쪽 왼쪽 위</option>
+              <option value="br">안쪽 오른쪽 아래</option>
+              <option value="bl">안쪽 왼쪽 아래</option>
             </select>
           </label>
+        <label class="chk"><input id="tLegendOn" type="checkbox" checked> 범례 표시</label>
         </div>
         <label class="fld"><span>요약 패널 시료 코드 (쉼표로 구분, 비우면 이름)</span><input id="tSumCodes" type="text" placeholder="예: AB, BB"></label>
         <label class="fld"><span>PNG 포맷</span>
@@ -638,6 +651,7 @@
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
+          <label class="chk"><input id="tPptFrame" type="checkbox"> PPT 테두리 (사방 박스)</label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="tExportBg">
@@ -741,9 +755,12 @@
   <ul>
     <li>표시 설정 → <b>PNG 포맷</b>에서 고릅니다. 기본값은 <b>학술지 (double 180 mm, 300 dpi)</b>입니다.</li>
     <li><b>학술지</b>: 흰 배경 · Times 계열 · 격자 없음 · 범례 대신 스펙트럼 위 이름 · 피크 라벨은 시료당 5개 · 최소 선굵기 0.53 pt. 폭(single 88 mm / double 180 mm)과 해상도(300/600 dpi)를 지정하며, 글자는 항상 7 pt로 계산되므로 인쇄했을 때 눈금이 7 pt로 나옵니다.</li>
-    <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · 옅은 격자 · 이름표+범례 · 피크 라벨 8개까지.</li>
+    <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · <b>검정 축 + 내부 격자</b>(축 #111111, 격자 rgba(0,0,0,0.28)) · 이름표+범례 · 피크 라벨 8개까지.</li>
     <li><b>화면 그대로</b>: 보이는 그대로 2배 해상도. 배경은 투명/흰색/앱 테마 중 선택.</li>
     <li>내보내기에는 화면 전용 요소(선택 음영·크로스헤어)가 빠지고, 피크를 아직 검출하지 않은 시료도 자동으로 검출해 라벨을 붙입니다.</li>
+    <li><b>범례</b>: 「범례 표시」로 켜고 끄며, 위치는 <b>바깥 위·아래·왼쪽·오른쪽</b>과 <b>안쪽 네 모서리</b> 중에서 고릅니다. 위·아래는 가로로 늘어놓고 폭이 모자라면 자동으로 다음 줄로 넘기며, 플롯 여백을 그만큼 확보합니다. 바깥 오른쪽은 요약 패널이 켜져 있으면 안쪽 오른쪽 위로 물러납니다. 학술지 포맷은 그림 안 시료명을 쓰므로 범례를 그리지 않습니다.</li>
+    <li><b>축 제목</b>: X축 제목은 아래 가운데, <b>Y축 제목은 왼쪽에 세로로</b> 그립니다. 스택(시료별 높이 정규화) 화면에서도 표시되며, 왼쪽 여백은 제목 폭만큼 자동으로 늘어납니다.</li>
+    <li><b>PPT 테두리</b>: PPT 포맷에서 플롯 영역을 사방 검정 박스로 닫습니다(기본 OFF = 왼쪽·아래 축 + 내부 격자).</li>
     <li><b>내보내기 서체</b>: 포맷과 별개로 글꼴만 바꿉니다. <b>현대하모니 L·M·B</b>는 <b>한글만(권장)</b>과 <b>전체</b> 중에서 고릅니다. <b>한글만</b>은 라틴·숫자·기호를 포맷 기본 서체(Segoe UI / Times)로 두고 한글만 사내 서체로 씁니다. <b>전체</b>로 두면 축 제목의 <code>°</code>·<code>¹</code> 이 전각으로, <code>µ</code>·<code>⁻</code>·<code>≈</code> 은 사내 서체에 없어 폴백되므로 <code>Temperature (°C)</code> 가 <code>(° C)</code> 처럼 벌어져 보입니다 — 축 제목 가독성이 중요하면 한글만을 쓰십시오. 사내 서체는 <code>fonts/</code> 폴더의 TTF를 직접 읽으므로 설치가 필요 없고, 폴더가 없으면 조용히 대체 서체로 저장되며 로그에 경고가 남습니다. 공개 웹 버전에는 서체 파일이 없어 대체 서체로 나옵니다(PNG는 글자가 픽셀로 굳으므로 받는 사람 PC에 서체가 없어도 동일).</li>
   </ul>
   <h3>4. 분석 흐름 권장</h3>

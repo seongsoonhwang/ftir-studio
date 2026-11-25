@@ -317,7 +317,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <div class="brand">
       <span class="logo">∿</span>
       <span class="title">FT-IR Studio</span>
-      <span class="ver">v1.5</span>
+      <span class="ver">v1.6</span>
       <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 | DSC: ΔH·Tg·결정화도 | TGA: T5%·Td·잔량</span>
     </div>
     <nav class="ttabs">
@@ -400,10 +400,13 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
           <label class="fld"><span>범례 위치</span>
             <select id="viewLegendPos">
               <option value="out">바깥 오른쪽</option>
-              <option value="tr">오른쪽 위</option>
-              <option value="tl">왼쪽 위</option>
-              <option value="br">오른쪽 아래</option>
-              <option value="bl">왼쪽 아래</option>
+              <option value="top">바깥 위</option>
+              <option value="bottom">바깥 아래</option>
+              <option value="left">바깥 왼쪽</option>
+              <option value="tr">안쪽 오른쪽 위</option>
+              <option value="tl">안쪽 왼쪽 위</option>
+              <option value="br">안쪽 오른쪽 아래</option>
+              <option value="bl">안쪽 왼쪽 아래</option>
             </select>
           </label>
         </div>
@@ -439,6 +442,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
+          <label class="chk"><input id="viewPptFrame" type="checkbox"> PPT 테두리 (사방 박스)</label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="viewExportBg">
@@ -698,12 +702,16 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
           <label class="fld"><span>범례 위치</span>
             <select id="dLegendPos">
               <option value="out">바깥 오른쪽</option>
-              <option value="tr">오른쪽 위</option>
-              <option value="tl">왼쪽 위</option>
-              <option value="br">오른쪽 아래</option>
-              <option value="bl">왼쪽 아래</option>
+              <option value="top">바깥 위</option>
+              <option value="bottom">바깥 아래</option>
+              <option value="left">바깥 왼쪽</option>
+              <option value="tr">안쪽 오른쪽 위</option>
+              <option value="tl">안쪽 왼쪽 위</option>
+              <option value="br">안쪽 오른쪽 아래</option>
+              <option value="bl">안쪽 왼쪽 아래</option>
             </select>
           </label>
+        <label class="chk"><input id="dLegendOn" type="checkbox" checked> 범례 표시</label>
         </div>
         <label class="fld"><span>PNG 포맷</span>
           <select id="dExportFmt">
@@ -737,6 +745,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
+          <label class="chk"><input id="dPptFrame" type="checkbox"> PPT 테두리 (사방 박스)</label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="dExportBg">
@@ -903,12 +912,16 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
           <label class="fld"><span>범례 위치</span>
             <select id="tLegendPos">
               <option value="out">바깥 오른쪽</option>
-              <option value="tr">오른쪽 위</option>
-              <option value="tl">왼쪽 위</option>
-              <option value="br">오른쪽 아래</option>
-              <option value="bl">왼쪽 아래</option>
+              <option value="top">바깥 위</option>
+              <option value="bottom">바깥 아래</option>
+              <option value="left">바깥 왼쪽</option>
+              <option value="tr">안쪽 오른쪽 위</option>
+              <option value="tl">안쪽 왼쪽 위</option>
+              <option value="br">안쪽 오른쪽 아래</option>
+              <option value="bl">안쪽 왼쪽 아래</option>
             </select>
           </label>
+        <label class="chk"><input id="tLegendOn" type="checkbox" checked> 범례 표시</label>
         </div>
         <label class="fld"><span>요약 패널 시료 코드 (쉼표로 구분, 비우면 이름)</span><input id="tSumCodes" type="text" placeholder="예: AB, BB"></label>
         <label class="fld"><span>PNG 포맷</span>
@@ -943,6 +956,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
+          <label class="chk"><input id="tPptFrame" type="checkbox"> PPT 테두리 (사방 박스)</label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="tExportBg">
@@ -1046,9 +1060,12 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
   <ul>
     <li>표시 설정 → <b>PNG 포맷</b>에서 고릅니다. 기본값은 <b>학술지 (double 180 mm, 300 dpi)</b>입니다.</li>
     <li><b>학술지</b>: 흰 배경 · Times 계열 · 격자 없음 · 범례 대신 스펙트럼 위 이름 · 피크 라벨은 시료당 5개 · 최소 선굵기 0.53 pt. 폭(single 88 mm / double 180 mm)과 해상도(300/600 dpi)를 지정하며, 글자는 항상 7 pt로 계산되므로 인쇄했을 때 눈금이 7 pt로 나옵니다.</li>
-    <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · 옅은 격자 · 이름표+범례 · 피크 라벨 8개까지.</li>
+    <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · <b>검정 축 + 내부 격자</b>(축 #111111, 격자 rgba(0,0,0,0.28)) · 이름표+범례 · 피크 라벨 8개까지.</li>
     <li><b>화면 그대로</b>: 보이는 그대로 2배 해상도. 배경은 투명/흰색/앱 테마 중 선택.</li>
     <li>내보내기에는 화면 전용 요소(선택 음영·크로스헤어)가 빠지고, 피크를 아직 검출하지 않은 시료도 자동으로 검출해 라벨을 붙입니다.</li>
+    <li><b>범례</b>: 「범례 표시」로 켜고 끄며, 위치는 <b>바깥 위·아래·왼쪽·오른쪽</b>과 <b>안쪽 네 모서리</b> 중에서 고릅니다. 위·아래는 가로로 늘어놓고 폭이 모자라면 자동으로 다음 줄로 넘기며, 플롯 여백을 그만큼 확보합니다. 바깥 오른쪽은 요약 패널이 켜져 있으면 안쪽 오른쪽 위로 물러납니다. 학술지 포맷은 그림 안 시료명을 쓰므로 범례를 그리지 않습니다.</li>
+    <li><b>축 제목</b>: X축 제목은 아래 가운데, <b>Y축 제목은 왼쪽에 세로로</b> 그립니다. 스택(시료별 높이 정규화) 화면에서도 표시되며, 왼쪽 여백은 제목 폭만큼 자동으로 늘어납니다.</li>
+    <li><b>PPT 테두리</b>: PPT 포맷에서 플롯 영역을 사방 검정 박스로 닫습니다(기본 OFF = 왼쪽·아래 축 + 내부 격자).</li>
     <li><b>내보내기 서체</b>: 포맷과 별개로 글꼴만 바꿉니다. <b>현대하모니 L·M·B</b>는 <b>한글만(권장)</b>과 <b>전체</b> 중에서 고릅니다. <b>한글만</b>은 라틴·숫자·기호를 포맷 기본 서체(Segoe UI / Times)로 두고 한글만 사내 서체로 씁니다. <b>전체</b>로 두면 축 제목의 <code>°</code>·<code>¹</code> 이 전각으로, <code>µ</code>·<code>⁻</code>·<code>≈</code> 은 사내 서체에 없어 폴백되므로 <code>Temperature (°C)</code> 가 <code>(° C)</code> 처럼 벌어져 보입니다 — 축 제목 가독성이 중요하면 한글만을 쓰십시오. 사내 서체는 <code>fonts/</code> 폴더의 TTF를 직접 읽으므로 설치가 필요 없고, 폴더가 없으면 조용히 대체 서체로 저장되며 로그에 경고가 남습니다. 공개 웹 버전에는 서체 파일이 없어 대체 서체로 나옵니다(PNG는 글자가 픽셀로 굳으므로 받는 사람 PC에 서체가 없어도 동일).</li>
   </ul>
   <h3>4. 분석 흐름 권장</h3>
@@ -2405,9 +2422,19 @@ window.FTIR_BANDS = {
     const fs0 = fs;
     const fsBig = state.view.legendScale || 1;
 
-    // ---- 범례 폭 측정(바깥 배치 시 오른쪽 여백 확보)
+    // ---- 범례 배치 계산(바깥 오른쪽/위/아래/왼쪽 · 안쪽 네 모서리)
     const legendOn = state.view.legendOn !== false;
-    let legendBoxW = 0;
+    const sumOn = !!(state.summary && state.summary.panels && state.summary.panels.length);
+    let lpos = state.view.legendPos || 'out';
+    // 요약 패널이 오른쪽을 차지하면 '바깥 오른쪽'은 안쪽 오른쪽 위로 물러난다
+    if (lpos === 'out' && sumOn) lpos = 'tr';
+    const OUT_R = legendOn && lpos === 'out';
+    const OUT_L = legendOn && lpos === 'left';
+    const OUT_T = legendOn && lpos === 'top';
+    const OUT_B = legendOn && lpos === 'bottom';
+    const outside = OUT_R;
+    const legendLineH = Math.round(fs * fsBig * 1.55);
+    let legendBoxW = 0, legendH = 0, legendRows = 1;
     if (legendOn) {
       ctx.font = `${Math.round(fs * fsBig)}px ${FONT}`;
       let wmax = 0;
@@ -2415,22 +2442,40 @@ window.FTIR_BANDS = {
         wmax = Math.max(wmax, ctx.measureText((t.legend || t.name)).width);
       }
       legendBoxW = Math.min(Math.max(200, cssW * 0.33), Math.max(300, Math.ceil(wmax) + 54));
+      // 위/아래 범례의 줄 수는 플롯 폭이 정해진 뒤(요약 패널 반영 후) 다시 센다
     }
-    const sumOn = !!(state.summary && state.summary.panels && state.summary.panels.length);
-    const outside = legendOn && state.view.legendPos === 'out' && !sumOn;
     // 여백: 포맷(저널 300 dpi 등)에서는 글자 크기에 맞춰 o.margin 으로 덮어쓴다
-    const m = Object.assign(
-      { l: 70, r: outside ? legendBoxW + 22 : 26, t: 22, b: 46 }, o.margin || {});
+    const m = Object.assign({ l: 70, r: 26, t: 22, b: 46 }, o.margin || {});
+    // Y축 제목 자리(회전 텍스트 + 눈금 숫자)를 왼쪽 여백에 미리 확보
+    if (state.view.yLabel) m.l = Math.max(m.l, Math.round(fs * 6.0));
+    if (OUT_R) m.r = Math.max(m.r, legendBoxW + 22);
+    if (OUT_L) m.l = m.l + legendBoxW + 20;
 
     // ---- 우측 요약(사이드) 패널 — 주요 지점만 따로 그리는 작은 그래프들
     const sum = (state.summary && state.summary.panels && state.summary.panels.length) ? state.summary : null;
-    let sumRect = null;
+    let sumRect = null, sw = 0;
     if (sum) {
-      const sw = Math.max(150, Math.min(cssW * 0.34, Math.max(220, 300 * (fs0 / 13))));
+      sw = Math.max(150, Math.min(cssW * 0.34, Math.max(220, 300 * (fs0 / 13))));
       m.r = sw + Math.max(24, m.l * 0.5);
       m.t = Math.max(m.t, Math.round(fs0 * 2.0));     // 패널 제목 자리
       m.b = Math.max(m.b, Math.round(fs0 * 3.0));     // x축 제목 자리
       sumRect = { x: cssW - sw - 8, y: m.t, w: sw, h: cssH - m.t - m.b };
+    }
+
+    // 위/아래 범례: 실제 플롯 폭(요약 패널 제외)으로 줄 수를 세고 여백을 확보한다
+    if (OUT_T || OUT_B) {
+      const pwGuess = cssW - m.l - m.r;
+      legendRows = 1;
+      let acc = 0;
+      for (const t of state.traces.filter((z) => z.visible)) {
+        const iw = 50 + ctx.measureText((t.legend || t.name)).width + 28;
+        if (acc > 0 && acc + iw > pwGuess) { legendRows++; acc = 0; }
+        acc += iw;
+      }
+      legendH = legendRows * legendLineH + 10;
+      if (OUT_T) m.t = m.t + legendH + 10;
+      if (OUT_B) m.b = m.b + legendH + Math.round(fs * 1.9);
+      if (sum) sumRect = { x: cssW - sw - 8, y: m.t, w: sw, h: cssH - m.t - m.b };
     }
 
     // ---- 스택 오프셋 계산
@@ -2504,18 +2549,26 @@ window.FTIR_BANDS = {
     }
 
     if (state.view.grid !== false) {
-      ctx.strokeStyle = gridC; ctx.lineWidth = 1;
+      ctx.strokeStyle = gridC; ctx.lineWidth = theme.gridW || 1;
       ctx.beginPath();
       for (const v of xTicks) { const px = Math.round(X(v)) + .5; ctx.moveTo(px, m.t); ctx.lineTo(px, m.t + ph); }
       for (const v of yTicks) { const py = Math.round(Y(v)) + .5; ctx.moveTo(m.l, py); ctx.lineTo(m.l + pw, py); }
       ctx.stroke();
     }
 
-    // ---- 축
-    ctx.strokeStyle = axisC; ctx.lineWidth = 1;
+    // ---- 축 (L자)
+    ctx.strokeStyle = axisC; ctx.lineWidth = theme.axisW || 1;
     ctx.beginPath();
     ctx.moveTo(m.l, m.t); ctx.lineTo(m.l, m.t + ph); ctx.lineTo(m.l + pw, m.t + ph);
     ctx.stroke();
+
+    // ---- 사방 테두리(선택) — theme.frame 이 있으면 플롯 영역을 닫아 그린다
+    if (theme.frame) {
+      ctx.strokeStyle = theme.frameColor || axisC; ctx.lineWidth = theme.axisW || 1;
+      ctx.beginPath();
+      ctx.rect(m.l, m.t, pw, ph);
+      ctx.stroke();
+    }
 
     ctx.fillStyle = fg;
     ctx.font = `${fs}px ${FONT}`;
@@ -2523,7 +2576,7 @@ window.FTIR_BANDS = {
     for (const v of xTicks) {
       const px = X(v);
       ctx.fillText(String(Math.abs(v) >= 1000 ? v : v), px, m.t + ph + 8);
-      ctx.strokeStyle = axisC; ctx.beginPath();
+      ctx.strokeStyle = axisC; ctx.lineWidth = theme.axisW || 1; ctx.beginPath();
       ctx.moveTo(px, m.t + ph); ctx.lineTo(px, m.t + ph + 5); ctx.stroke();
     }
     if (yTicks.length) {
@@ -2533,7 +2586,7 @@ window.FTIR_BANDS = {
       for (const v of yTicks) {
         const py = Y(v);
         ctx.fillText(v.toFixed(yDec), m.l - 8, py);
-        ctx.strokeStyle = axisC; ctx.beginPath();
+        ctx.strokeStyle = axisC; ctx.lineWidth = theme.axisW || 1; ctx.beginPath();
         ctx.moveTo(m.l - 5, py); ctx.lineTo(m.l, py); ctx.stroke();
       }
     }
@@ -2543,11 +2596,12 @@ window.FTIR_BANDS = {
     ctx.font = `${Math.round(fs * 1.05)}px ${FONT}`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
     ctx.fillText(state.view.xLabel || 'Wavenumber (cm⁻¹)', m.l + pw / 2, cssH - 6);
-    if (!stacked || !normH) {
+    // Y축 제목 — 스택(정규화) 모드에서도 항상 왼쪽에 회전해 그린다
+    if (state.view.yLabel) {
       ctx.save();
-      ctx.translate(14, m.t + ph / 2); ctx.rotate(-Math.PI / 2);
+      ctx.translate(Math.round(fs * 1.5), m.t + ph / 2); ctx.rotate(-Math.PI / 2);
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.fillText(state.view.yLabel || 'Absorbance (a.u.)', 0, 0);
+      ctx.fillText(state.view.yLabel, 0, 0);
       ctx.restore();
     }
 
@@ -2709,58 +2763,76 @@ window.FTIR_BANDS = {
       }
     }
 
-    // ---- 범례
+    // ---- 범례 (바깥: 오른쪽 상자 · 위/아래 가로줄 · 왼쪽 상자 / 안쪽: 네 모서리)
     const legendRects = [];
-    if (legendOn) {
-      ctx.font = `${Math.round(fs * fsBig)}px ${FONT}`;
-      const lineH = Math.round(fs * fsBig * 1.55);
+    if (legendOn && order.length) {
       const pad = 10;
-      const boxW = outside ? Math.min(legendBoxW, cssW - m.l - m.r + 8) : Math.min(pw - 20, legendBoxW);
-      let boxH = order.length * lineH + pad * 2;
-      const maxH = outside ? ph : ph - 20;
-      let lh = lineH;
-      if (boxH > maxH) { lh = Math.max(11, Math.floor((maxH - pad * 2) / order.length)); boxH = order.length * lh + pad * 2; }
-      // 요약 패널이 있으면 '바깥' 자리가 없으므로 안쪽 오른쪽 위로 옮긴다
-      let pos = state.view.legendPos || 'out';
-      if (pos === 'out') pos = sumOn ? 'tr' : 'out';
-      let bx, by;
-      if (outside) { bx = m.l + pw + 10; by = m.t; }
-      else {
-        bx = pos === 'tl' ? m.l + 10 : (pos === 'bl' ? m.l + 10 : m.l + pw - boxW - 10);
-        by = (pos === 'bl' || pos === 'br') ? m.t + ph - boxH - 10 : m.t + 10;
-      }
-      ctx.save();
-      ctx.fillStyle = outside ? 'rgba(12,18,26,0)' : legendBgC;
-      ctx.strokeStyle = legendStrokeC;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      const r = 6;
-      ctx.moveTo(bx + r, by);
-      ctx.arcTo(bx + boxW, by, bx + boxW, by + boxH, r);
-      ctx.arcTo(bx + boxW, by + boxH, bx, by + boxH, r);
-      ctx.arcTo(bx, by + boxH, bx, by, r);
-      ctx.arcTo(bx, by, bx + boxW, by, r);
-      ctx.closePath(); ctx.fill(); ctx.stroke();
-
-      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
       ctx.font = `${Math.round(fs * fsBig)}px ${FONT}`;
-      order.forEach((t, i) => {
-        const cy = by + pad + i * lh + lh / 2;
-        ctx.strokeStyle = t.color; ctx.lineWidth = Math.max(2, t.width || 1.6);
-        ctx.setLineDash(dashArr(t.dash));
-        ctx.beginPath(); ctx.moveTo(bx + 10, cy); ctx.lineTo(bx + 38, cy); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = t.color;
-        let nm = t.legend || t.name;
-        const avail = boxW - 48;
-        if (ctx.measureText(nm).width > avail) {
-          while (nm.length > 2 && ctx.measureText(nm + '…').width > avail) nm = nm.slice(0, -1);
-          nm += '…';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+
+      if (OUT_T || OUT_B) {
+        // 가로 배치 — 폭이 모자라면 다음 줄로
+        const y0 = OUT_T ? (m.t - legendH - Math.round(fs * 0.55)) : (m.t + ph + Math.round(fs * 1.7));
+        let cx = m.l, cy = y0 + 4;
+        order.forEach((t) => {
+          const nm = t.legend || t.name;
+          const tw = ctx.measureText(nm).width;
+          const iw = 50 + tw + 28;
+          if (cx > m.l && cx + iw - 4 > m.l + pw) { cx = m.l; cy += legendLineH; }
+          const mid = cy + legendLineH / 2;
+          ctx.strokeStyle = t.color; ctx.lineWidth = Math.max(2, t.width || 1.6);
+          ctx.setLineDash(dashArr(t.dash));
+          ctx.beginPath(); ctx.moveTo(cx + 2, mid); ctx.lineTo(cx + 30, mid); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = t.color;
+          ctx.fillText(nm, cx + 36, mid);
+          legendRects.push({ id: t.id, x: cx, y: cy, w: iw, h: legendLineH });
+          cx += iw;
+        });
+      } else {
+        const boxW = Math.min(legendBoxW, Math.max(120, cssW - m.l - m.r - 8));
+        let boxH = order.length * legendLineH + pad * 2;
+        const maxH = ph - 20;
+        let lh = legendLineH;
+        if (boxH > maxH) { lh = Math.max(11, Math.floor((maxH - pad * 2) / order.length)); boxH = order.length * lh + pad * 2; }
+        let bx, by;
+        if (OUT_R) { bx = m.l + pw + 10; by = m.t; }
+        else if (OUT_L) { bx = Math.max(4, m.l - boxW - 14); by = m.t; }
+        else {
+          bx = (lpos === 'tl' || lpos === 'bl') ? m.l + 10 : m.l + pw - boxW - 10;
+          by = (lpos === 'bl' || lpos === 'br') ? m.t + ph - boxH - 10 : m.t + 10;
         }
-        ctx.fillText(nm, bx + 44, cy);
-        legendRects.push({ id: t.id, x: bx, y: by + pad + i * lh, w: boxW, h: lh });
-      });
-      ctx.restore();
+        ctx.save();
+        ctx.fillStyle = OUT_R ? 'rgba(12,18,26,0)' : legendBgC;
+        ctx.strokeStyle = legendStrokeC;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const r = 6;
+        ctx.moveTo(bx + r, by);
+        ctx.arcTo(bx + boxW, by, bx + boxW, by + boxH, r);
+        ctx.arcTo(bx + boxW, by + boxH, bx, by + boxH, r);
+        ctx.arcTo(bx, by + boxH, bx, by, r);
+        ctx.arcTo(bx, by, bx + boxW, by, r);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        order.forEach((t, i) => {
+          const cy = by + pad + i * lh + lh / 2;
+          ctx.strokeStyle = t.color; ctx.lineWidth = Math.max(2, t.width || 1.6);
+          ctx.setLineDash(dashArr(t.dash));
+          ctx.beginPath(); ctx.moveTo(bx + 10, cy); ctx.lineTo(bx + 38, cy); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = t.color;
+          let nm = t.legend || t.name;
+          const avail = boxW - 48;
+          if (ctx.measureText(nm).width > avail) {
+            while (nm.length > 2 && ctx.measureText(nm + '…').width > avail) nm = nm.slice(0, -1);
+            nm += '…';
+          }
+          ctx.fillText(nm, bx + 44, cy);
+          legendRects.push({ id: t.id, x: bx, y: by + pad + i * lh, w: boxW, h: lh });
+        });
+        ctx.restore();
+      }
     }
 
     // ---- 우측 요약 패널 그리기
@@ -2940,7 +3012,9 @@ window.FTIR_BANDS = {
       scale, width: w, height: h, theme: th, font: o.font, margin: o.margin,
       nameMax: o.nameMax, transparent: mode === 'transparent'
     });
-    return off.toDataURL('image/png');
+    const url = off.toDataURL('image/png');
+    window.__lastPNG = url;            // 테스트·검증용 마지막 산출물
+    return url;
   }
 
   /* =========================================================================
@@ -3000,12 +3074,22 @@ window.FTIR_BANDS = {
       };
     }
     if (fmt === 'ppt') {
+      /* PPT 도판 잉크 — 축·눈금·제목을 검정으로, 내부 격자를 보이게.
+         (기본 INK_DARK 는 축 #5b6672 · 격자 alpha 0.10 이라 흰 슬라이드에서 흐릿했다) */
+      const pptTheme = {
+        bg: null,
+        fg: '#111111', axis: '#111111', muted: '#3d444c',
+        grid: 'rgba(0,0,0,0.28)', gridW: 1.6, axisW: 2.0,
+        nameBg: 'rgba(255,255,255,0.90)', legendBg: 'rgba(255,255,255,0.92)',
+        legendStroke: 'rgba(0,0,0,0.30)'
+      };
+      if (o.frame) { pptTheme.frame = true; pptTheme.frameColor = '#111111'; }
       return {
         width: o.width || 1600, height: o.height || 900, scale: 1, bg: 'transparent',
-        font: fontOverride(o, PPT_FONT),
+        font: fontOverride(o, PPT_FONT), theme: pptTheme,
         margin: { l: Math.round(26 * 2.5), t: Math.round(26 * 1.5), b: Math.round(26 * 2.9) }, nameMax: 26,
         view: {
-          grid: true, legendOn: true, fontSize: 26,
+          grid: true, legendOn: o.legendOn !== false, fontSize: 26,
           peaksOn: true, labelsOn: true,
           labelMinProm: o.labelMinProm || 0.03
         },
@@ -3205,7 +3289,8 @@ window.FTIR_BANDS = {
       exportFmt: 'journal',        // journal | ppt | screen
       exportWidth: '180',          // 저널 폭(mm): 180=double, 88=single
       exportDpi: 300,
-      exportFont: ''
+      exportFont: '',
+      pptFrame: false
     },
     pre: {
       smooth: { on: false, win: 9, order: 2 },
@@ -3715,6 +3800,7 @@ window.FTIR_BANDS = {
     if ($('viewExportWidth')) $('viewExportWidth').value = String(state.view.exportWidth || '180');
     if ($('viewExportDpi')) $('viewExportDpi').value = String(state.view.exportDpi || 300);
     if ($('viewExportFont')) $('viewExportFont').value = state.view.exportFont || '';
+    if ($('viewPptFrame')) $('viewPptFrame').checked = !!state.view.pptFrame;
     $('smoothOn').checked = state.pre.smooth.on;
     $('smoothWin').value = state.pre.smooth.win;
     $('smoothOrder').value = state.pre.smooth.order;
@@ -3808,7 +3894,9 @@ window.FTIR_BANDS = {
         wmm: parseInt(state.view.exportWidth, 10) || 180,
         dpi: parseInt(state.view.exportDpi, 10) || 300,
         labelMinProm: state.view.labelMinProm,
-        fontFamily: state.view.exportFont || ''
+        fontFamily: state.view.exportFont || '',
+        frame: !!state.view.pptFrame,
+        legendOn: state.view.legendOn !== false
       };
       if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
       let opts, st = state, tag;
@@ -3819,7 +3907,7 @@ window.FTIR_BANDS = {
       } else {
         const pre = P.formatPreset(fmt, o);
         st = P.stateForFormat(state, fmt, o);
-        opts = { scale: 1, bg: pre.bg, width: pre.width, height: pre.height, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+        opts = { scale: 1, bg: pre.bg, width: pre.width, height: pre.height, font: pre.font, margin: pre.margin, nameMax: pre.nameMax, theme: pre.theme };
         tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + pre.height + ' px' : '');
       }
       const url = P.toPNG($('plot'), st, opts);
@@ -3871,13 +3959,14 @@ window.FTIR_BANDS = {
       if ($('viewExportWidth')) state.view.exportWidth = parseInt($('viewExportWidth').value, 10) || 180;
       if ($('viewExportDpi')) state.view.exportDpi = parseInt($('viewExportDpi').value, 10) || 300;
       if ($('viewExportFont')) state.view.exportFont = $('viewExportFont').value || '';
+      if ($('viewPptFrame')) state.view.pptFrame = $('viewPptFrame').checked;
       let lo = +$('viewLo').value, hi = +$('viewHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 20) { state.view.lo = lo; state.view.hi = hi; }
       renderPlot();
     };
     ['viewMode', 'viewGap', 'viewNormHeight', 'viewRev', 'viewGrid', 'viewPeaks', 'viewLabels',
       'viewFont', 'viewLegendPos', 'viewLegendOn', 'viewLegendScale', 'viewLo', 'viewHi', 'viewLabelMin',
-      'viewExportBg', 'viewExportFmt', 'viewExportWidth', 'viewExportDpi', 'viewExportFont'].forEach((id) => {
+      'viewExportBg', 'viewExportFmt', 'viewExportWidth', 'viewExportDpi', 'viewExportFont', 'viewPptFrame'].forEach((id) => {
       $(id).onchange = onView; $(id).oninput = onView;
     });
     const setRange = (lo, hi) => {
@@ -4215,7 +4304,7 @@ window.FTIR_BANDS = {
     bind();
     renderAll();
     window.APP_TAB = 'ftir';
-    log('FT-IR Studio v1.5 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
+    log('FT-IR Studio v1.6 — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 
@@ -4733,7 +4822,7 @@ window.FTIR_BANDS = {
       peaksOn: true, labelsOn: true, labelMinProm: 0, summaryOn: true,
       lo: 20, hi: 320, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
       exportBg: 'transparent',
-      exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '',
+      exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '', pptFrame: false,
       xLabel: 'Temperature (°C)', yLabel: 'Heat flow (mW/mg)'
     },
     cfg: {
@@ -5145,6 +5234,7 @@ window.FTIR_BANDS = {
     const o = {
       wmm: parseInt(st.view.exportWidth, 10) || 180,
       dpi: parseInt(st.view.exportDpi, 10) || 300, fontFamily: st.view.exportFont || '',
+      frame: !!st.view.pptFrame, legendOn: st.view.legendOn !== false,
       labelMinProm: st.view.labelMinProm
     };
     if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
@@ -5166,7 +5256,7 @@ window.FTIR_BANDS = {
           }))
         });
       }
-      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax, theme: pre.theme };
       tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + h + ' px' : '');
     }
     const url = P.toPNG($('dPlot'), s, opts);
@@ -5241,11 +5331,13 @@ window.FTIR_BANDS = {
     $('dLo').value = st.view.lo; $('dHi').value = st.view.hi;
     $('dFont').value = st.view.fontSize;
     $('dLegendPos').value = st.view.legendPos;
+    if ($('dLegendOn')) $('dLegendOn').checked = st.view.legendOn !== false;
     $('dExportBg').value = st.view.exportBg;
     if ($('dExportFmt')) $('dExportFmt').value = st.view.exportFmt || 'journal';
     if ($('dExportWidth')) $('dExportWidth').value = String(st.view.exportWidth || '180');
     if ($('dExportDpi')) $('dExportDpi').value = String(st.view.exportDpi || 300);
     if ($('dExportFont')) $('dExportFont').value = st.view.exportFont || '';
+    if ($('dPptFrame')) $('dPptFrame').checked = !!st.view.pptFrame;
     $('dMass').value = st.cfg.mass;
     $('dBeta').value = st.cfg.beta;
     $('dUnit').value = st.cfg.unit;
@@ -5320,18 +5412,20 @@ window.FTIR_BANDS = {
       st.view.labelsOn = $('dLabels').checked;
       if ($('dSummary')) st.view.summaryOn = $('dSummary').checked;
       st.view.fontSize = Math.max(8, +$('dFont').value || 13);
-      st.view.legendPos = $('dLegendPos').value;
+      if ($('dLegendPos')) st.view.legendPos = $('dLegendPos').value;
+      if ($('dLegendOn')) st.view.legendOn = $('dLegendOn').checked;
       st.view.exportBg = $('dExportBg').value;
       if ($('dExportFmt')) st.view.exportFmt = $('dExportFmt').value;
       if ($('dExportWidth')) st.view.exportWidth = parseInt($('dExportWidth').value, 10) || 180;
       if ($('dExportDpi')) st.view.exportDpi = parseInt($('dExportDpi').value, 10) || 300;
       if ($('dExportFont')) st.view.exportFont = $('dExportFont').value || '';
+      if ($('dPptFrame')) st.view.pptFrame = $('dPptFrame').checked;
       const lo = +$('dLo').value, hi = +$('dHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 1) { st.view.lo = lo; st.view.hi = hi; }
       renderPlot();
     };
     ['dViewMode', 'dGap', 'dNormH', 'dRev', 'dGrid', 'dPeaks', 'dLabels', 'dSummary', 'dFont', 'dLegendPos',
-      'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dExportFont', 'dLo', 'dHi'].forEach((id) => { if ($(id)) { $(id).onchange = onView; $(id).oninput = onView; } });
+      'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dExportFont', 'dPptFrame', 'dLo', 'dHi', 'dLegendOn'].forEach((id) => { if ($(id)) { $(id).onchange = onView; $(id).oninput = onView; } });
 
     // 분석 설정
     const onCfg = () => {
@@ -5873,7 +5967,7 @@ window.FTIR_BANDS = {
       stacked: false, gap: 0.35, rev: false, grid: true,
       peaksOn: true, labelsOn: false, labelMinProm: 0, summaryOn: true,
       lo: 30, hi: 800, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
-      exportBg: 'transparent', exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '',
+      exportBg: 'transparent', exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '', pptFrame: false,
       xLabel: 'Temperature (°C)', yLabel: 'Weight (%)'
     },
     cfg: { smooth: 5, tempCol: null, wtCol: null, yLo: 0, yHi: 105, sumCodes: '' },
@@ -6154,7 +6248,8 @@ window.FTIR_BANDS = {
     if (!st.traces.length) { log('내보낼 TGA 곡선이 없습니다', 'warn'); return; }
     const fmt = st.view.exportFmt || 'journal';
     const o = { wmm: parseInt(st.view.exportWidth, 10) || 180, dpi: parseInt(st.view.exportDpi, 10) || 300,
-      labelMinProm: 0, fontFamily: st.view.exportFont || '' };
+      labelMinProm: 0, fontFamily: st.view.exportFont || '', frame: !!st.view.pptFrame,
+      legendOn: st.view.legendOn !== false };
     if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
     const sum = summarySpec();
     const base = {
@@ -6176,7 +6271,7 @@ window.FTIR_BANDS = {
         s.view = Object.assign({}, s.view, { legendOn: true, legendPos: 'tr', legendScale: 0.72 });
       }
       const h = fmt === 'journal' ? Math.round(pre.width * (o.wmm > 120 ? 0.46 : 0.58)) : pre.height;
-      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax, theme: pre.theme };
       tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + h + ' px' : '');
     }
     const url = P.toPNG($('tPlot'), s, opts);
@@ -6251,10 +6346,12 @@ window.FTIR_BANDS = {
     $('tSummary').checked = !!st.view.summaryOn;
     $('tFont').value = st.view.fontSize;
     $('tLegendPos').value = st.view.legendPos;
+    if ($('tLegendOn')) $('tLegendOn').checked = st.view.legendOn !== false;
     $('tExportFmt').value = st.view.exportFmt;
     $('tExportWidth').value = String(st.view.exportWidth);
     $('tExportDpi').value = String(st.view.exportDpi);
     if ($('tExportFont')) $('tExportFont').value = st.view.exportFont || '';
+    if ($('tPptFrame')) $('tPptFrame').checked = !!st.view.pptFrame;
     $('tExportBg').value = st.view.exportBg;
     $('tLo').value = st.view.lo; $('tHi').value = st.view.hi;
     $('tSmooth').value = st.cfg.smooth;
@@ -6307,11 +6404,13 @@ window.FTIR_BANDS = {
       st.view.labelsOn = $('tLabels').checked;
       st.view.summaryOn = $('tSummary').checked;
       st.view.fontSize = Math.max(8, +$('tFont').value || 13);
-      st.view.legendPos = $('tLegendPos').value;
+      if ($('tLegendPos')) st.view.legendPos = $('tLegendPos').value;
+      if ($('tLegendOn')) st.view.legendOn = $('tLegendOn').checked;
       st.view.exportFmt = $('tExportFmt').value;
       st.view.exportWidth = parseInt($('tExportWidth').value, 10) || 180;
       st.view.exportDpi = parseInt($('tExportDpi').value, 10) || 300;
       if ($('tExportFont')) st.view.exportFont = $('tExportFont').value || '';
+      if ($('tPptFrame')) st.view.pptFrame = $('tPptFrame').checked;
       st.view.exportBg = $('tExportBg').value;
       const lo = +$('tLo').value, hi = +$('tHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 5) { st.view.lo = lo; st.view.hi = hi; }
@@ -6325,7 +6424,7 @@ window.FTIR_BANDS = {
       renderPlot(); renderTables();
     };
     ['tViewMode', 'tGap', 'tGrid', 'tPeaks', 'tLabels', 'tSummary', 'tFont', 'tLegendPos',
-      'tExportFmt', 'tExportWidth', 'tExportDpi', 'tExportFont', 'tExportBg', 'tLo', 'tHi', 'tSmooth', 'tSumCodes']
+      'tExportFmt', 'tExportWidth', 'tExportDpi', 'tExportFont', 'tPptFrame', 'tExportBg', 'tLo', 'tHi', 'tSmooth', 'tSumCodes', 'tLegendOn']
       .forEach((id) => { const e = $(id); if (e) { e.onchange = onView; e.oninput = onView; } });
 
     // 아래쪽 탭

@@ -20,7 +20,7 @@
       peaksOn: true, labelsOn: true, labelMinProm: 0, summaryOn: true,
       lo: 20, hi: 320, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
       exportBg: 'transparent',
-      exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '',
+      exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '', pptFrame: false,
       xLabel: 'Temperature (°C)', yLabel: 'Heat flow (mW/mg)'
     },
     cfg: {
@@ -432,6 +432,7 @@
     const o = {
       wmm: parseInt(st.view.exportWidth, 10) || 180,
       dpi: parseInt(st.view.exportDpi, 10) || 300, fontFamily: st.view.exportFont || '',
+      frame: !!st.view.pptFrame, legendOn: st.view.legendOn !== false,
       labelMinProm: st.view.labelMinProm
     };
     if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
@@ -453,7 +454,7 @@
           }))
         });
       }
-      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax, theme: pre.theme };
       tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + h + ' px' : '');
     }
     const url = P.toPNG($('dPlot'), s, opts);
@@ -528,11 +529,13 @@
     $('dLo').value = st.view.lo; $('dHi').value = st.view.hi;
     $('dFont').value = st.view.fontSize;
     $('dLegendPos').value = st.view.legendPos;
+    if ($('dLegendOn')) $('dLegendOn').checked = st.view.legendOn !== false;
     $('dExportBg').value = st.view.exportBg;
     if ($('dExportFmt')) $('dExportFmt').value = st.view.exportFmt || 'journal';
     if ($('dExportWidth')) $('dExportWidth').value = String(st.view.exportWidth || '180');
     if ($('dExportDpi')) $('dExportDpi').value = String(st.view.exportDpi || 300);
     if ($('dExportFont')) $('dExportFont').value = st.view.exportFont || '';
+    if ($('dPptFrame')) $('dPptFrame').checked = !!st.view.pptFrame;
     $('dMass').value = st.cfg.mass;
     $('dBeta').value = st.cfg.beta;
     $('dUnit').value = st.cfg.unit;
@@ -607,18 +610,20 @@
       st.view.labelsOn = $('dLabels').checked;
       if ($('dSummary')) st.view.summaryOn = $('dSummary').checked;
       st.view.fontSize = Math.max(8, +$('dFont').value || 13);
-      st.view.legendPos = $('dLegendPos').value;
+      if ($('dLegendPos')) st.view.legendPos = $('dLegendPos').value;
+      if ($('dLegendOn')) st.view.legendOn = $('dLegendOn').checked;
       st.view.exportBg = $('dExportBg').value;
       if ($('dExportFmt')) st.view.exportFmt = $('dExportFmt').value;
       if ($('dExportWidth')) st.view.exportWidth = parseInt($('dExportWidth').value, 10) || 180;
       if ($('dExportDpi')) st.view.exportDpi = parseInt($('dExportDpi').value, 10) || 300;
       if ($('dExportFont')) st.view.exportFont = $('dExportFont').value || '';
+      if ($('dPptFrame')) st.view.pptFrame = $('dPptFrame').checked;
       const lo = +$('dLo').value, hi = +$('dHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 1) { st.view.lo = lo; st.view.hi = hi; }
       renderPlot();
     };
     ['dViewMode', 'dGap', 'dNormH', 'dRev', 'dGrid', 'dPeaks', 'dLabels', 'dSummary', 'dFont', 'dLegendPos',
-      'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dExportFont', 'dLo', 'dHi'].forEach((id) => { if ($(id)) { $(id).onchange = onView; $(id).oninput = onView; } });
+      'dExportBg', 'dExportFmt', 'dExportWidth', 'dExportDpi', 'dExportFont', 'dPptFrame', 'dLo', 'dHi', 'dLegendOn'].forEach((id) => { if ($(id)) { $(id).onchange = onView; $(id).oninput = onView; } });
 
     // 분석 설정
     const onCfg = () => {

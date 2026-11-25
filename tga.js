@@ -19,7 +19,7 @@
       stacked: false, gap: 0.35, rev: false, grid: true,
       peaksOn: true, labelsOn: false, labelMinProm: 0, summaryOn: true,
       lo: 30, hi: 800, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
-      exportBg: 'transparent', exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '',
+      exportBg: 'transparent', exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '', pptFrame: false,
       xLabel: 'Temperature (°C)', yLabel: 'Weight (%)'
     },
     cfg: { smooth: 5, tempCol: null, wtCol: null, yLo: 0, yHi: 105, sumCodes: '' },
@@ -300,7 +300,8 @@
     if (!st.traces.length) { log('내보낼 TGA 곡선이 없습니다', 'warn'); return; }
     const fmt = st.view.exportFmt || 'journal';
     const o = { wmm: parseInt(st.view.exportWidth, 10) || 180, dpi: parseInt(st.view.exportDpi, 10) || 300,
-      labelMinProm: 0, fontFamily: st.view.exportFont || '' };
+      labelMinProm: 0, fontFamily: st.view.exportFont || '', frame: !!st.view.pptFrame,
+      legendOn: st.view.legendOn !== false };
     if (o.fontFamily && !(await P.ensureFont(o.fontFamily))) log('서체 "' + o.fontFamily + '" 를 불러오지 못했습니다 — 대체 서체로 저장합니다', 'warn');
     const sum = summarySpec();
     const base = {
@@ -322,7 +323,7 @@
         s.view = Object.assign({}, s.view, { legendOn: true, legendPos: 'tr', legendScale: 0.72 });
       }
       const h = fmt === 'journal' ? Math.round(pre.width * (o.wmm > 120 ? 0.46 : 0.58)) : pre.height;
-      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax };
+      opts = { scale: 1, bg: pre.bg, width: pre.width, height: h, font: pre.font, margin: pre.margin, nameMax: pre.nameMax, theme: pre.theme };
       tag = pre.label + (fmt === 'journal' ? ' · ' + pre.width + '×' + h + ' px' : '');
     }
     const url = P.toPNG($('tPlot'), s, opts);
@@ -397,10 +398,12 @@
     $('tSummary').checked = !!st.view.summaryOn;
     $('tFont').value = st.view.fontSize;
     $('tLegendPos').value = st.view.legendPos;
+    if ($('tLegendOn')) $('tLegendOn').checked = st.view.legendOn !== false;
     $('tExportFmt').value = st.view.exportFmt;
     $('tExportWidth').value = String(st.view.exportWidth);
     $('tExportDpi').value = String(st.view.exportDpi);
     if ($('tExportFont')) $('tExportFont').value = st.view.exportFont || '';
+    if ($('tPptFrame')) $('tPptFrame').checked = !!st.view.pptFrame;
     $('tExportBg').value = st.view.exportBg;
     $('tLo').value = st.view.lo; $('tHi').value = st.view.hi;
     $('tSmooth').value = st.cfg.smooth;
@@ -453,11 +456,13 @@
       st.view.labelsOn = $('tLabels').checked;
       st.view.summaryOn = $('tSummary').checked;
       st.view.fontSize = Math.max(8, +$('tFont').value || 13);
-      st.view.legendPos = $('tLegendPos').value;
+      if ($('tLegendPos')) st.view.legendPos = $('tLegendPos').value;
+      if ($('tLegendOn')) st.view.legendOn = $('tLegendOn').checked;
       st.view.exportFmt = $('tExportFmt').value;
       st.view.exportWidth = parseInt($('tExportWidth').value, 10) || 180;
       st.view.exportDpi = parseInt($('tExportDpi').value, 10) || 300;
       if ($('tExportFont')) st.view.exportFont = $('tExportFont').value || '';
+      if ($('tPptFrame')) st.view.pptFrame = $('tPptFrame').checked;
       st.view.exportBg = $('tExportBg').value;
       const lo = +$('tLo').value, hi = +$('tHi').value;
       if (isFinite(lo) && isFinite(hi) && Math.abs(hi - lo) > 5) { st.view.lo = lo; st.view.hi = hi; }
@@ -471,7 +476,7 @@
       renderPlot(); renderTables();
     };
     ['tViewMode', 'tGap', 'tGrid', 'tPeaks', 'tLabels', 'tSummary', 'tFont', 'tLegendPos',
-      'tExportFmt', 'tExportWidth', 'tExportDpi', 'tExportFont', 'tExportBg', 'tLo', 'tHi', 'tSmooth', 'tSumCodes']
+      'tExportFmt', 'tExportWidth', 'tExportDpi', 'tExportFont', 'tPptFrame', 'tExportBg', 'tLo', 'tHi', 'tSmooth', 'tSumCodes', 'tLegendOn']
       .forEach((id) => { const e = $(id); if (e) { e.onchange = onView; e.oninput = onView; } });
 
     // 아래쪽 탭
