@@ -218,17 +218,17 @@
       const r = st.res[t.id] || {};
       const pk = r.peak && r.peak.ok ? r.peak : null;
       const tg = r.tg && r.tg.ok ? r.tg : null;
-      if (pk && isFinite(pk.peakX)) {
+      if (pk && Number.isFinite(pk.peakX)) {
         const endo = pk.sign >= 0;
         tPts.push({ cat: i, y: pk.peakX, color: endo ? '#1f4e79' : '#b23a2e',
           marker: endo ? 'circle' : 'diamond', below: !endo,
           text: (endo ? 'Tm ' : 'Tc ') + pk.peakX.toFixed(1) + ' °C', textShort: pk.peakX.toFixed(1) });
       }
-      if (tg && isFinite(tg.tgMid)) {
+      if (tg && Number.isFinite(tg.tgMid)) {
         tPts.push({ cat: i, y: tg.tgMid, color: '#1f7a4d', marker: 'square',
           text: 'Tg ' + tg.tgMid.toFixed(1), textShort: tg.tgMid.toFixed(1) });
       }
-      if (pk && isFinite(pk.dH)) {
+      if (pk && Number.isFinite(pk.dH)) {
         hPts.push({ cat: i, y: Math.abs(pk.dH), color: '#1f4e79', marker: 'circle',
           text: Math.abs(pk.dH).toFixed(1) + ' J/g', textShort: Math.abs(pk.dH).toFixed(1) });
       }
@@ -386,9 +386,12 @@
             }
           }
           r.warnings.forEach((w) => log('  · ' + w, 'warn'));
-          runAnalysis(t, true);
+          // 분석 실패가 '그리기'까지 막지 않도록 분리한다 — 곡선은 항상 그린다
+          try { runAnalysis(t, true); }
+          catch (e) { log(`  · ${f.name}: 분석 단계 오류 — ${e.message} (곡선은 그립니다)`, 'warn'); }
           done++;
-          renderAll();
+          try { renderAll(); }
+          catch (e) { log(`  · ${f.name}: 그리기 오류 — ${e.message}`, 'err'); }
         } catch (e) { log(`${f.name}: 처리 오류 — ${e.message}`, 'err'); }
       };
       rd.onerror = () => log(`${f.name}: 파일을 읽을 수 없습니다`, 'err');

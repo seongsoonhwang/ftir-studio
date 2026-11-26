@@ -317,7 +317,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <div class="brand">
       <span class="logo">∿</span>
       <span class="title">FT-IR Studio</span>
-      <span class="ver">v1.6c</span>
+      <span class="ver">v1.6d</span>
       <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 | DSC: ΔH·Tg·결정화도 | TGA: T5%·Td·잔량</span>
     </div>
     <nav class="ttabs">
@@ -2949,6 +2949,7 @@ window.FTIR_BANDS = {
       const xx = X(p.cat || 0), yy = Y(p.y);
       ctx.fillStyle = p.color || fg;
       marker(ctx, p.marker || 'circle', xx, yy, rad);
+      if (!Number.isFinite(p.y)) continue;                 // 값이 없는 점(null)은 건너뛴다
       const full = p.text !== undefined ? p.text : (pn.yFmt === 0 ? Math.round(p.y) : p.y.toFixed(1)) + (pn.yUnit || '');
       ctx.font = `${fSmall}px ${FONT}`;
       const slot = (pw / nCat) - 4;
@@ -4304,7 +4305,7 @@ window.FTIR_BANDS = {
     bind();
     renderAll();
     window.APP_TAB = 'ftir';
-    log('FT-IR Studio v1.6c — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
+    log('FT-IR Studio v1.6d — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 
@@ -5056,17 +5057,17 @@ window.FTIR_BANDS = {
       const r = st.res[t.id] || {};
       const pk = r.peak && r.peak.ok ? r.peak : null;
       const tg = r.tg && r.tg.ok ? r.tg : null;
-      if (pk && isFinite(pk.peakX)) {
+      if (pk && Number.isFinite(pk.peakX)) {
         const endo = pk.sign >= 0;
         tPts.push({ cat: i, y: pk.peakX, color: endo ? '#1f4e79' : '#b23a2e',
           marker: endo ? 'circle' : 'diamond', below: !endo,
           text: (endo ? 'Tm ' : 'Tc ') + pk.peakX.toFixed(1) + ' °C', textShort: pk.peakX.toFixed(1) });
       }
-      if (tg && isFinite(tg.tgMid)) {
+      if (tg && Number.isFinite(tg.tgMid)) {
         tPts.push({ cat: i, y: tg.tgMid, color: '#1f7a4d', marker: 'square',
           text: 'Tg ' + tg.tgMid.toFixed(1), textShort: tg.tgMid.toFixed(1) });
       }
-      if (pk && isFinite(pk.dH)) {
+      if (pk && Number.isFinite(pk.dH)) {
         hPts.push({ cat: i, y: Math.abs(pk.dH), color: '#1f4e79', marker: 'circle',
           text: Math.abs(pk.dH).toFixed(1) + ' J/g', textShort: Math.abs(pk.dH).toFixed(1) });
       }
@@ -5224,9 +5225,12 @@ window.FTIR_BANDS = {
             }
           }
           r.warnings.forEach((w) => log('  · ' + w, 'warn'));
-          runAnalysis(t, true);
+          // 분석 실패가 '그리기'까지 막지 않도록 분리한다 — 곡선은 항상 그린다
+          try { runAnalysis(t, true); }
+          catch (e) { log(`  · ${f.name}: 분석 단계 오류 — ${e.message} (곡선은 그립니다)`, 'warn'); }
           done++;
-          renderAll();
+          try { renderAll(); }
+          catch (e) { log(`  · ${f.name}: 그리기 오류 — ${e.message}`, 'err'); }
         } catch (e) { log(`${f.name}: 처리 오류 — ${e.message}`, 'err'); }
       };
       rd.onerror = () => log(`${f.name}: 파일을 읽을 수 없습니다`, 'err');

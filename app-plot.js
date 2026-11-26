@@ -601,6 +601,7 @@
       const xx = X(p.cat || 0), yy = Y(p.y);
       ctx.fillStyle = p.color || fg;
       marker(ctx, p.marker || 'circle', xx, yy, rad);
+      if (!Number.isFinite(p.y)) continue;                 // 값이 없는 점(null)은 건너뛴다
       const full = p.text !== undefined ? p.text : (pn.yFmt === 0 ? Math.round(p.y) : p.y.toFixed(1)) + (pn.yUnit || '');
       ctx.font = `${fSmall}px ${FONT}`;
       const slot = (pw / nCat) - 4;
