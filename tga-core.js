@@ -148,6 +148,24 @@
     }
     if (wtCol < 0) return { ok: false, reason: '중량(%) 열을 찾지 못했습니다' };
 
+    // 컬럼 이름표(##Temp./°C;Time/min;Mass/%;…)가 있으면 이름으로 먼저 배정한다
+    let nameMap = null;
+    for (let k = headerLines.length - 1; k >= 0 && !nameMap; k--) {
+      const hl = headerLines[k];
+      if (!/temp|mass|weight|zeit|time|tg/i.test(hl)) continue;
+      const body = hl.replace(/^#+\s*/, '');
+      const toks = delim ? body.split(delim) : body.trim().split(/\s+/);
+      if (toks.length < 2 || toks.length > width + 1) continue;
+      const map = { temp: -1, wt: -1 };
+      toks.forEach((t, i) => {
+        const s = t.trim().toLowerCase();
+        if (map.temp < 0 && /temp/.test(s)) map.temp = i;
+        if (map.wt < 0 && /(mass|weight|^tg|\/%)/.test(s) && !/dtg|deriv/.test(s)) map.wt = i;
+      });
+      if (map.temp >= 0 && map.wt >= 0 && map.temp < width && map.wt < width && map.temp !== map.wt) nameMap = map;
+    }
+    if (nameMap) { tempCol = nameMap.temp; wtCol = nameMap.wt; }
+
     // 보조 열(3열 이상이면 DTG 또는 시간) — 요철이 가장 큰 열
     let auxCol = -1, bestR = -1;
     for (let c = 0; c < width; c++) {

@@ -112,6 +112,26 @@
     }
     if (hfCol < 0) return { ok: false, reason: '열유량 열을 찾지 못했습니다' };
 
+    // 컬럼 이름표가 있으면(##Temp./°C;Time/min;DSC/(mW/mg);Sensit./(uV/mW)) 이름으로 먼저 배정한다.
+    //  요철도만 보면 감도(Sensitivity) 열이나 시간 열이 열유량으로 뽑히는 경우가 있어,
+    //  계측기가 남긴 열 이름을 우선한다.
+    let nameMap = null;
+    for (let k = headerLines.length - 1; k >= 0 && !nameMap; k--) {
+      const hl = headerLines[k];
+      if (!/temp|dsc|heat|sens|zeit|time/i.test(hl)) continue;
+      const body = hl.replace(/^#+\s*/, '');
+      const toks = delim ? body.split(delim) : body.trim().split(/\s+/);
+      if (toks.length < 2 || toks.length > width + 1) continue;
+      const map = { temp: -1, hf: -1 };
+      toks.forEach((t, i) => {
+        const s = t.trim().toLowerCase();
+        if (map.temp < 0 && /temp/.test(s)) map.temp = i;
+        if (map.hf < 0 && /(dsc|heat)/.test(s) && !/sens/.test(s)) map.hf = i;
+      });
+      if (map.temp >= 0 && map.hf >= 0 && map.temp < width && map.hf < width && map.temp !== map.hf) nameMap = map;
+    }
+    if (nameMap) { tempCol = nameMap.temp; hfCol = nameMap.hf; }
+
     // 사용자가 지정한 열(오검출 교정)
     if (Number.isInteger(O.tempCol) && O.tempCol >= 0 && O.tempCol < width) tempCol = O.tempCol;
     if (Number.isInteger(O.hfCol) && O.hfCol >= 0 && O.hfCol < width && O.hfCol !== tempCol) hfCol = O.hfCol;

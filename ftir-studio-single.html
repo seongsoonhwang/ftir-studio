@@ -317,7 +317,7 @@ dialog code{background:#0e141c; padding:1px 5px; border-radius:4px; font-size:11
     <div class="brand">
       <span class="logo">∿</span>
       <span class="title">FT-IR Studio</span>
-      <span class="ver">v1.6b</span>
+      <span class="ver">v1.6c</span>
       <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 | DSC: ΔH·Tg·결정화도 | TGA: T5%·Td·잔량</span>
     </div>
     <nav class="ttabs">
@@ -4304,7 +4304,7 @@ window.FTIR_BANDS = {
     bind();
     renderAll();
     window.APP_TAB = 'ftir';
-    log('FT-IR Studio v1.6b — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
+    log('FT-IR Studio v1.6c — 준비 완료. OPUS 원시 파일(.0/.1) 또는 ASCII(.dpt)를 끌어다 놓으세요. 상단 탭에서 DSC·TGA 분석으로 전환할 수 있습니다.');
     log('OPUS 원시 바이너리(.0/.1)는 그대로 읽고, 내부 MNY/MXY 대조로 값 무결성을 확인합니다.');
   }
 
@@ -4434,6 +4434,26 @@ window.FTIR_BANDS = {
       if (rg > bestRough) { bestRough = rg; hfCol = c; }
     }
     if (hfCol < 0) return { ok: false, reason: '열유량 열을 찾지 못했습니다' };
+
+    // 컬럼 이름표가 있으면(##Temp./°C;Time/min;DSC/(mW/mg);Sensit./(uV/mW)) 이름으로 먼저 배정한다.
+    //  요철도만 보면 감도(Sensitivity) 열이나 시간 열이 열유량으로 뽑히는 경우가 있어,
+    //  계측기가 남긴 열 이름을 우선한다.
+    let nameMap = null;
+    for (let k = headerLines.length - 1; k >= 0 && !nameMap; k--) {
+      const hl = headerLines[k];
+      if (!/temp|dsc|heat|sens|zeit|time/i.test(hl)) continue;
+      const body = hl.replace(/^#+\s*/, '');
+      const toks = delim ? body.split(delim) : body.trim().split(/\s+/);
+      if (toks.length < 2 || toks.length > width + 1) continue;
+      const map = { temp: -1, hf: -1 };
+      toks.forEach((t, i) => {
+        const s = t.trim().toLowerCase();
+        if (map.temp < 0 && /temp/.test(s)) map.temp = i;
+        if (map.hf < 0 && /(dsc|heat)/.test(s) && !/sens/.test(s)) map.hf = i;
+      });
+      if (map.temp >= 0 && map.hf >= 0 && map.temp < width && map.hf < width && map.temp !== map.hf) nameMap = map;
+    }
+    if (nameMap) { tempCol = nameMap.temp; hfCol = nameMap.hf; }
 
     // 사용자가 지정한 열(오검출 교정)
     if (Number.isInteger(O.tempCol) && O.tempCol >= 0 && O.tempCol < width) tempCol = O.tempCol;
@@ -5190,7 +5210,19 @@ window.FTIR_BANDS = {
           st.selectedId = t.id;
           st.cfg.unit = r.unit;
           if ($('dUnit')) $('dUnit').value = r.unit;
-          log(`${f.name}: ${r.x.length}점 · ${fm(r.x[0], 0)}–${fm(r.x[r.x.length - 1], 0)} °C · 단위 ${r.unit} · 온도열 ${r.meta.tempCol} / 열유량열 ${r.meta.hfCol} (${r.meta.cols}열, ${r.meta.delim}, ${r.dir === 'cool' ? '냉각' : '가열'})`, 'ok');
+          const yMin = Math.min.apply(null, r.y), yMax = Math.max.apply(null, r.y);
+          log(`${f.name}: ${r.x.length}점 · ${fm(r.x[0], 0)}–${fm(r.x[r.x.length - 1], 0)} °C · 단위 ${r.unit} · y ${fm(yMin, 3)}–${fm(yMax, 3)} · 온도열 ${r.meta.tempCol} / 열유량열 ${r.meta.hfCol} (${r.meta.cols}열, ${r.meta.delim}, ${r.dir === 'cool' ? '냉각' : '가열'})`, 'ok');
+          // 새 데이터가 지금 X 창 밖으로 나가면 창을 넓힌다 — 불러왔는데 그래프가 안 보이는 문제 방지
+          const xa = r.x[0], xb = r.x[r.x.length - 1];
+          if (st.traces.length === 1 || xa < st.view.lo - 1 || xb > st.view.hi + 1) {
+            const lo0 = st.view.lo, hi0 = st.view.hi;
+            st.view.lo = Math.min(lo0, Math.floor(xa - 5));
+            st.view.hi = Math.max(hi0, Math.ceil(xb + 5));
+            if (st.view.lo !== lo0 || st.view.hi !== hi0) {
+              if ($('dLo')) { $('dLo').value = st.view.lo.toFixed(1); $('dHi').value = st.view.hi.toFixed(1); }
+              log(`  · X 창을 데이터에 맞춰 ${st.view.lo}–${st.view.hi} °C 로 넓혔습니다 (이전 ${lo0}–${hi0})`, 'info');
+            }
+          }
           r.warnings.forEach((w) => log('  · ' + w, 'warn'));
           runAnalysis(t, true);
           done++;
@@ -5753,6 +5785,24 @@ window.FTIR_BANDS = {
       if (score > bestW) { bestW = score; wtCol = c; }
     }
     if (wtCol < 0) return { ok: false, reason: '중량(%) 열을 찾지 못했습니다' };
+
+    // 컬럼 이름표(##Temp./°C;Time/min;Mass/%;…)가 있으면 이름으로 먼저 배정한다
+    let nameMap = null;
+    for (let k = headerLines.length - 1; k >= 0 && !nameMap; k--) {
+      const hl = headerLines[k];
+      if (!/temp|mass|weight|zeit|time|tg/i.test(hl)) continue;
+      const body = hl.replace(/^#+\s*/, '');
+      const toks = delim ? body.split(delim) : body.trim().split(/\s+/);
+      if (toks.length < 2 || toks.length > width + 1) continue;
+      const map = { temp: -1, wt: -1 };
+      toks.forEach((t, i) => {
+        const s = t.trim().toLowerCase();
+        if (map.temp < 0 && /temp/.test(s)) map.temp = i;
+        if (map.wt < 0 && /(mass|weight|^tg|\/%)/.test(s) && !/dtg|deriv/.test(s)) map.wt = i;
+      });
+      if (map.temp >= 0 && map.wt >= 0 && map.temp < width && map.wt < width && map.temp !== map.wt) nameMap = map;
+    }
+    if (nameMap) { tempCol = nameMap.temp; wtCol = nameMap.wt; }
 
     // 보조 열(3열 이상이면 DTG 또는 시간) — 요철이 가장 큰 열
     let auxCol = -1, bestR = -1;

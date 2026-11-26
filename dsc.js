@@ -372,7 +372,19 @@
           st.selectedId = t.id;
           st.cfg.unit = r.unit;
           if ($('dUnit')) $('dUnit').value = r.unit;
-          log(`${f.name}: ${r.x.length}점 · ${fm(r.x[0], 0)}–${fm(r.x[r.x.length - 1], 0)} °C · 단위 ${r.unit} · 온도열 ${r.meta.tempCol} / 열유량열 ${r.meta.hfCol} (${r.meta.cols}열, ${r.meta.delim}, ${r.dir === 'cool' ? '냉각' : '가열'})`, 'ok');
+          const yMin = Math.min.apply(null, r.y), yMax = Math.max.apply(null, r.y);
+          log(`${f.name}: ${r.x.length}점 · ${fm(r.x[0], 0)}–${fm(r.x[r.x.length - 1], 0)} °C · 단위 ${r.unit} · y ${fm(yMin, 3)}–${fm(yMax, 3)} · 온도열 ${r.meta.tempCol} / 열유량열 ${r.meta.hfCol} (${r.meta.cols}열, ${r.meta.delim}, ${r.dir === 'cool' ? '냉각' : '가열'})`, 'ok');
+          // 새 데이터가 지금 X 창 밖으로 나가면 창을 넓힌다 — 불러왔는데 그래프가 안 보이는 문제 방지
+          const xa = r.x[0], xb = r.x[r.x.length - 1];
+          if (st.traces.length === 1 || xa < st.view.lo - 1 || xb > st.view.hi + 1) {
+            const lo0 = st.view.lo, hi0 = st.view.hi;
+            st.view.lo = Math.min(lo0, Math.floor(xa - 5));
+            st.view.hi = Math.max(hi0, Math.ceil(xb + 5));
+            if (st.view.lo !== lo0 || st.view.hi !== hi0) {
+              if ($('dLo')) { $('dLo').value = st.view.lo.toFixed(1); $('dHi').value = st.view.hi.toFixed(1); }
+              log(`  · X 창을 데이터에 맞춰 ${st.view.lo}–${st.view.hi} °C 로 넓혔습니다 (이전 ${lo0}–${hi0})`, 'info');
+            }
+          }
           r.warnings.forEach((w) => log('  · ' + w, 'warn'));
           runAnalysis(t, true);
           done++;
