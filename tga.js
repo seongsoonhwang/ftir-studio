@@ -19,7 +19,7 @@
       stacked: false, gap: 0.35, rev: false, grid: true,
       peaksOn: true, labelsOn: false, labelMinProm: 0, summaryOn: true,
       lo: 30, hi: 800, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
-      exportBg: 'transparent', exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '', pptFrame: false,
+      exportBg: 'transparent', exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '', pptFrame: true,
       xLabel: 'Temperature (°C)', yLabel: 'Weight (%)'
     },
     cfg: { smooth: 5, tempCol: null, wtCol: null, yLo: 0, yHi: 105, sumCodes: '' },

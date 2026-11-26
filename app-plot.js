@@ -732,7 +732,7 @@
       const pptTheme = {
         bg: null,
         fg: '#111111', axis: '#111111', muted: '#3d444c',
-        grid: 'rgba(0,0,0,0.28)', gridW: 1.6, axisW: 2.0,
+        grid: 'rgba(0,0,0,0.45)', gridW: 2.0, axisW: 2.4,
         nameBg: 'rgba(255,255,255,0.90)', legendBg: 'rgba(255,255,255,0.92)',
         legendStroke: 'rgba(0,0,0,0.30)'
       };

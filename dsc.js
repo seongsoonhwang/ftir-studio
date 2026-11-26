@@ -20,7 +20,7 @@
       peaksOn: true, labelsOn: true, labelMinProm: 0, summaryOn: true,
       lo: 20, hi: 320, fontSize: 13, legendOn: true, legendPos: 'out', legendScale: 1,
       exportBg: 'transparent',
-      exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '', pptFrame: false,
+      exportFmt: 'journal', exportWidth: '180', exportDpi: 300, exportFont: '', pptFrame: true,
       xLabel: 'Temperature (°C)', yLabel: 'Heat flow (mW/mg)'
     },
     cfg: {

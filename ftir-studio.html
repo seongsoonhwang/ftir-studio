@@ -12,7 +12,7 @@
     <div class="brand">
       <span class="logo">∿</span>
       <span class="title">FT-IR Studio</span>
-      <span class="ver">v1.6d</span>
+      <span class="ver">v1.6e</span>
       <span class="sub">FT-IR: OPUS 바이너리·ASCII · 정성/열화 판정 | DSC: ΔH·Tg·결정화도 | TGA: T5%·Td·잔량</span>
     </div>
     <nav class="ttabs">
@@ -137,7 +137,7 @@
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
-          <label class="chk"><input id="viewPptFrame" type="checkbox"> PPT 테두리 (사방 박스)</label>
+          <label class="chk"><input id="viewPptFrame" type="checkbox" checked> PPT 테두리 (사방 박스, 기본 켜짐)</label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="viewExportBg">
@@ -440,7 +440,7 @@
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
-          <label class="chk"><input id="dPptFrame" type="checkbox"> PPT 테두리 (사방 박스)</label>
+          <label class="chk"><input id="dPptFrame" type="checkbox" checked> PPT 테두리 (사방 박스, 기본 켜짐)</label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="dExportBg">
@@ -651,7 +651,7 @@
               <option value="Malgun Gothic">맑은 고딕</option>
             </select>
           </label>
-          <label class="chk"><input id="tPptFrame" type="checkbox"> PPT 테두리 (사방 박스)</label>
+          <label class="chk"><input id="tPptFrame" type="checkbox" checked> PPT 테두리 (사방 박스, 기본 켜짐)</label>
         </div>
         <label class="fld"><span>PNG 배경 (화면 그대로일 때)</span>
           <select id="tExportBg">
@@ -755,7 +755,7 @@
   <ul>
     <li>표시 설정 → <b>PNG 포맷</b>에서 고릅니다. 기본값은 <b>학술지 (double 180 mm, 300 dpi)</b>입니다.</li>
     <li><b>학술지</b>: 흰 배경 · Times 계열 · 격자 없음 · 범례 대신 스펙트럼 위 이름 · 피크 라벨은 시료당 5개 · 최소 선굵기 0.53 pt. 폭(single 88 mm / double 180 mm)과 해상도(300/600 dpi)를 지정하며, 글자는 항상 7 pt로 계산되므로 인쇄했을 때 눈금이 7 pt로 나옵니다.</li>
-    <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · <b>검정 축 + 내부 격자</b>(축 #111111, 격자 rgba(0,0,0,0.28)) · 이름표+범례 · 피크 라벨 8개까지.</li>
+    <li><b>PPT</b>: 1600×900(16:9) · 투명 배경 · 굵은 선(≈2 pt) · 큰 글씨 · <b>검정 축 + 내부 격자</b>(축·테두리 #111111 2.4 px, 격자 rgba(0,0,0,0.45) 2.0 px) · 이름표+범례 · 피크 라벨 8개까지.</li>
     <li><b>화면 그대로</b>: 보이는 그대로 2배 해상도. 배경은 투명/흰색/앱 테마 중 선택.</li>
     <li>내보내기에는 화면 전용 요소(선택 음영·크로스헤어)가 빠지고, 피크를 아직 검출하지 않은 시료도 자동으로 검출해 라벨을 붙입니다.</li>
     <li><b>범례</b>: 「범례 표시」로 켜고 끄며, 위치는 <b>바깥 위·아래·왼쪽·오른쪽</b>과 <b>안쪽 네 모서리</b> 중에서 고릅니다. 위·아래는 가로로 늘어놓고 폭이 모자라면 자동으로 다음 줄로 넘기며, 플롯 여백을 그만큼 확보합니다. 바깥 오른쪽은 요약 패널이 켜져 있으면 안쪽 오른쪽 위로 물러납니다. 학술지 포맷은 그림 안 시료명을 쓰므로 범례를 그리지 않습니다.</li>
